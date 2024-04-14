@@ -8,3 +8,5 @@ client = pymongo.MongoClient(DB_URI)
 db = client.get_database('agricultural_predict')
 
 model = pymongo.collection.Collection(db, 'model')
+
+user = pymongo.collection.Collection(db, 'user')

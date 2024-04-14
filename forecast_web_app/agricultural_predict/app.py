@@ -1,8 +1,8 @@
 from flask import Flask
 from flask import render_template
 from flask import send_from_directory
-
 from pymongo import MongoClient
+from config.db import db, model
 
 app = Flask(__name__,
             static_url_path='', 
@@ -31,4 +31,6 @@ def page_not_found(e):
 
 
 if __name__ == '__main__':
+    db.init_app()
+    admin.init_app(app)
     app.run(debug=True)

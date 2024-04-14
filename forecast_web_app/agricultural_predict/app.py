@@ -61,6 +61,17 @@ def login():
 def admin():
     return render_template('admin/index.html')
 
+@app.route('/upload-model')
+def admin_upload_train_model():
+    return render_template('admin/upload-model.html')
+
+
+
+@app.route('/train-model')
+def admin_train_model():
+    return render_template('admin/train-model.html')
+
+
 @app.route('/hello/')
 @app.route('/hello/<name>')
 def hello_name(name=None):

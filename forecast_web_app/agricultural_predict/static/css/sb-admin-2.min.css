@@ -2409,6 +2409,43 @@ fieldset:disabled a.btn {
 .show > .btn-warning.dropdown-toggle:focus {
   box-shadow: 0 0 0 0.2rem rgba(247, 203, 91, 0.5);
 }
+.btn-agr {
+  color: #fff;
+  background-color: #f3f6ce;
+  border-color: #f6c23e;
+}
+
+.btn-agr:hover {
+  background-color: #c0ca33; /* Màu tối hơn khi hover */
+  border-color: #afb42b; /* Màu tối hơn khi hover */
+}
+
+.btn-agr:focus,
+.btn-agr.focus {
+  background-color: #c0ca33; /* Màu tối hơn khi focus */
+  border-color: #afb42b; /* Màu tối hơn khi focus */
+  box-shadow: 0 0 0 0.2rem rgba(175, 180, 43, 0.5); /* Đổ bóng xanh khi focus */
+}
+
+.btn-agr.disabled,
+.btn-agr:disabled {
+  background-color: #f3f6ce;
+  border-color: #f6c23e;
+}
+
+.btn-agr:not(:disabled):not(.disabled):active,
+.btn-agr:not(:disabled):not(.disabled).active,
+.show > .btn-agr.dropdown-toggle {
+  background-color: #afb42b; /* Màu tối hơn khi active */
+  border-color: #9e9d24; /* Màu tối hơn khi active */
+}
+
+.btn-agr:not(:disabled):not(.disabled):active:focus,
+.btn-agr:not(:disabled):not(.disabled).active:focus,
+.show > .btn-agr.dropdown-toggle:focus {
+  box-shadow: 0 0 0 0.2rem rgba(175, 180, 43, 0.5); /* Đổ bóng xanh khi focus */
+}
+
 .btn-danger {
   color: #fff;
   background-color: #e74a3b;

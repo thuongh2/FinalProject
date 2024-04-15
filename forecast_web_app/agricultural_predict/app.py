@@ -65,7 +65,9 @@ def admin():
 def admin_upload_train_model():
     return render_template('admin/upload-model.html')
 
-
+@app.route('/detail-model')
+def admin_detail_model():
+    return render_template('admin/detail-model.html')
 
 @app.route('/train-model')
 def admin_train_model():

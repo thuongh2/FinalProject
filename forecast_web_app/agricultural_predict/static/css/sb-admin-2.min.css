@@ -10366,3 +10366,53 @@ footer.sticky-footer .copyright {
 body.sidebar-toggled footer.sticky-footer {
   width: 100%;
 }
+
+.slide-container {
+  box-sizing: border-box;
+  width: 100vmin;
+  transform: translate(-50%, -50%);
+  top: 45%;
+  left: 50%;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.slide-wrap {
+  width: 100%;
+  display: flex;
+  animation: slide 30s infinite;
+}
+
+@keyframes slide {
+  0% {
+    transform: translateX(0); /* Di chuyển từ vị trí ban đầu */
+  }
+  33.33% {
+    transform: translateX(0); /* Giữ nguyên vị trí cho hình ảnh 1 */
+  }
+  66.66% {
+    transform: translateX(
+      -100%
+    ); /* Di chuyển sang phải để hiển thị hình ảnh 2 */
+  }
+  100% {
+    transform: translateX(
+      -200%
+    ); /* Di chuyển sang phải để hiển thị hình ảnh 3 */
+  }
+}
+
+.slide-image {
+  width: 100%;
+}
+
+.text-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: white;
+  font-size: 68px;
+  text-shadow: 0 0 0.2rem rgba(78, 115, 223, 0.25);
+}

@@ -2,42 +2,31 @@
 header %}{% endblock %} {% block content %}
 
 <!-- Begin Page Content -->
-<div class="container-fluid">
-  <!-- Slide image -->
-  <div class="row">
-    <div
-      class="owl-item col-xl-12 mb-2 bg-slide-image"
-      style="height: 350px"
-    ></div>
+<!-- Slide image -->
+<div class="row" style="height: 450px">
+  <div class="slide-container col-xl-12">
+    <div class="slide-wrap">
+      <div
+        class="slide-image col-xl-12 bg-password-image"
+        style="height: 450px"
+      >
+        <div class="text-overlay text-shadow">Dự đoán giá nông sản</div>
+      </div>
+      <div class="slide-image col-xl-12 bg-slide-image" style="height: 450px">
+        <div class="text-overlay text-shadow">Dự đoán giá nông sản</div>
+      </div>
+      <div
+        class="slide-image col-xl-12 bg-register-image"
+        style="height: 450px"
+      >
+        <div class="text-overlay text-shadow">Dự đoán giá nông sản</div>
+      </div>
+    </div>
   </div>
-
+</div>
+<div class="container-fluid">
   <div class="row mt-4">
     <!-- Content Column -->
-
-    <div class="col-xl-3">
-      <select class="form-control form-select col-xl-12" style="color: black">
-        >
-        <option selected="">Chọn mô hình</option>
-        <option value="ARIMA">ARIMA</option>
-        <option value="LSTM">LSTM</option>
-      </select>
-    </div>
-
-    <div class="col-xl-3">
-      <select class="form-control form-select col-xl-12" style="color: black">
-        <option selected="">Chọn dữ liệu kết hợp</option>
-        <option value="xuatkhau">Giá xuất khẩu</option>
-        <option value="giaxang">Giá xăng</option>
-      </select>
-    </div>
-
-    <div class="col-xl-3">
-      <select class="form-control form-select col-xl-12" style="color: black">
-        <option selected="">Chọn thời gian dự đoán</option>
-        <option value="dudoan6">6 tháng</option>
-        <option value="dudoan12">12 tháng</option>
-      </select>
-    </div>
     <div class="col-xl-3">
       <div class="row no-gutters align-items-center">
         <div class="col mr-2">
@@ -49,6 +38,30 @@ header %}{% endblock %} {% block content %}
           </div>
         </div>
       </div>
+    </div>
+    <div class="col-xl-2">
+      <select class="form-control form-select col-xl-12" style="color: black">
+        >
+        <option selected="">Chọn mô hình</option>
+        <option value="ARIMA">ARIMA</option>
+        <option value="LSTM">LSTM</option>
+      </select>
+    </div>
+
+    <div class="col-xl-2">
+      <select class="form-control form-select col-xl-12" style="color: black">
+        <option selected="">Chọn dữ liệu kết hợp</option>
+        <option value="xuatkhau">Giá xuất khẩu</option>
+        <option value="giaxang">Giá xăng</option>
+      </select>
+    </div>
+
+    <div class="col-xl-2">
+      <select class="form-control form-select col-xl-12" style="color: black">
+        <option selected="">Chọn thời gian dự đoán</option>
+        <option value="dudoan6">6 tháng</option>
+        <option value="dudoan12">12 tháng</option>
+      </select>
     </div>
   </div>
   <!-- Content Row -->

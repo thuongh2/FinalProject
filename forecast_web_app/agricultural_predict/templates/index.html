@@ -3,90 +3,59 @@ header %}{% endblock %} {% block content %}
 
 <!-- Begin Page Content -->
 <div class="container-fluid">
+  <!-- Slide image -->
   <div class="row">
+    <div
+      class="owl-item col-xl-12 mb-2 bg-slide-image"
+      style="height: 350px"
+    ></div>
+  </div>
+
+  <div class="row mt-4">
     <!-- Content Column -->
-    <div class="col-xl-5 mb-2"></div>
-    <div class="col-xl-7 mb-2">
-      <div class="row">
-        <div class="col-xl-4">
-          <select
-            class="form-control form-select col-xl-12"
-            style="background-color: #36b9cc; color: black"
-          >
-            >
-            <option selected="">Chọn mô hình</option>
-            <option value="ARIMA">ARIMA</option>
-            <option value="LSTM">LSTM</option>
-          </select>
-        </div>
 
-        <div class="col-xl-4">
-          <select
-            class="form-control form-select col-xl-12"
-            style="background-color: #36b9cc; color: black"
-          >
-            <option selected="">Chọn dữ liệu kết hợp</option>
-            <option value="xuatkhau">Giá xuất khẩu</option>
-            <option value="giaxang">Giá xăng</option>
-          </select>
-        </div>
+    <div class="col-xl-3">
+      <select class="form-control form-select col-xl-12" style="color: black">
+        >
+        <option selected="">Chọn mô hình</option>
+        <option value="ARIMA">ARIMA</option>
+        <option value="LSTM">LSTM</option>
+      </select>
+    </div>
 
-        <div class="col-xl-4">
-          <select
-            class="form-control form-select col-xl-12"
-            style="background-color: #36b9cc; color: black"
-          >
-            <option selected="">Chọn thời gian dự đoán</option>
-            <option value="dudoan6">6 tháng</option>
-            <option value="dudoan12">12 tháng</option>
-          </select>
+    <div class="col-xl-3">
+      <select class="form-control form-select col-xl-12" style="color: black">
+        <option selected="">Chọn dữ liệu kết hợp</option>
+        <option value="xuatkhau">Giá xuất khẩu</option>
+        <option value="giaxang">Giá xăng</option>
+      </select>
+    </div>
+
+    <div class="col-xl-3">
+      <select class="form-control form-select col-xl-12" style="color: black">
+        <option selected="">Chọn thời gian dự đoán</option>
+        <option value="dudoan6">6 tháng</option>
+        <option value="dudoan12">12 tháng</option>
+      </select>
+    </div>
+    <div class="col-xl-3">
+      <div class="row no-gutters align-items-center">
+        <div class="col mr-2">
+          <div class="h6 font-weight-bold text-primary text-uppercase mb-1">
+            Giá lúa 20/4/2024: 10.000đ
+          </div>
+          <div class="h6 mb-0 font-weight-bold text-warning">
+            Giá dự đoán: 10.500đ
+          </div>
         </div>
       </div>
     </div>
   </div>
-
   <!-- Content Row -->
 
-  <div class="row bg-gradient-info">
-    <!-- Pie Chart -->
-    <div class="col-xl-2 col-lg-5 mt-4">
-      <div class="card-body">
-        <div class="chart-pie pt-4 pb-10 mt-2">
-          <a
-            href="#"
-            class="btn btn-agr btn-icon-split mb-4"
-            style="display: block; text-align: left; color: black"
-          >
-            <span class="icon text-white-50">
-              <i class="fas fa-seedling"></i>
-            </span>
-            <span class="text">Lúa gạo</span>
-          </a>
-          <a
-            href="#"
-            class="btn btn-agr btn-icon-split mb-4"
-            style="display: block; text-align: left; color: black"
-          >
-            <span class="icon text-white-50">
-              <i class="fas fa-seedling"></i>
-            </span>
-            <span class="text">Cà phê</span>
-          </a>
-          <a
-            href="#"
-            class="btn btn-agr btn-icon-split mb-4"
-            style="display: block; text-align: left; color: black"
-          >
-            <span class="icon text-white-50">
-              <i class="fas fa-seedling"></i>
-            </span>
-            <span class="text">Dưa hấu</span>
-          </a>
-        </div>
-      </div>
-    </div>
+  <div class="row">
     <!-- Area Chart -->
-    <div class="col-xl-10 col-lg-7 mt-4">
+    <div class="col-xl-9 mt-4">
       <div class="card shadow mb-4">
         <!-- Card Header - Dropdown -->
         <div
@@ -104,15 +73,110 @@ header %}{% endblock %} {% block content %}
         </div>
       </div>
     </div>
+    <!-- Pie Chart -->
+    <div class="col-xl-3 mt-4">
+      <div class="card shadow mb-4">
+        <!-- Card Header - Dropdown -->
+        <div
+          class="card-header py-3 d-flex flex-row align-items-center justify-content-between"
+        >
+          <h5 class="m-0 font-weight-bold text-primary">Thị trường</h5>
+        </div>
+        <!-- Card Body -->
+        <div class="card-body">
+          <div class="chart-pie">
+            <!-- Card 1 -->
+            <div class="col-xl-12 col-md-6 mb-2">
+              <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div
+                        class="h6 font-weight-bold text-primary text-uppercase mb-1"
+                      >
+                        Giá cà phê
+                      </div>
+                      <div
+                        class="h6 mb-0 font-weight-bold text-primary text-gray-800"
+                      >
+                        Hôm nay: 10.000đ
+                      </div>
+                    </div>
+                    <div class="col-auto">
+                      <i
+                        class="fas fa-arrow-trend-up text-success"
+                        style="font-size: 1.5em"
+                      ></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="col-xl-12 col-md-6 mb-2">
+              <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div
+                        class="h6 font-weight-bold text-primary text-uppercase mb-1"
+                      >
+                        Giá xoài
+                      </div>
+                      <div class="h6 mb-0 font-weight-bold text-gray-800">
+                        Hôm nay: 10.000đ
+                      </div>
+                    </div>
+                    <div class="col-auto">
+                      <i
+                        class="fas fa-arrow-trend-up text-success"
+                        style="font-size: 1.5em"
+                      ></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="col-xl-12 col-md-6">
+              <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                  <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                      <div
+                        class="h6 font-weight-bold text-primary text-uppercase mb-1"
+                      >
+                        Giá dưa hấu
+                      </div>
+                      <div class="h6 mb-0 font-weight-bold text-gray-800">
+                        Hôm nay: 10.000đ
+                      </div>
+                    </div>
+                    <div class="col-auto">
+                      <i
+                        class="fas fa-arrow-trend-down text-danger"
+                        style="font-size: 1.5em"
+                      ></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Content Row -->
   <div class="row">
     <!-- Content Column -->
-    <div class="col-lg-12 mb-4 mt-4">
+    <div class="col-lg-8 mb-4 mt-4">
       <div class="card shadow mb-4">
         <div class="card-header py-3">
-          <h6 class="m-0 font-weight-bold text-primary">Giá nông sản</h6>
+          <h5 class="m-0 font-weight-bold text-primary">Giá nông sản</h5>
         </div>
         <div class="card-body">
           <div class="table-responsive" style="overflow-x: hidden">
@@ -173,6 +237,23 @@ header %}{% endblock %} {% block content %}
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4 mb-4 mt-4">
+      <div class="card shadow mb-4">
+        <!-- Card Header - Dropdown -->
+        <div
+          class="card-header py-3 d-flex flex-row align-items-center justify-content-between"
+        >
+          <h5 class="m-0 font-weight-bold text-primary">
+            Top mô hình có độ chính xác cao
+          </h5>
+        </div>
+        <!-- Card Body -->
+        <div class="card-body">
+          <div class="chart-pie d-flex flex-column align-items-start"></div>
         </div>
       </div>
     </div>

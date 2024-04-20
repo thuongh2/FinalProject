@@ -1,6 +1,26 @@
 // Pulling these images from Unsplash
 // Toshi the dog from https://unsplash.com/@charlesdeluvio - what a funny dog...
 
+/* CSS slideshow */
+.owl-carousel {
+  display: block;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+.owl-carousel .item {
+  display: none;
+  position: relative;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+.owl-carousel .item img {
+  width: 100%;
+  height: auto;
+}
+
 .bg-login-image {
   background: url($login-image);
   background-position: center;

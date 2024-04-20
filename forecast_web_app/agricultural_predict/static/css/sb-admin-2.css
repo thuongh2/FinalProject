@@ -11314,11 +11314,37 @@ a:focus {
     height: calc(20rem - 43px) !important;
   }
 }
+/* CSS slideshow */
+.owl-carousel {
+  display: block;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+.owl-carousel .item {
+  display: none;
+  position: relative;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+.owl-carousel .item img {
+  width: 100%;
+  height: auto;
+}
 
 .bg-login-image {
   background: url("../img/rice.jpg");
   background-position: center;
   background-size: cover;
+}
+
+.bg-slide-image {
+  background: url("../img/rice.jpg");
+  background-position: center;
+  background-size: cover;
+  border-radius: 10px;
 }
 
 .bg-register-image {

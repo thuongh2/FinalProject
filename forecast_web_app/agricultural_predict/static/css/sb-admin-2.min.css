@@ -9957,7 +9957,7 @@ a:focus {
 }
 @media (min-width: 768px) {
   .chart-pie {
-    height: calc(20rem - 43px) !important;
+    height: 320px;
   }
 }
 .bg-login-image {
@@ -10380,6 +10380,7 @@ body.sidebar-toggled footer.sticky-footer {
   width: 100%;
 }
 
+/* Slideshow */
 .slide-container {
   box-sizing: border-box;
   width: 100vmin;
@@ -10393,7 +10394,7 @@ body.sidebar-toggled footer.sticky-footer {
 .slide-wrap {
   width: 100%;
   display: flex;
-  /* animation: slide 30s infinite; */
+  animation: slide 30s infinite;
 }
 
 @keyframes slide {
@@ -10415,6 +10416,7 @@ body.sidebar-toggled footer.sticky-footer {
   width: 100%;
 }
 
+/* Title in slideshow */
 .text-overlay {
   position: absolute;
   top: 50%;
@@ -10433,4 +10435,10 @@ body.sidebar-toggled footer.sticky-footer {
   text-shadow: 6px 6px 12px rgba(0, 0, 0, 0.8);
   color: lightgray;
   text-decoration: none;
+}
+
+/* Animation smooth cho trình duyệt*/
+html,
+body {
+  scroll-behavior: smooth;
 }

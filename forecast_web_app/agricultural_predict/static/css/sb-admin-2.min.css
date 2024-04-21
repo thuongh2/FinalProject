@@ -9961,10 +9961,9 @@ a:focus {
   }
 }
 .bg-login-image {
-  background: url(../img/rice.jpg);
+  background: url("../img/login-image.jpg");
   background-position: center;
   background-size: cover;
-  border-radius: 10px;
 }
 .bg-slide-image1 {
   background: url("../img/slide-image1.jpg");
@@ -9985,7 +9984,7 @@ a:focus {
 }
 
 .bg-register-image {
-  background: url(../img/coffee.jpg);
+  background: url("../img/register-image.jpg");
   background-position: center;
   background-size: cover;
 }

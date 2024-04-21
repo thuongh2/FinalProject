@@ -11335,19 +11335,13 @@ a:focus {
 }
 
 .bg-login-image {
-  background: url("../img/rice.jpg");
-  background-position: center;
-  background-size: cover;
-}
-
-.bg-slide-image {
-  background: url("../img/rice.jpg");
+  background: url("../img/login-image.jpg");
   background-position: center;
   background-size: cover;
 }
 
 .bg-register-image {
-  background: url("../img/coffee.jpg");
+  background: url("../img/register-image.jpg");
   background-position: center;
   background-size: cover;
 }

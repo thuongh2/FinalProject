@@ -9966,11 +9966,24 @@ a:focus {
   background-size: cover;
   border-radius: 10px;
 }
-.bg-slide-image {
-  background: url("../img/rice.jpg");
+.bg-slide-image1 {
+  background: url("../img/slide-image1.jpg");
   background-position: center;
   background-size: cover;
 }
+
+.bg-slide-image2 {
+  background: url("../img/slide-image2.jpg");
+  background-position: center;
+  background-size: cover;
+}
+
+.bg-slide-image3 {
+  background: url("../img/slide-image3.jpg");
+  background-position: center;
+  background-size: cover;
+}
+
 .bg-register-image {
   background: url(../img/coffee.jpg);
   background-position: center;
@@ -10415,4 +10428,10 @@ body.sidebar-toggled footer.sticky-footer {
   color: white;
   font-size: 68px;
   text-shadow: 0 0 0.2rem rgba(78, 115, 223, 0.25);
+  text-decoration: none;
+}
+
+.text-overlay:hover {
+  color: orange;
+  text-decoration: none;
 }

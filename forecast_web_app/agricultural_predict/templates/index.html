@@ -1,4 +1,4 @@
-{% extends "layout.html" %} {% block title %}Dashboard{% endblock %} {% block
+{% extends "layout.html" %} {% block title %}Dự đoán giá nông sản{% endblock %} {% block
 header %}{% endblock %} {% block content %}
 
 <!-- Begin Page Content -->
@@ -18,21 +18,28 @@ header %}{% endblock %} {% block content %}
     </div>
   </div>
 </div>
+
+
 <div id="container-fluid" class="container-fluid" style="padding-top: 4px">
   <div class="row mt-4">
+  
     <!-- Content Column -->
-    <div class="col-xl-3">
+    <div class="col-xl-4">
       <div class="row no-gutters align-items-center">
         <div class="col mr-2">
-          <div class="h6 font-weight-bold text-primary text-uppercase mb-1">
+          <div class="h4 font-weight-bold text-primary text-uppercase mb-1">
             Giá lúa 20/4/2024: 10.000đ
           </div>
-          <div class="h6 mb-0 font-weight-bold text-warning">
+          <div class="h5 mb-0 mt-3 font-weight-bold text-success">
             Giá dự đoán: 10.500đ
           </div>
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="row mt-4">
+  
     <div class="col-xl-2">
       <select class="form-control form-select col-xl-12" style="color: black">
         >
@@ -57,7 +64,9 @@ header %}{% endblock %} {% block content %}
         <option value="dudoan12">12 tháng</option>
       </select>
     </div>
-  </div>
+    </div>
+
+</div>
   <!-- Content Row -->
 
   <div class="row">
@@ -280,7 +289,51 @@ header %}{% endblock %} {% block content %}
         </div>
         <!-- Card Body -->
         <div class="card-body">
-          <div class="chart-pie d-flex flex-column align-items-start"></div>
+          <table
+          class="table table-bordered dataTable"
+          id="dataTable"
+          width="100%"
+          cellspacing="0"
+          role="grid"
+          aria-describedby="dataTable_info"
+          style="width: 100%"
+        >
+          <thead>
+            <tr role="row">
+              <th
+                class="sorting sorting_asc"
+                tabindex="0"
+                aria-controls="dataTable"
+                rowspan="1"
+                colspan="1"
+                aria-sort="ascending"
+                aria-label="Name: activate to sort column descending"
+                style="width: 160px"
+              >
+                Tên
+              </th>
+              <th
+                class="sorting"
+                tabindex="0"
+                aria-controls="dataTable"
+                rowspan="1"
+                colspan="1"
+                aria-label="Position: activate to sort column ascending"
+                style="width: 246px"
+              >
+                Đánh giá
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="odd">
+              <td class="sorting_1">hoaithuong.data@gmail.com</td>
+              <td>RMSE: 500</td>
+            </tr>
+        
+            <tr class="even"></tr>
+          </tbody>
+        </table>
         </div>
       </div>
     </div>

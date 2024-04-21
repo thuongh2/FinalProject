@@ -57,6 +57,16 @@ def login():
     return render_template('login.html')
 
 
+
+@app.route('/logout', methods=['GET'])
+def logout():
+
+    if session.get('is_authen'):
+        session['is_authen'] = False
+        del session['username']
+    return render_template('index.html')
+
+
 @app.route('/admin')
 def admin():
     return render_template('admin/index.html')

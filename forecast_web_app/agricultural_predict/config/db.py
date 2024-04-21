@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_pymongo import pymongo
 
-DB_URI = "mongodb+srv://admin:cqH3HoQ1Cp4zafXn@cluster0.putsxyw.mongodb.net/agricultural_predict?retryWrites=true&w=majority"
+DB_URI = "mongodb+srv://finalproject:j7TKpBLGsfhg6MF6@cluster0.ipzpp93.mongodb.net/agricultural_predict?retryWrites=true&w=majority"
 
 client = pymongo.MongoClient(DB_URI)
 

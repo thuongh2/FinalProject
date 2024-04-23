@@ -21,7 +21,7 @@ content %}
               >
                 Tổng mô hình
               </div>
-              <div class="h5 mb-0 font-weight-bold text-gray-800">10</div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_model }}</div>
             </div>
             <div class="col-auto">
               <i class="fas fa-calendar fa-2x text-gray-300"></i>
@@ -32,7 +32,7 @@ content %}
     </div>
 
     <!-- Earnings (Monthly) Card Example -->
-    <div class="col-xl-3 col-md-6 mb-4">
+    <!-- <div class="col-xl-3 col-md-6 mb-4">
       <div class="card border-left-success shadow h-100 py-2">
         <div class="card-body">
           <div class="row no-gutters align-items-center">
@@ -50,12 +50,12 @@ content %}
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- Earnings (Monthly) Card Example -->
 
     <!-- Pending Requests Card Example -->
-    <div class="col-xl-3 col-md-6 mb-4">
+    <!-- <div class="col-xl-3 col-md-6 mb-4">
       <div class="card border-left-warning shadow h-100 py-2">
         <div class="card-body">
           <div class="row no-gutters align-items-center">
@@ -73,7 +73,7 @@ content %}
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 
   <!-- Content Row -->
@@ -111,25 +111,22 @@ content %}
                   <th></th>
                 </tr>
               </thead>
-
+    
               <tbody>
+              
+                {% for model in train_model_list %}
                 <tr>
-                  <td>Mô hình arimax</td>
-                  <td>14/4/2024</td>
-                  <td>ARIMAX</td>
+                  <td>{{model.name}}</td>
+                  <td>{{model.create_time.strftime('%d-%m-%Y')}}</td>
+                  <td>{{model.model_id}}</td>
+                  <td>{{model.data_name}}</td>
                   <td>RMSE: 360</td>
                   <td>Thành công</td>
-                  <td>Trống</td>
+            
                 </tr>
+                {% endfor %}
 
-                <tr>
-                  <td>Mô hình LSTM</td>
-                  <td>14/4/2024</td>
-                  <td>LSTM</td>
-                  <td>RMSE: 250</td>
-                  <td>Thành công</td>
-                  <td>Trống</td>
-                </tr>
+          
               </tbody>
             </table>
           </div>

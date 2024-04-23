@@ -2,6 +2,8 @@
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
 <!-- Begin Page Content -->
 <div class="container-fluid">
     <!-- Content Row -->
@@ -30,20 +32,20 @@
     <!-- Earnings (Monthly) Card Example -->
     <div class="col-xl-3 col-md-6 mb-4">
         <a href="train-model">
-        <div class="card shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
-                            Train trên web
+            <div class="card shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
+                                Train trên web
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-tasks fa-2x text-gray-300"></i>
+                        <div class="col-auto">
+                            <i class="fas fa-tasks fa-2x text-gray-300"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
         </a>
     </div>
 
@@ -53,7 +55,7 @@
 
 
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Train model</h1>
+    <h1 class="h3 mb-0 text-gray-800">Train model {{ model_name }}</h1>
 </div>
 
 <!-- Begin Page Content -->
@@ -61,21 +63,71 @@
     <!-- Content Row -->
     <div class="row">
         <!-- Earnings (Monthly) Card Example -->
-        <form>
-            <div class="col-12 d-flex p-0">
+        <form action="{{ 'upload-model?model_name=' ~ model_name }}" enctype='multipart/form-data' method="POST">
+            <div class=" mt-2 col-12 mb-3">
+                <input name="name_train" type="text" class="form-control" placeholder="Tên" aria-describedby="basic-addon1">
+            </div>
+            <div class="col-12 d-flex p-0 mb-3">
+                
                 <div class=" mt-2  col-6">
-                    <input type="text" class="form-control" placeholder="Name" aria-describedby="basic-addon1">
+                    <select name="model_name"  onchange="this.options[this.selectedIndex].value 
+                    && (window.location = this.options[this.selectedIndex].value);" id="select"
+                        class="form-control form-select">
+                        <option value="upload-model" selected>Mô hình</option>
+                        {% for item in model_names %}
+                        <option value="{{ 'upload-model?model_name=' ~ item }}">{{item}}</option>
+
+                        {% endfor %}
+                    </select>
                 </div>
 
+    
+                {% if data %}
+
                 <div class=" mt-2  col-6">
-                    <select class="form-control form-select">
-                        <option selected>Open this select model</option>
-                        <option value="ARIMA">ARIMA</option>
-                        <option value="LSTM">LSTM</option>
-                        <option value="GRU">GRU</option>
-                      </select>
+                    <select name="algricutural_name"  class="form-control form-select">
+                        <option selected>Loại nông sản</option>
+                        {% for item in data.algricutural %}
+                        <option value="{{item}}">{{item}}</option>
+
+                        {% endfor %}
+                    </select>
                 </div>
-            
+
+
+                <div class=" mt-2  col-6">
+                    <select  name="data_name"  class="form-control form-select">
+                        <option>Tập dữ liệu</option>
+                        {% for item in data.data %}
+                        <option value="{{item}}">{{item}}</option>
+
+                        {% endfor %}
+                    </select>
+                </div>
+
+                {% endif %}
+
+
+            </div>
+
+
+            <div class="col-12">
+
+                <div class="card">
+                    <div class="card-body">
+
+
+                        <div id="drop-area" class="border rounded d-flex justify-content-center align-items-center"
+                            style="height: 200px; cursor: pointer;">
+
+                            <input type=file name=file>
+                        </div>
+
+                        <input class="btn btn-facebook btn-block mt-4" class="mt-3" type=submit value='Cập nhật'>
+
+                    </div>
+                </div>
+
             </div>
         </form>
 
@@ -84,27 +136,6 @@
 </div>
 
 
-<div class="row">
-    <div class="container-fluid">
-        <div class="card">
-            <div class="card-body">
-                <div id="drop-area" class="border rounded d-flex justify-content-center align-items-center"
-                    style="height: 200px; cursor: pointer;">
-                    <div class="text-center">
-                        <i class="bi bi-cloud-arrow-up-fill text-primary" style="font-size: 48px;"></i>
-                        <p class="mt-3">Drag and drop your image here or click to select a file.</p>
-                    </div>
-                </div>
-                <input type="file" id="fileElem" multiple accept="image/*" class="d-none">
-            </div>
-        </div>
-
-        <a href="#" class="btn btn-facebook btn-block mt-4">Submit Model</a>
-    </div>
-</div>
-
-
-<!-- Content Row -->
 
 
 </div>
@@ -164,6 +195,12 @@
     fileElem.addEventListener("change", function (e) {
         handleFiles(this.files);
     });
+
+    $("#select").change(function () {
+        var option = $(this).find('option:selected');
+        window.location.href = option.data("url");
+    });
+
 </script>
 
 {% endblock %}

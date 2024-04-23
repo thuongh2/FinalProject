@@ -5,6 +5,7 @@ from pymongo import MongoClient
 from config.db import db, model, user
 from flask import session
 from router import main_router
+from upload_model_router import upload_model_router
 
 app = Flask(__name__,
             static_url_path='', 
@@ -16,6 +17,7 @@ app.secret_key = "cqH3HoQ1Cp4zafXn"
 is_authen = False
 
 app.register_blueprint(main_router)
+app.register_blueprint(upload_model_router)
 
 
 if __name__ == '__main__':

@@ -12,6 +12,7 @@ from flask import current_app
 main_router = Blueprint('main_router', __name__, static_folder='static',
             template_folder='templates')
 
+
 @main_router.route('/')
 def hello():
     return render_template('index.html')
@@ -74,17 +75,13 @@ def logout():
     return redirect('/')
 
 
-@main_router.route('/admin')
-def admin():
-    return render_template('admin/index.html')
 
-@main_router.route('/upload-model')
-def admin_upload_train_model():
-    return render_template('admin/upload-model.html')
+
 
 @main_router.route('/detail-model')
 def admin_detail_model():
     return render_template('admin/detail-model.html')
+
 
 @main_router.route('/train-model')
 def admin_train_model():
@@ -95,3 +92,5 @@ def admin_train_model():
 @main_router.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
+
+

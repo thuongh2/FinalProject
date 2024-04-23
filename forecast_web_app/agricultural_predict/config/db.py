@@ -10,3 +10,5 @@ db = client.get_database('agricultural_predict')
 model = pymongo.collection.Collection(db, 'model')
 
 user = pymongo.collection.Collection(db, 'user')
+
+train_model = pymongo.collection.Collection(db, 'train_model')

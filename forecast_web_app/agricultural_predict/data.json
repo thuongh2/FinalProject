@@ -1,0 +1,58 @@
+[
+    {
+      "name": "LSTM",
+      "default_param": {"units": 100, "activation": "tanh", "recurrent_activation": "sigmoid"},
+      "attrs": {
+        "algricutural": ["LUA", "CAFFE", "DUAHAU"],
+        "data": [
+          {"LUA": "https://"},
+          {"CAFE": "https"}
+        ]
+      }
+    },
+    {
+      "name": "GRU",
+      "default_param": {"units": 100, "activation": "tanh"},
+      "attrs": {
+        "algricutural": ["LUA", "CAFFE", "DUAHAU"],
+        "data": [
+          {"LUA": "https://"},
+          {"CAFE": "https"}
+        ]
+      }
+    },
+    {
+      "name": "SARIMA",
+      "default_param": {"order": [1, 1, 1], "seasonal_order": [0, 0, 0, 0]},
+      "attrs": {
+        "algricutural": ["LUA", "CAFFE", "DUAHAU"],
+        "data": [
+          {"LUA": "https://"},
+          {"CAFE": "https"}
+        ]
+      }
+    },
+    {
+      "name": "ARIMAX",
+      "default_param": {"order": [1, 1, 1], "exogenous_variables": null},
+      "attrs": {
+        "algricutural": ["LUA", "CAFFE", "DUAHAU"],
+        "data": [
+          {"LUA": "https://"},
+          {"CAFE": "https"}
+        ]
+      }
+    },
+    {
+      "name": "VAR",
+      "default_param": {"lag_order": 1},
+      "attrs": {
+        "algricutural": ["LUA", "CAFFE", "DUAHAU"],
+        "data": [
+          {"LUA": "https://"},
+          {"CAFE": "https"}
+        ]
+      }
+    }
+  ]
+  

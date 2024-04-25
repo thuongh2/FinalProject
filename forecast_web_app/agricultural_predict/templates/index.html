@@ -83,8 +83,8 @@ header %}{% endblock %} {% block content %}
         </div>
         <!-- Card Body -->
         <div class="card-body">
-          <div class="chart-area">
-            <canvas id="myAreaChart"></canvas>
+          <div class="chart-area" style="height: auto;">
+            {% include './chart/lstm_coffee_chart.html' %}
           </div>
         </div>
       </div>

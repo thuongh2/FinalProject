@@ -116,7 +116,7 @@ content %}
               
                 {% for model in train_model_list %}
                 <tr>
-                  <td>{{model.name}}</td>
+                  <td><a href="{{ url_for('upload_model_router.admin_detail_model', model_id=model._id ) }}">{{model.name}}</a></td>
                   <td>{{model.create_time.strftime('%d-%m-%Y')}}</td>
                   <td>{{model.model_id}}</td>
                   <td>{{model.data_name}}</td>

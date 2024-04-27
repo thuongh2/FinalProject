@@ -59,7 +59,8 @@ class ARIMAModel:
         mae_score = mae(actual, forecast)
         mape = mae(actual, forecast) * 100  # MAPE     # ME
         rmse = np.mean((forecast - actual)**2)**.5  # RMS
-        return({'mape':mape,'mae': mae_score, 'rmse':rmse})
+        return({'mape': round(mape,3),'mae': round(mae_score,3), 'rmse':round(rmse,3)})
+    
 
     def prepare_data(self, train_url, test_url):
         if train_url:

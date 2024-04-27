@@ -76,13 +76,6 @@ def logout():
 
 
 
-
-
-@main_router.route('/detail-model')
-def admin_detail_model():
-    return render_template('admin/detail-model.html')
-
-
 @main_router.route('/train-model')
 def admin_train_model():
     return render_template('admin/train-model.html')

@@ -1,5 +1,11 @@
 {% extends "layout.html" %} {% block title %}Dashboard{% endblock %} {% block content %}
 
+<style>
+  .modebar {
+display: none !important;
+}
+  </style>
+
 <!-- Begin Page Content -->
 <div class="container-fluid">
   <!-- Page Heading -->
@@ -15,26 +21,29 @@
       <div class="card shadow mb-4">
         <!-- Card Header - Dropdown -->
         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-          <h5 class="m-0 font-weight-bold text-primary">Thông tin mô hình</h5>
+          <h5 class="m-0 font-weight-bold text-primary">Thông tin mô hình {{ model_data.model_id }}</h5>
         </div>
         <!-- Card Body -->
         <div class="card-body">
           <div class="chart-pie d-flex flex-column align-items-start">
             <h6 class="mb-4" style="display: block; text-align: left">
-              Tên mô hình:
+              Tên mô hình: {{model_data.name}}
             </h6>
             <h6 class="mb-4" style="display: block; text-align: left">
-              Tham số:
+              Dữ liệu: {{model_data.data_name}}
             </h6>
             <h6 class="mb-4" style="display: block; text-align: left">
               Đánh giá:
             </h6>
-            <h6 class="mb-4" style="display: block; text-align: left">RMSE:</h6>
-            <h6 class="mb-4" style="display: block; text-align: left">MAPE:</h6>
+            <p class="mb-4" style="display: block; text-align: left">MAPE: {{ model_data.score['mape'] }}</p>
+            <p class="mb-4" style="display: block; text-align: left">MAE: {{ model_data.score['mae'] }}</p>
+            <p class="mb-4" style="display: block; text-align: left">RMSE: {{ model_data.score['rmse']  }}</p>
           </div>
         </div>
       </div>
     </div>
+
+  
 
     <!-- Area Chart -->
     <div class="col-xl-8 col-lg-7">
@@ -45,9 +54,9 @@
         </div>
         <!-- Card Body -->
         <div class="card-body">
-          <div class="chart-area">
-            <canvas id="myAreaChart"></canvas>
-          </div>
+  
+            {% include url_for('static', filename='chart/' + chart_name + '.html') %}
+      
         </div>
       </div>
     </div>

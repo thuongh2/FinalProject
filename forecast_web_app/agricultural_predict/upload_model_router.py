@@ -10,10 +10,16 @@ import hashlib
 from flask import current_app
 from minio import Minio
 import os
+import pandas as pd
 from werkzeug.utils import secure_filename
 import json
 from pprint import pprint
 from datetime import datetime, timedelta
+from model.arima_model import ARIMAModel
+from bson.objectid import ObjectId
+import matplotlib.pyplot as plt
+import plotly.graph_objs as go
+import plotly.io as pio
 
 upload_model_router = Blueprint('upload_model_router', __name__, static_folder='static',
             template_folder='templates')
@@ -42,13 +48,9 @@ def upload_object(filename, data, length):
 
 def get_minio_object(filename):
     client = Minio(MINIO_URL, MINIO_ACCESS_KEY, MINIO_SECRET, secure=False)
-    return client.get_presigned_url(
-    "GET",
-    BUCKET_NAME,
-    filename,
-    expires=timedelta(days=1),
-)
+    return client.fget_object(BUCKET_NAME, filename, "./file/arima_model.joblib")
     
+
 
 
 
@@ -119,6 +121,19 @@ def admin_train_model():
         current_app.logger.info(file_after_upload.object_name)
         current_app.logger.info(file_after_upload.version_id)
         current_app.logger.info(file_after_upload.etag)
+        
+    # kiểm tra model
+    
+    arima_model = ARIMAModel()
+    model_url = get_minio_object(file_after_upload.object_name)
+    current_app.logger.info(model_url)
+    arima_model.model_url = "./file/arima_model.joblib"
+    arima_model.data_uri = "./test_data/test_data_arima.csv"
+    _ , test_data = arima_model.prepare_data(arima_model.data_uri)
+    # xử lí dữ liệu (cho trai trên web)
+    current_app.logger.info(test_data.head())
+    data , ac = arima_model.train_for_upload_mode(len(test_data), test_data)
+    current_app.logger.info(ac)
     
     data_model = {"user_id": session.get('username'),
                 "name": name_train,
@@ -127,11 +142,57 @@ def admin_train_model():
                 "data_name": data_name,
                 "file_name": file_after_upload.object_name,
                 "file_etag": file_after_upload.etag,
-                "create_time": datetime.now()}
+                "create_time": datetime.now(), 
+                "score": ac}
     train_model.insert_one(data_model)
-    return redirect(url_for('upload_model_router.admin_upload_train_model'))
+    return redirect("detail-modle?model_id=" + str(data_model.get('_id')))
     
     
+
+
+def create_chart_mode(data_actual, data_predicted, model_name):
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=data_actual.index, y=data_actual['price'], mode='lines', name='Giá thực tế',
+                             line=dict(color='rgba(0, 0, 255, 0.5)'), fill='tozeroy', fillcolor='rgba(173, 216, 230, 0.2)', visible=True))
+    fig.add_trace(go.Scatter(x=data_predicted.index, y=data_predicted['price'], mode='lines',
+                             name='Giá dự đoán', line=dict(color='rgba(255, 165, 0, 0.5)'), fill='tozeroy', fillcolor='rgba(255, 165, 0, 0.2)', visible=True))
+    fig.update_layout(
+                    xaxis_title='Ngày',
+                    yaxis_title='Giá',
+                    plot_bgcolor='rgba(0,0,0,0)', 
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    xaxis=dict(
+                       tickmode='array',
+                       dtick='7D', 
+                       tickformat='%d-%m-%Y' 
+                   ))
+    # fig.show()
+    
+    pio.write_html(fig, './templates/chart/' + model_name + '.html')
+
+@upload_model_router.route('/detail-model')
+def admin_detail_model():
+    model_id = request.args.get('model_id')
+    current_app.logger.info(model_id)
+    model_data = train_model.find_one(ObjectId(model_id))
+    current_app.logger.info(model_data)
+    arima_model = ARIMAModel()
+    model_url = get_minio_object(model_data.get('file_name'))
+    current_app.logger.info(model_url)
+    arima_model.model_url = "./file/arima_model.joblib"
+    arima_model.data_uri = "./test_data/arima_data.csv"
+    _ , test_data = arima_model.prepare_data(arima_model.data_uri)
+    # xử lí dữ liệu (cho trai trên web)
+    current_app.logger.info(test_data.head())
+    data , ac = arima_model.train_for_upload_mode(len(test_data), test_data)
+    current_app.logger.info(ac)
+    df = pd.DataFrame(data, columns=['price'])
+    df.set_index(test_data.index, inplace=True)
+    current_app.logger.info(test_data.head())
+    
+    current_app.logger.info(df.head())
+    create_chart_mode(test_data, df, model_data.get('model_id') + str(model_data.get('_id')))
+    return render_template('admin/detail-model.html', model_data= model_data, chart_name = model_data.get('model_id') + str(model_data.get('_id')))
 
 
 @upload_model_router.route('/admin')

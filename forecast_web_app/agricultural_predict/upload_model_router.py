@@ -16,12 +16,14 @@ import json
 from pprint import pprint
 from datetime import datetime, timedelta
 
-from forecast_web_app.agricultural_predict.model.factory_model import FactoryModel
+from model.factory_model import FactoryModel
 from model.arima_model import ARIMAModel
 from bson.objectid import ObjectId
 import matplotlib.pyplot as plt
 import plotly.graph_objs as go
 import plotly.io as pio
+import ast
+
 
 upload_model_router = Blueprint('upload_model_router', __name__, static_folder='static',
             template_folder='templates')
@@ -98,7 +100,14 @@ def admin_upload_train_model():
     if(model_name):
         model_data_find = model.find_one({'name': model_name})
         data = model_data_find.get('attrs')
-        return render_template('admin/upload-model.html', model_names=model_names, data=data, model_name=model_name)
+        data_url = []
+
+        for item in data.get('data'):
+            data_url.append(list(item.values())[0])
+
+        current_app.logger.info(data_url)
+    
+        return render_template('admin/upload-model.html', model_names=model_names, data=data, model_name=model_name, data_url=data_url)
 
     return render_template('admin/upload-model.html', 
                            model_names=model_names, data=None, model_name="")
@@ -126,17 +135,18 @@ def admin_train_model():
         current_app.logger.info(file_after_upload.etag)
         
     # kiểm tra model
-    
-    arima_model = ARIMAModel()
+
+    arima_model = FactoryModel(model_name).factory()
     model_url = get_minio_object(file_after_upload.object_name)
     current_app.logger.info(model_url)
-    arima_model.model_url = "./file/arima_model.joblib"
-    arima_model.data_uri = "./test_data/test_data_arima.csv"
-    _ , test_data = arima_model.prepare_data(arima_model.data_uri)
+    arima_model.model_url = model_url
+    arima_model.data_uri = data_name
+    _, test_data = arima_model.prepare_data(arima_model.data_uri)
     # xử lí dữ liệu (cho trai trên web)
     current_app.logger.info(test_data.head())
-    data , ac = arima_model.train_for_upload_mode(len(test_data), test_data)
+    data, ac = arima_model.train_for_upload_mode(len(test_data), test_data)
     current_app.logger.info(ac)
+
     
     data_model = {"user_id": session.get('username'),
                 "name": name_train,
@@ -148,7 +158,7 @@ def admin_train_model():
                 "create_time": datetime.now(), 
                 "score": ac}
     train_model.insert_one(data_model)
-    return redirect("detail-modle?model_id=" + str(data_model.get('_id')))
+    return redirect("detail-model?model_id=" + str(data_model.get('_id')))
     
     
 
@@ -180,21 +190,27 @@ def admin_detail_model():
     model_data = train_model.find_one(ObjectId(model_id))
     current_app.logger.info(model_data)
     # load model
-    arima_model = FactoryModel(model_data.get('model_id')).factory()
-    model_url = get_minio_object(model_data.get('file_name'))
-    current_app.logger.info(model_url)
-    arima_model.model_url = model_url
-    arima_model.data_uri = "./test_data/var_data.csv"
-    _ , test_data = arima_model.prepare_data(arima_model.data_uri)
-    # xử lí dữ liệu (cho trai trên web)
-    current_app.logger.info(test_data.head())
-    data , ac = arima_model.train_for_upload_mode(len(test_data), test_data)
-    current_app.logger.info(ac)
-    data.set_index(test_data.index, inplace=True)
-    current_app.logger.info(test_data.head())
-    
-    current_app.logger.info(data.head())
-    create_chart_mode(test_data, data, model_data.get('model_id') + str(model_data.get('_id')))
+    if model_data:
+        arima_model = FactoryModel(model_data.get('model_id')).factory()
+        model_url = get_minio_object(model_data.get('file_name'))
+        current_app.logger.info(model_url)
+        arima_model.model_url = model_url
+        arima_model.data_uri = model_data.get('data_name')
+        _ , test_data = arima_model.prepare_data(arima_model.data_uri)
+        # xử lí dữ liệu (cho trai trên web)
+        current_app.logger.info(test_data.head())
+        data , ac = arima_model.train_for_upload_mode(len(test_data), test_data)
+        current_app.logger.info(ac)
+        if(isinstance(data, pd.DataFrame)):
+            data.set_index(test_data.index, inplace=True)
+        else:
+            data = pd.DataFrame(data, index=test_data.index, columns=['price'])
+        current_app.logger.info(test_data.head())
+
+        current_app.logger.info(data.head())
+        create_chart_mode(test_data, data, model_data.get('model_id') + str(model_data.get('_id')))
+    else:
+        flash('Không tìm thấy mô hình.', 'danger')
     return render_template('admin/detail-model.html', model_data= model_data, chart_name = model_data.get('model_id') + str(model_data.get('_id')))
 
 

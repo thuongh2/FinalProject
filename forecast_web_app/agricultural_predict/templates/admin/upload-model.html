@@ -95,12 +95,11 @@
                 </div>
 
 
-                <div class=" mt-2  col-6">
+             <div class=" mt-2  col-6">
                     <select  name="data_name"  class="form-control form-select">
                         <option>Tập dữ liệu</option>
-                        {% for item in data.data %}
-                        <option value="{{item}}">{{item}}</option>
-
+                        {% for item in data_url %}
+                            <option value="{{item}}">{{ item }}</option>
                         {% endfor %}
                     </select>
                 </div>

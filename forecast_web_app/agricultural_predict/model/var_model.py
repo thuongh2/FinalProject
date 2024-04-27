@@ -48,15 +48,13 @@ def evaluate_mode():
     pass
 
 
+from sklearn.metrics import mean_absolute_error as mae 
+
 def forecast_accuracy(forecast, actual):
-    mape = np.mean(np.abs(forecast - actual)/np.abs(actual))  # MAPE
-    me = np.mean(forecast - actual)             # ME
-    mae = np.mean(np.abs(forecast - actual))    # MAE
-    mpe = np.mean((forecast - actual)/actual)   # MPE
-    rmse = np.mean((forecast - actual)**2)**.5  # RMSE
-    r2 = 0
-    return({'mape':mape, 'me':me, 'mae': mae,
-            'mpe': mpe, 'rmse':rmse,  'r2': r2})
+    mae = mae(actual, forecast)
+    mape =mae * 100  # MAPE     # ME
+    rmse = np.mean((forecast - actual)**2)**.5  # RMS
+    return({'mape':mape,'mae': mae, 'rmse':rmse})
     
     
 def train_for_upload_mode(model_url, n_periods, train_data, test_data):

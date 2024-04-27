@@ -75,7 +75,6 @@ def logout():
     return redirect('/')
 
 
-
 @main_router.route('/train-model')
 def admin_train_model():
     return render_template('admin/train-model.html')

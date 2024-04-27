@@ -5,9 +5,10 @@ from statsmodels.tsa.stattools import acf
 import mlflow
 from mlflow.models import infer_signature
 from sklearn.metrics import mean_absolute_error as mae 
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
 
-
-class ARIMAModel:
+class VARModel:
     
     def __init__(self):
         # model
@@ -33,11 +34,10 @@ class ARIMAModel:
     def predict(self, n_periods, df_forecast=None):
         self.model = joblib.load(self.model_url)
         if self.model:
-            lag_order = model.k_ar
-            print(lag_order)  #> 4
-            
-            forecast_input = self.values[-lag_order:]
-            fc = self.model.forecast(y=forecast_input, steps=nobs)
+            lag_order = self.model.k_ar
+            print(lag_order)
+            forecast_input = self.train_data.values[-lag_order:]
+            fc = self.model.forecast(y=forecast_input, steps=n_periods)
             return fc
         else:
             raise Exception("Không tìm thấy model")
@@ -46,28 +46,29 @@ class ARIMAModel:
 
 
     def train_for_upload_mode(self, n_periods, test_data):
-        print(n_periods)
+        self.difference_dataset()
         self.forecast_data = self.predict(n_periods)
-        if self.forecast_data.empty:
+        if self.forecast_data.size == 0:
             raise Exception("Không tìm thấy model")
-        print(test_data.iloc[1])
+
+
+        self.forecast_data = pd.DataFrame(self.forecast_data, index=self.test_data.index[-n_periods:], columns=self.test_data.columns + '_2d')
         print(self.forecast_data.info())
-        
         self.forecast_data = self.invert_transformation(self.train_data[self.list_feature], self.forecast_data, second_diff=True)
 
-        self.accuracy = self.forecast_accuracy(self.forecast_data, test_data.price.values)
+        self.accuracy = self.forecast_accuracy(self.forecast_data.price_2d.values, test_data.price.values)
         return self.forecast_data, self.accuracy
         
     
     def forecast_accuracy(self, forecast, actual):
-        mae_score = mae(actual, forecast)
-        mape = mae(actual, forecast) * 100  # MAPE     # ME
-        rmse = np.mean((forecast - actual)**2)**.5  # RMS
-        return({'mape': round(mape,3),'mae': round(mae_score,3), 'rmse':round(rmse,3)})
+        mse = mean_squared_error(actual, forecast)
+        rmse = np.sqrt(mse)
+        r2 = r2_score(actual, forecast)
+        return ({'mse': round(mse, 3), 'rmse': round(rmse, 3), 'r2': round(r2, 3)})
     
     
     def difference_dataset(self, interval=None):
-        self.train_data.diff(interval).dropna()
+        self.train_data = self.train_data.diff().dropna()
     
 
     def prepare_data(self, train_url, test_url):
@@ -113,7 +114,7 @@ class ARIMAModel:
         return diff
 
 
-    def invert_transformation(df_train, df_forecast, second_diff=False):
+    def invert_transformation(self, df_train, df_forecast, second_diff=False):
         """Revert back the differencing to get the forecast to original scale."""
         df_fc = df_forecast.copy()
         columns = df_train.columns
@@ -130,7 +131,7 @@ class ARIMAModel:
         ARTIFACT_PATH = "model"
 
         mlflow.set_tracking_uri(uri="http://20.2.210.176:5000/")
-        mlflow.set_experiment("ARIMA_MODEL")
+        mlflow.set_experiment("VAR_MODEL")
 
         # Create an instance of a PandasDataset
         dataset = mlflow.data.from_pandas(
@@ -138,32 +139,32 @@ class ARIMAModel:
         )
 
         with mlflow.start_run() as run:
+            mlflow.autolog(log_models=True)
+
             input_sample = pd.DataFrame(self.train_data)
             output_sample = pd.DataFrame(self.forecast_data)
             
             mlflow.log_input(dataset, context="training")
             
-            mlflow.log_params({"order": self.model.order})
+            mlflow.log_params({"P": self.model.k_ar})
             
             for k, v in self.accuracy.items():
                 mlflow.log_metric(k, round(v,4))
             
             signature = infer_signature(input_sample, output_sample)
-            
-            model_mflow = mlflow.pmdarima.log_model(
-                model, ARTIFACT_PATH, signature=signature
-            )
-            return model_mflow
+
+            model_info = mlflow.statsmodels.log_model(statsmodels_model=self.model,
+                                                      signature=signature,
+                                                      artifact_path="varmodel",
+                                                      registered_model_name="statsmodels_model")
+            return model_info
 
 
     
 if __name__ == '__main__':
-    test_data_url = "../test_data/test_data_arima.csv"
-    test_data = pd.read_csv("../test_data/test_data_arima.csv")
-    data_url = "../test_data/arima_data.csv"
-    model_url = "../test_data/arima.joblib"
-    model = ARIMAModel()
-    model.test_data = "../test_data/test_data_arima.csv"
+    data_url = "../test_data/var_data.csv"
+    model_url = "../test_data/var_model.joblib"
+    model = VARModel()
     model.model_url = model_url    
     model.data_uri = data_url
     # tạo data
@@ -172,13 +173,11 @@ if __name__ == '__main__':
     print(test_data.head())
     print(test_data.iloc[0].values)
     # dự đoná mô hình
-    data , ac = model.train_for_upload_mode(599, test_data)
+    data , ac = model.train_for_upload_mode(len(test_data), test_data)
     # register in ml flow
     model_mflow = model.ml_flow_register()
     print(model_mflow.model_uri)
     print(ac)
     print(data)
-
-
 
     

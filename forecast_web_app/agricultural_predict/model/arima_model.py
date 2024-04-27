@@ -5,7 +5,8 @@ from statsmodels.tsa.stattools import acf
 import mlflow
 from mlflow.models import infer_signature
 from sklearn.metrics import mean_absolute_error as mae 
-
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
 
 class ARIMAModel:
     
@@ -56,11 +57,10 @@ class ARIMAModel:
         
     
     def forecast_accuracy(self, forecast, actual):
-        mae_score = mae(actual, forecast)
-        mape = mae(actual, forecast) * 100  # MAPE     # ME
-        rmse = np.mean((forecast - actual)**2)**.5  # RMS
-        return({'mape': round(mape,3),'mae': round(mae_score,3), 'rmse':round(rmse,3)})
-    
+        mse = mean_squared_error(actual, forecast)
+        rmse = np.sqrt(mse)
+        r2 = r2_score(actual, forecast)
+        return ({'mse': round(mse, 3), 'rmse': round(rmse, 3), 'r2': round(r2, 3)})
 
     def prepare_data(self, train_url, test_url):
         if train_url:

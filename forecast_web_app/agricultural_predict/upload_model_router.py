@@ -156,7 +156,9 @@ def admin_train_model():
                 "file_name": file_after_upload.object_name,
                 "file_etag": file_after_upload.etag,
                 "create_time": datetime.now(), 
-                "score": ac}
+                "score": ac,
+                "type": "UPLOAD_MODEL",
+                "isUsed": False}
     train_model.insert_one(data_model)
     return redirect("detail-model?model_id=" + str(data_model.get('_id')))
     

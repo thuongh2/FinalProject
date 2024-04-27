@@ -40,7 +40,7 @@ header %}{% endblock %} {% block content %}
 
   <div class="row mt-4">
   
-    <div class="col-xl-3">
+    <div class="col-xl-2">
       <select class="form-control form-select col-xl-12" style="color: black">
         >
         <option selected="">Chọn mô hình</option>
@@ -49,7 +49,7 @@ header %}{% endblock %} {% block content %}
       </select>
     </div>
 
-    <div class="col-xl-3">
+    <div class="col-xl-2">
       <select class="form-control form-select col-xl-12" style="color: black">
         <option selected="">Chọn dữ liệu kết hợp</option>
         <option value="xuatkhau">Giá xuất khẩu</option>
@@ -57,7 +57,7 @@ header %}{% endblock %} {% block content %}
       </select>
     </div>
 
-    <div class="col-xl-3">
+    <div class="col-xl-2">
       <select class="form-control form-select col-xl-12" style="color: black">
         <option selected="">Chọn thời gian dự đoán</option>
         <option value="dudoan6">6 tháng</option>
@@ -84,7 +84,7 @@ header %}{% endblock %} {% block content %}
         <!-- Card Body -->
         <div class="card-body">
           <div class="chart-area" style="height: auto;">
-            {% include './chart/lstm_chart.html' %}
+            {% include './chart/lstm_coffee_chart.html' %}
           </div>
         </div>
       </div>

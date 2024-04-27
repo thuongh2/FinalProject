@@ -30,14 +30,10 @@ class ARIMAModel:
         self.list_feature = []
         
         
-    def predict(self, n_periods, df_forecast=None):
+    def predict(self, n_periods):
         self.model = joblib.load(self.model_url)
         if self.model:
-            lag_order = model.k_ar
-            print(lag_order)  #> 4
-            
-            forecast_input = self.values[-lag_order:]
-            fc = self.model.forecast(y=forecast_input, steps=nobs)
+            fc = self.forecast(steps = n_periods)
             return fc
         else:
             raise Exception("Không tìm thấy model")
@@ -64,10 +60,6 @@ class ARIMAModel:
         mape = mae(actual, forecast) * 100  # MAPE     # ME
         rmse = np.mean((forecast - actual)**2)**.5  # RMS
         return({'mape': round(mape,3),'mae': round(mae_score,3), 'rmse':round(rmse,3)})
-    
-    
-    def difference_dataset(self, interval=None):
-        self.train_data.diff(interval).dropna()
     
 
     def prepare_data(self, train_url, test_url):
@@ -124,7 +116,6 @@ class ARIMAModel:
             # Roll back 1st Diff
             df_fc[str(col)+'_forecast'] = df_train[col].iloc[-1] + df_fc[str(col)+'_1d'].cumsum()
         return df_fc
-
 
     def ml_flow_register(self):
         ARTIFACT_PATH = "model"

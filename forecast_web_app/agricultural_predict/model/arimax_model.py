@@ -6,7 +6,7 @@ from mlflow.models import infer_signature
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 
-class ARIMAModel:
+class ARIMAXModel:
 
     def __init__(self):
         # model
@@ -30,7 +30,7 @@ class ARIMAModel:
     def predict(self, n_periods):
         self.model = joblib.load(self.model_url)
         if self.model:
-            fc, confint = self.model.predict(n_periods=n_periods, exogenous=test_data[self.list_feature])
+            fc, confint = self.model.predict(n_periods=n_periods, exogenous=self.test_data[self.list_feature])
             fc_series = pd.Series(fc, index=self.test_data.index)
             return fc_series
         else:

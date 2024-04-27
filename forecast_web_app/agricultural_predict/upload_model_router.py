@@ -15,6 +15,8 @@ from werkzeug.utils import secure_filename
 import json
 from pprint import pprint
 from datetime import datetime, timedelta
+
+from forecast_web_app.agricultural_predict.model.factory_model import FactoryModel
 from model.arima_model import ARIMAModel
 from bson.objectid import ObjectId
 import matplotlib.pyplot as plt
@@ -48,7 +50,8 @@ def upload_object(filename, data, length):
 
 def get_minio_object(filename):
     client = Minio(MINIO_URL, MINIO_ACCESS_KEY, MINIO_SECRET, secure=False)
-    return client.fget_object(BUCKET_NAME, filename, "./file/arima_model.joblib")
+    client.fget_object(BUCKET_NAME, filename, "./file/" + filename)
+    return "./file/" + filename
     
 
 
@@ -176,22 +179,22 @@ def admin_detail_model():
     current_app.logger.info(model_id)
     model_data = train_model.find_one(ObjectId(model_id))
     current_app.logger.info(model_data)
-    arima_model = ARIMAModel()
+    # load model
+    arima_model = FactoryModel(model_data.get('model_id')).factory()
     model_url = get_minio_object(model_data.get('file_name'))
     current_app.logger.info(model_url)
-    arima_model.model_url = "./file/arima_model.joblib"
-    arima_model.data_uri = "./test_data/arima_data.csv"
+    arima_model.model_url = model_url
+    arima_model.data_uri = "./test_data/var_data.csv"
     _ , test_data = arima_model.prepare_data(arima_model.data_uri)
     # xử lí dữ liệu (cho trai trên web)
     current_app.logger.info(test_data.head())
     data , ac = arima_model.train_for_upload_mode(len(test_data), test_data)
     current_app.logger.info(ac)
-    df = pd.DataFrame(data, columns=['price'])
-    df.set_index(test_data.index, inplace=True)
+    data.set_index(test_data.index, inplace=True)
     current_app.logger.info(test_data.head())
     
-    current_app.logger.info(df.head())
-    create_chart_mode(test_data, df, model_data.get('model_id') + str(model_data.get('_id')))
+    current_app.logger.info(data.head())
+    create_chart_mode(test_data, data, model_data.get('model_id') + str(model_data.get('_id')))
     return render_template('admin/detail-model.html', model_data= model_data, chart_name = model_data.get('model_id') + str(model_data.get('_id')))
 
 

@@ -36,7 +36,7 @@ class VARModel:
         if self.model:
             lag_order = self.model.k_ar
             print(lag_order)
-            forecast_input = self.train_data.values[-lag_order:]
+            forecast_input = df_forecast.values[-lag_order:]
             fc = self.model.forecast(y=forecast_input, steps=n_periods)
             return fc
         else:
@@ -46,17 +46,18 @@ class VARModel:
 
 
     def train_for_upload_mode(self, n_periods, test_data):
-        self.difference_dataset()
-        self.forecast_data = self.predict(n_periods)
+        df_diff = self.difference_dataset()
+        self.forecast_data = self.predict(n_periods, df_diff)
         if self.forecast_data.size == 0:
             raise Exception("Không tìm thấy model")
 
 
-        self.forecast_data = pd.DataFrame(self.forecast_data, index=self.test_data.index[-n_periods:], columns=self.test_data.columns + '_2d')
-        print(self.forecast_data.info())
-        self.forecast_data = self.invert_transformation(self.train_data[self.list_feature], self.forecast_data, second_diff=True)
+        self.forecast_data = pd.DataFrame(self.forecast_data, index=self.test_data.index[-n_periods:], columns=self.test_data.columns)
 
-        self.accuracy = self.forecast_accuracy(self.forecast_data.price_2d.values, test_data.price.values)
+        print(self.forecast_data.info())
+        self.forecast_data = self.invert_transformation(self.train_data, self.forecast_data, second_diff=True)
+        self.forecast_data['price'] = self.forecast_data['price_forecast']
+        self.accuracy = self.forecast_accuracy(self.forecast_data.price_forecast.values, test_data.price.values)
         return self.forecast_data, self.accuracy
         
     
@@ -68,7 +69,8 @@ class VARModel:
     
     
     def difference_dataset(self, interval=None):
-        self.train_data = self.train_data.diff().dropna()
+        df_dif = self.train_data.copy()
+        return df_dif.diff().dropna()
     
 
     def prepare_data(self, train_url, test_url):
@@ -175,9 +177,9 @@ if __name__ == '__main__':
     # dự đoná mô hình
     data , ac = model.train_for_upload_mode(len(test_data), test_data)
     # register in ml flow
-    model_mflow = model.ml_flow_register()
-    print(model_mflow.model_uri)
+    # model_mflow = model.ml_flow_register()
+    # print(model_mflow.model_uri)
     print(ac)
-    print(data)
+    print(data['price_forecast'])
 
     

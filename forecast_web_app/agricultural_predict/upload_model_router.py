@@ -1,5 +1,5 @@
 from flask import Blueprint
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask import render_template
 from flask import send_from_directory
 from flask import current_app
@@ -100,26 +100,31 @@ def admin_upload_train_model():
     if(model_name):
         model_data_find = model.find_one({'name': model_name})
         data = model_data_find.get('attrs')
-        data_url = []
-
-        for item in data.get('data'):
-            data_url.append(list(item.values())[0])
-
-        current_app.logger.info(data_url)
     
-        return render_template('admin/upload-model.html', model_names=model_names, data=data, model_name=model_name, data_url=data_url)
+        return render_template('admin/upload-model.html', model_names=model_names, data=data, model_name=model_name
+                               )
 
     return render_template('admin/upload-model.html', 
                            model_names=model_names, data=None, model_name="")
+    
+    
+@upload_model_router.route('/search-upload-model', methods=['GET'])
+def get_data_train_model():
+    model_name = request.args.get('model_name')
+
+    data_name = request.args.get('data_name')
+    model_data_find = model.find_one({'name': model_name})
+    data = model_data_find.get('attrs')
+
+    return jsonify(data)
 
 
 @upload_model_router.route('/upload-model', methods=['POST'])
 def admin_train_model():
     name_train = request.form['name_train']
     model_name = request.args.get('model_name')
-    algricutural_name = request.form['algricutural_name']
     data_name = request.form['data_name']
-
+    data_name = ast.literal_eval(data_name)
     file = request.files["file"]
     # If the user does not select a file, the browser submits an
      # empty file without a filename.
@@ -136,23 +141,23 @@ def admin_train_model():
         
     # kiểm tra model
 
-    arima_model = FactoryModel(model_name).factory()
+    factory_model = FactoryModel(model_name).factory()
     model_url = get_minio_object(file_after_upload.object_name)
     current_app.logger.info(model_url)
-    arima_model.model_url = model_url
-    arima_model.data_uri = data_name
-    _, test_data = arima_model.prepare_data(arima_model.data_uri)
+    factory_model.model_url = model_url
+    factory_model.data_uri = data_name
+    _, test_data = factory_model.prepare_data(factory_model.data_uri)
     # xử lí dữ liệu (cho trai trên web)
     current_app.logger.info(test_data.head())
-    data, ac = arima_model.train_for_upload_mode(len(test_data), test_data)
+    data, ac = factory_model.train_for_upload_mode(len(test_data), test_data)
     current_app.logger.info(ac)
 
     
     data_model = {"user_id": session.get('username'),
                 "name": name_train,
-                "model_id": model_name,
-                "algricutural_name": algricutural_name,
-                "data_name": data_name,
+                "model_name": model_name,
+                "algricutural_name": data_name['type'],
+                "data_name": data_name['data'],
                 "file_name": file_after_upload.object_name,
                 "file_etag": file_after_upload.etag,
                 "create_time": datetime.now(), 
@@ -168,9 +173,9 @@ def admin_train_model():
 def create_chart_mode(data_actual, data_predicted, model_name):
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=data_actual.index, y=data_actual['price'], mode='lines', name='Giá thực tế',
-                             line=dict(color='rgba(0, 0, 255, 0.5)'), fill='tozeroy', fillcolor='rgba(173, 216, 230, 0.2)', visible=True))
+                             line=dict(color='rgba(0, 0, 255, 0.5)'), fillcolor='rgba(173, 216, 230, 0.2)', visible=True))
     fig.add_trace(go.Scatter(x=data_predicted.index, y=data_predicted['price'], mode='lines',
-                             name='Giá dự đoán', line=dict(color='rgba(255, 165, 0, 0.5)'), fill='tozeroy', fillcolor='rgba(255, 165, 0, 0.2)', visible=True))
+                             name='Giá dự đoán', line=dict(color='rgba(255, 165, 0, 0.5)'), fillcolor='rgba(255, 165, 0, 0.2)', visible=True))
     fig.update_layout(
                     xaxis_title='Ngày',
                     yaxis_title='Giá',
@@ -193,7 +198,7 @@ def admin_detail_model():
     current_app.logger.info(model_data)
     # load model
     if model_data:
-        arima_model = FactoryModel(model_data.get('model_id')).factory()
+        arima_model = FactoryModel(model_data.get('model_name')).factory()
         model_url = get_minio_object(model_data.get('file_name'))
         current_app.logger.info(model_url)
         arima_model.model_url = model_url
@@ -210,6 +215,10 @@ def admin_detail_model():
         current_app.logger.info(test_data.head())
 
         current_app.logger.info(data.head())
+        data_url = model_data.get('data_name')
+        url_parts = data_url.split('/')
+        filename = url_parts[-1]
+        model_data['data_name'] = filename
         create_chart_mode(test_data, data, model_data.get('model_id') + str(model_data.get('_id')))
     else:
         flash('Không tìm thấy mô hình.', 'danger')
@@ -220,4 +229,9 @@ def admin_detail_model():
 def admin():
     train_model_list = train_model.find()
     records = list(train_model.find())
-    return render_template('admin/index.html', train_model_list=train_model_list, total_model = len(records))
+    for record in records:
+        data_url = record.get('data_name')
+        url_parts = data_url.split('/')
+        filename = url_parts[-1]
+        record['data_name'] = filename
+    return render_template('admin/index.html', train_model_list=records, total_model = len(records))

@@ -106,8 +106,8 @@ content %}
                   <th>Tên</th>
                   <th>Ngày</th>
                   <th>Mô hình</th>
+                  <th>Dữ liệu</th>
                   <th>Đánh giá</th>
-                  <th>Chú thích</th>
                   <th></th>
                 </tr>
               </thead>
@@ -120,7 +120,10 @@ content %}
                   <td>{{model.create_time.strftime('%d-%m-%Y')}}</td>
                   <td>{{model.model_id}}</td>
                   <td>{{model.data_name}}</td>
-                  <td>RMSE: 360</td>
+                  <td>RMSE: {{model.score['rmse']}}
+                    <br>
+                    MSE: {{model.score['mse']}}
+                  </td>
                   <td>Thành công</td>
             
                 </tr>

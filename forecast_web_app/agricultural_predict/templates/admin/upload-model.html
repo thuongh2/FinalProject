@@ -61,21 +61,20 @@
 <!-- Begin Page Content -->
 <div class="container-fluid  p-0 mb-3">
     <!-- Content Row -->
-    <div class="row">
+    <div class="">
         <!-- Earnings (Monthly) Card Example -->
         <form action="{{ 'upload-model?model_name=' ~ model_name }}" enctype='multipart/form-data' method="POST">
-            <div class=" mt-2 col-12 mb-3">
-                <input name="name_train" type="text" class="form-control" placeholder="Tên" aria-describedby="basic-addon1">
-            </div>
             <div class="col-12 d-flex p-0 mb-3">
                 
-                <div class=" mt-2  col-6">
+                <div class=" mt-2 col-4">
                     <select name="model_name"  onchange="this.options[this.selectedIndex].value 
                     && (window.location = this.options[this.selectedIndex].value);" id="select"
                         class="form-control form-select">
                         <option value="upload-model" selected>Mô hình</option>
                         {% for item in model_names %}
-                        <option value="{{ 'upload-model?model_name=' ~ item }}">{{item}}</option>
+                        <option value="{{ 'upload-model?model_name=' ~ item }}" 
+                        {% if item == model_name %} selected {% endif %}>{{ item }}</option>
+
 
                         {% endfor %}
                     </select>
@@ -84,22 +83,16 @@
     
                 {% if data %}
 
-                <div class=" mt-2  col-6">
-                    <select name="algricutural_name"  class="form-control form-select">
-                        <option selected>Loại nông sản</option>
-                        {% for item in data.algricutural %}
-                        <option value="{{item}}">{{item}}</option>
-
-                        {% endfor %}
-                    </select>
+                <div class=" mt-2 col-4 mb-3">
+                    <input name="name_train" type="text" class="form-control" placeholder="Tên" aria-describedby="basic-addon1">
                 </div>
 
 
-             <div class=" mt-2  col-6">
+             <div class=" mt-2  col-4">
                     <select  name="data_name"  class="form-control form-select">
                         <option>Tập dữ liệu</option>
-                        {% for item in data_url %}
-                            <option value="{{item}}">{{ item }}</option>
+                        {% for item in data.data %}
+                            <option value="{{item}}">{{ item['name'] }}</option>
                         {% endfor %}
                     </select>
                 </div>

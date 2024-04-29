@@ -6,7 +6,7 @@ from sklearn.preprocessing import MinMaxScaler
 from keras.models import load_model
 from sklearn.metrics import mean_squared_error
 
-class LSTMModel():
+class BiLSTMModel():
     def __init__(self):
         # model
         self.model = None
@@ -127,7 +127,7 @@ class LSTMModel():
                             tickvals=data_predicted['date'][::14],                                 
                     ))
         
-        pio.write_html(fig, '../templates/chart/lstm_chart.html')
+        pio.write_html(fig, '../templates/chart/bilstm_chart.html')
        
     def forecast_future(self, forecast_num, data, n_steps):
         predicted = self.predict_ensemble(forecast_num, data, n_steps, n_steps+1)
@@ -149,12 +149,12 @@ class LSTMModel():
 
     
 if __name__ == '__main__':
-    model_url = "../test_data/LSTM_univariate_coffee.h5"
+    model_url = "../test_data/BiLSTM_univariate_coffee.h5"
     data_url = "../test_data/coffee.csv"
     data = pd.read_csv("../test_data/coffee.csv", encoding='utf-8')
-    model = LSTMModel()
+    model = BiLSTMModel()
     model.model_url = model_url    
-    model.data_url = data_url   
+    model.data_url = data_url
     
     n_steps = 10
     
@@ -172,7 +172,7 @@ if __name__ == '__main__':
     print("Evaluation on test data:", evaluation_test)
     
     # Dự đoán giá trong tương lai
-    forecast_num = 30
+    forecast_num = 60
     predicted_df = model.forecast_future(forecast_num, test_data, n_steps)
 
     # Nối dữ liệu dự đoán vào tập dữ liệu gốc

@@ -127,7 +127,7 @@ class BiLSTMModel():
                             tickvals=data_predicted['date'][::14],                                 
                     ))
         
-        pio.write_html(fig, '../templates/chart/bilstm_chart.html')
+        pio.write_html(fig, '../templates/chart/bilstm_univariate_coffee_30days.html')
        
     def forecast_future(self, forecast_num, data, n_steps):
         predicted = self.predict_ensemble(forecast_num, data, n_steps, n_steps+1)
@@ -150,8 +150,8 @@ class BiLSTMModel():
     
 if __name__ == '__main__':
     model_url = "../test_data/BiLSTM_univariate_coffee.h5"
-    data_url = "../test_data/coffee.csv"
-    data = pd.read_csv("../test_data/coffee.csv", encoding='utf-8')
+    data_url = "../test_data/coffee_daklak.csv"
+    data = pd.read_csv("../test_data/coffee_daklak.csv", encoding='utf-8')
     model = BiLSTMModel()
     model.model_url = model_url    
     model.data_url = data_url

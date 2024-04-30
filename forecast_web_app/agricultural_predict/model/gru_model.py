@@ -6,7 +6,7 @@ from sklearn.preprocessing import MinMaxScaler
 from keras.models import load_model
 from sklearn.metrics import mean_squared_error
 
-class LSTMModel():
+class GRUModel():
     def __init__(self):
         # model
         self.model = None
@@ -127,7 +127,7 @@ class LSTMModel():
                             tickvals=data_predicted['date'][::14],                                 
                     ))
         
-        pio.write_html(fig, '../templates/chart/lstm_univariate_coffee_30days.html')
+        pio.write_html(fig, '../templates/chart/gru_univariate_coffee_30days.html')
        
     def forecast_future(self, forecast_num, data, n_steps):
         predicted = self.predict_ensemble(forecast_num, data, n_steps, n_steps+1)
@@ -149,12 +149,12 @@ class LSTMModel():
 
     
 if __name__ == '__main__':
-    model_url = "../test_data/LSTM_univariate_coffee.h5"
+    model_url = "../test_data/GRU_univariate_coffee.h5"
     data_url = "../test_data/coffee_daklak.csv"
     data = pd.read_csv("../test_data/coffee_daklak.csv", encoding='utf-8')
-    model = LSTMModel()
+    model = GRUModel()
     model.model_url = model_url    
-    model.data_url = data_url   
+    model.data_url = data_url
     
     n_steps = 10
     

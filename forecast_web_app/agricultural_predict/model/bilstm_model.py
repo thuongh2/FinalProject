@@ -127,7 +127,7 @@ class BiLSTMModel():
                             tickvals=data_predicted['date'][::14],                                 
                     ))
         
-        pio.write_html(fig, '../templates/chart/bilstm_univariate_coffee_30days.html')
+        pio.write_html(fig, '../templates/chart/bilstm_univariate_coffee_60days.html')
        
     def forecast_future(self, forecast_num, data, n_steps):
         predicted = self.predict_ensemble(forecast_num, data, n_steps, n_steps+1)

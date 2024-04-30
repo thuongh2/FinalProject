@@ -21,51 +21,67 @@ header %}{% endblock %} {% block content %}
 
 
 <div id="container-fluid" class="container-fluid" style="padding-top: 4px">
-  <div class="row mt-4">
+
+    <div class="row mt-4"> 
+      <div class="col-xl-2 d-flex justify-content-center align-items-center">
+        <div class="h6 font-weight-bold text-gray-800 text-uppercase">
+          Mô hình
+        </div>
+      </div>
   
-    <!-- Content Column -->
-    <div class="col-xl-4">
-      <div class="row no-gutters align-items-center">
-        <div class="col mr-2">
-          <div class="h4 font-weight-bold text-primary text-uppercase mb-1">
-            Giá lúa 20/4/2024: 10.000đ
-          </div>
-          <div class="h5 mb-0 mt-3 font-weight-bold text-success">
-            Giá dự đoán: 10.500đ
-          </div>
+      <div class="col-xl-2 d-flex justify-content-center align-items-center">
+        <div class="h6 font-weight-bold text-gray-800 text-uppercase d-flex align-items-center">
+          Dữ liệu
+        </div>
+      </div>
+  
+      <div class="col-xl-2 d-flex justify-content-center align-items-center">
+        <div class="h6 font-weight-bold text-gray-800 text-uppercase">
+          Thời gian
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="row mt-4">
-  
-    <div class="col-xl-2">
-      <select class="form-control form-select col-xl-12" style="color: black">
-        >
-        <option selected="">Chọn mô hình</option>
-        <option value="ARIMA">ARIMA</option>
-        <option value="LSTM">LSTM</option>
-      </select>
-    </div>
-
-    <div class="col-xl-2">
-      <select class="form-control form-select col-xl-12" style="color: black">
-        <option selected="">Chọn dữ liệu kết hợp</option>
-        <option value="xuatkhau">Giá xuất khẩu</option>
-        <option value="giaxang">Giá xăng</option>
-      </select>
-    </div>
-
-    <div class="col-xl-2">
-      <select class="form-control form-select col-xl-12" style="color: black">
-        <option selected="">Chọn thời gian dự đoán</option>
-        <option value="dudoan6">6 tháng</option>
-        <option value="dudoan12">12 tháng</option>
-      </select>
-    </div>
-    </div>
-
+      <div class="row"> 
+        <div class="col-xl-2">
+          <select id="model-select" class="form-control form-select col-xl-12" style="color: black">
+            >
+            <option value="LSTM" selected>LSTM</option>
+            <option value="GRU">GRU</option>
+            <option value="BiLSTM">BiLSTM</option>
+          </select>
+        </div>
+    
+        <div class="col-xl-2">
+          <select class="form-control form-select col-xl-12" style="color: black">
+            <option value="giacaphe" selected>Giá cà phê</option>
+            <option value="xuatkhau">Giá cà phê và xuất khẩu</option>
+            <option value="giaxang">Giá cà phê và xăng</option>
+          </select>
+        </div>
+    
+        <div class="col-xl-2">
+            <select id="time-select" class="form-control form-select col-xl-12" style="color: black">
+              <option value="dudoan30ngay" selected>30 ngày</option>
+              <option value="dudoan60ngay">60 ngày</option>
+            </select>
+        </div>
+        <div class="col-xl-3">
+        </div>
+        <div class="col-xl-3">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="h5 font-weight-bold text-primary text-uppercase mb-1">
+                Giá lúa 20/4/2024: 10.000đ
+              </div>
+              <div class="h5 mb-0 font-weight-bold text-success">
+                Giá dự đoán: 10.500đ
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+   
 </div>
   <!-- Content Row -->
 
@@ -83,9 +99,21 @@ header %}{% endblock %} {% block content %}
         </div>
         <!-- Card Body -->
         <div class="card-body">
-          <div class="chart-area" style="height: auto;">
-            {% include './chart/gru_univariate_coffee_30days.html' %}
+          <div id="charts-container" style="height: 100%;">
+            <div id="LSTM-dudoan30ngay-chart" class="chart-area" style="height: auto; position: relative; opacity: 1;">
+              {% include './chart/lstm_univariate_coffee_30days.html' %}
+            </div>
+            <div id="GRU-dudoan30ngay-chart" class="chart-area" style="height: auto; position: absolute; opacity: 0;">
+              {% include './chart/gru_univariate_coffee_30days.html' %}
+            </div>
+            <div id="BiLSTM-dudoan30ngay-chart" class="chart-area" style="height: auto; position: absolute; opacity: 0;">
+              {% include './chart/bilstm_univariate_coffee_30days.html' %}
+            </div>
+            <div id="BiLSTM-dudoan60ngay-chart" class="chart-area" style="height: auto; position: absolute; opacity: 0;">
+              {% include './chart/bilstm_univariate_coffee_60days.html' %}
+            </div>
           </div>
+          
         </div>
       </div>
     </div>

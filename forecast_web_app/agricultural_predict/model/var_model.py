@@ -44,13 +44,11 @@ class VARModel:
 
 
 
-
     def train_for_upload_mode(self, n_periods, test_data):
         df_diff = self.difference_dataset()
         self.forecast_data = self.predict(n_periods, df_diff)
         if self.forecast_data.size == 0:
             raise Exception("Không tìm thấy model")
-
 
         self.forecast_data = pd.DataFrame(self.forecast_data, index=self.test_data.index[-n_periods:], columns=self.test_data.columns)
 
@@ -59,13 +57,13 @@ class VARModel:
         self.forecast_data['price'] = self.forecast_data['price_forecast']
         self.accuracy = self.forecast_accuracy(self.forecast_data.price_forecast.values, test_data.price.values)
         return self.forecast_data, self.accuracy
-        
-    
-    def forecast_accuracy(self, forecast, actual):
-        mse = mean_squared_error(actual, forecast)
+
+    def forecast_accuracy(self, test_data, predicted_values):
+        mape = np.mean(np.abs((test_data - predicted_values) / test_data)) * 100
+        mse = mean_squared_error(test_data, predicted_values)
         rmse = np.sqrt(mse)
-        r2 = r2_score(actual, forecast)
-        return ({'mse': round(mse, 3), 'rmse': round(rmse, 3), 'r2': round(r2, 3)})
+
+        return {'mape': round(mape, 2), 'rmse': round(rmse, 2)}
     
     
     def difference_dataset(self, interval=None):
@@ -92,7 +90,6 @@ class VARModel:
         self.test_data = self.data[size:]
             
         return self.train_data, self.test_data
-
 
 
     def set_index_date(self, train_data, test_data):

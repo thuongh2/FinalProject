@@ -73,13 +73,13 @@ class LSTMModel():
         predicted_values = scaler.inverse_transform(predicted_values)
         
         return predicted_values
-    
+
     def forecast_accuracy(self, test_data, predicted_values):
         mape = np.mean(np.abs((test_data - predicted_values) / test_data)) * 100
         mse = mean_squared_error(test_data, predicted_values)
         rmse = np.sqrt(mse)
-        
-        return {'mape': mape, 'rmse': rmse}
+
+        return {'mape': round(mape, 2), 'rmse': round(rmse, 2)}
 
     
     def predict_ensemble(self, forecast_num, data, n_steps, time):
@@ -153,7 +153,7 @@ if __name__ == '__main__':
     data_url = "../test_data/coffee_daklak.csv"
     data = pd.read_csv("../test_data/coffee_daklak.csv", encoding='utf-8')
     model = LSTMModel()
-    model.model_url = model_url    
+    model.model_url = model_url
     model.data_url = data_url   
     
     n_steps = 10

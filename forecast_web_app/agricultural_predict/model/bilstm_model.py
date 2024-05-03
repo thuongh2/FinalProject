@@ -73,13 +73,13 @@ class BiLSTMModel():
         predicted_values = scaler.inverse_transform(predicted_values)
         
         return predicted_values
-    
+
     def forecast_accuracy(self, test_data, predicted_values):
         mape = np.mean(np.abs((test_data - predicted_values) / test_data)) * 100
         mse = mean_squared_error(test_data, predicted_values)
         rmse = np.sqrt(mse)
-        
-        return {'mape': mape, 'rmse': rmse}
+
+        return {'mape': round(mape, 2), 'rmse': round(rmse, 2)}
 
     
     def predict_ensemble(self, forecast_num, data, n_steps, time):

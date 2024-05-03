@@ -1,3 +1,5 @@
+import http
+
 from flask import Blueprint
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask import render_template
@@ -54,9 +56,6 @@ def get_minio_object(filename):
     client = Minio(MINIO_URL, MINIO_ACCESS_KEY, MINIO_SECRET, secure=False)
     client.fget_object(BUCKET_NAME, filename, "./file/" + filename)
     return "./file/" + filename
-    
-
-
 
 
 @upload_model_router.route('/upload-model-minio', methods=['GET', 'POST'])
@@ -145,7 +144,7 @@ def admin_train_model():
     model_url = get_minio_object(file_after_upload.object_name)
     current_app.logger.info(model_url)
     factory_model.model_url = model_url
-    factory_model.data_uri = data_name
+    factory_model.data_uri = data_name.get('data')
     _, test_data = factory_model.prepare_data(factory_model.data_uri)
     # xử lí dữ liệu (cho trai trên web)
     current_app.logger.info(test_data.head())
@@ -164,6 +163,7 @@ def admin_train_model():
                 "score": ac,
                 "type": "UPLOAD_MODEL",
                 "isUsed": False}
+
     train_model.insert_one(data_model)
     return redirect("detail-model?model_id=" + str(data_model.get('_id')))
     
@@ -187,7 +187,7 @@ def create_chart_mode(data_actual, data_predicted, model_name):
                        tickformat='%d-%m-%Y' 
                    ))
     # fig.show()
-    
+    current_app.logger.info("CREATE CHART " + model_name)
     pio.write_html(fig, './templates/chart/' + model_name + '.html')
 
 @upload_model_router.route('/detail-model')
@@ -198,6 +198,7 @@ def admin_detail_model():
     current_app.logger.info(model_data)
     # load model
     if model_data:
+        
         arima_model = FactoryModel(model_data.get('model_name')).factory()
         model_url = get_minio_object(model_data.get('file_name'))
         current_app.logger.info(model_url)
@@ -219,10 +220,10 @@ def admin_detail_model():
         url_parts = data_url.split('/')
         filename = url_parts[-1]
         model_data['data_name'] = filename
-        create_chart_mode(test_data, data, model_data.get('model_id') + str(model_data.get('_id')))
+        create_chart_mode(test_data, data, model_data.get('model_name') + str(model_data.get('_id')))
     else:
         flash('Không tìm thấy mô hình.', 'danger')
-    return render_template('admin/detail-model.html', model_data= model_data, chart_name = model_data.get('model_id') + str(model_data.get('_id')))
+    return render_template('admin/detail-model.html', model_data= model_data, chart_name= model_data.get('model_name') + str(model_data.get('_id')))
 
 
 @upload_model_router.route('/admin')

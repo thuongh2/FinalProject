@@ -30,37 +30,39 @@ class ARIMAModel:
         
         
         
-    def predict(self, n_periods):
+    def predict(self, n_periods = 30):
         self.model = joblib.load(self.model_url)
         if self.model:
-            fc, confint = self.model.predict(n_periods=n_periods, return_conf_int=True, dynamic=True)
-            fc_series = pd.Series(fc, index = self.test_data.index)
-            return fc_series
+            predict, confint = self.model.predict(n_periods=n_periods, return_conf_int=True, dynamic=True)
+            predict_series = pd.Series(predict, index = self.test_data.index)
+            return predict_series
         else:
             raise Exception("Không tìm thấy model")
 
 
-
-
     def train_for_upload_mode(self, n_periods, test_data):
-        print(n_periods)
         self.forecast_data = self.predict(n_periods)
         if self.forecast_data.empty:
             raise Exception("Không tìm thấy model")
         print(test_data.iloc[1])
         print(self.forecast_data.info())
         
-        self.forecast_data = [self.inverse_difference(test_data.iloc[i].price, self.forecast_data[i]) for i in range(len(self.forecast_data))]
+        # self.forecast_data = [self.inverse_difference(test_data.iloc[i].price, self.forecast_data[i]) for i in range(len(self.forecast_data))]
       
         self.accuracy = self.forecast_accuracy(self.forecast_data, test_data.price.values)
         return self.forecast_data, self.accuracy
-        
     
-    def forecast_accuracy(self, forecast, actual):
-        mse = mean_squared_error(actual, forecast)
+
+        
+    def forecast_accuracy(self, test_data, predicted_values):
+        mape = np.mean(np.abs((test_data - predicted_values) / test_data)) * 100
+        mse = mean_squared_error(test_data, predicted_values)
         rmse = np.sqrt(mse)
-        r2 = r2_score(actual, forecast)
-        return ({'mse': round(mse, 3), 'rmse': round(rmse, 3), 'r2': round(r2, 3)})
+        
+        return {'mape': round(mape, 2), 'rmse': round(rmse, 2)}
+
+    
+    
 
     def prepare_data(self, train_url, test_url):
         if train_url:
@@ -111,11 +113,11 @@ class ARIMAModel:
         return value + last_ob
 
 
-    def ml_flow_register(self):
+    def ml_flow_register(self,  experient_name = "DEFAUT_MODEL"):
         ARTIFACT_PATH = "model"
 
         mlflow.set_tracking_uri(uri="http://20.2.210.176:5000/")
-        mlflow.set_experiment("ARIMA_MODEL")
+        mlflow.set_experiment(experient_name)
 
         # Create an instance of a PandasDataset
         dataset = mlflow.data.from_pandas(

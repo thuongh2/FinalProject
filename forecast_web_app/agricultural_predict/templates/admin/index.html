@@ -118,11 +118,11 @@ content %}
                 <tr>
                   <td><a href="{{ url_for('upload_model_router.admin_detail_model', model_id=model._id ) }}">{{model.name}}</a></td>
                   <td>{{model.create_time.strftime('%d-%m-%Y')}}</td>
-                  <td>{{model.model_id}}</td>
+                  <td>{{model.model_name}}</td>
                   <td>{{model.data_name}}</td>
                   <td>RMSE: {{model.score['rmse']}}
                     <br>
-                    MSE: {{model.score['mse']}}
+                    MAPE: {{model.score['mape']}}
                   </td>
                   <td>Thành công</td>
             

@@ -50,11 +50,14 @@ class ARIMAXModel:
         self.accuracy = self.forecast_accuracy(self.forecast_data, test_data.price.values)
         return self.forecast_data, self.accuracy
 
-    def forecast_accuracy(self, forecast, actual):
-        mse = mean_squared_error(actual, forecast)
+    def forecast_accuracy(self, test_data, predicted_values):
+        mape = np.mean(np.abs((test_data - predicted_values) / test_data)) * 100
+        mse = mean_squared_error(test_data, predicted_values)
         rmse = np.sqrt(mse)
-        r2 = r2_score(actual, forecast)
-        return ({'mse': round(mse, 3), 'rmse': round(rmse, 3), 'r2': round(r2, 3)})
+
+        return {'mape': round(mape, 2), 'rmse': round(rmse, 2)}
+
+
 
     def prepare_data(self, train_url, test_url):
         if train_url:

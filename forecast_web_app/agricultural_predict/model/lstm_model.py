@@ -75,13 +75,13 @@ class LSTMModel():
         return predicted_values
 
     def forecast_accuracy(self, test_data, predicted_values):
-        mape = np.mean(np.abs((test_data - predicted_values) / test_data)) * 100
-        mse = mean_squared_error(test_data, predicted_values)
+        test_values = test_data['price'].values 
+        mape = np.mean(np.abs((test_values - predicted_values) / test_values)) * 100
+        mse = mean_squared_error(test_values, predicted_values)
         rmse = np.sqrt(mse)
 
         return {'mape': round(mape, 2), 'rmse': round(rmse, 2)}
 
-    
     def predict_ensemble(self, forecast_num, data, n_steps, time):
         model = load_model(self.model_url)
         scaler = MinMaxScaler(feature_range=(0, 1))
@@ -162,12 +162,15 @@ if __name__ == '__main__':
     train_data , test_data = model.prepare_data(data_url)
     
     # Dự đoán mô hình trên dữ liệu thực tế
-    predicted_train = model.predict(train_data, n_steps)
-    predicted_test = model.predict(test_data, n_steps)
+    predicted_train_initial = model.predict(train_data, n_steps)
+    predicted_test_initial = model.predict(test_data, n_steps)
     
-    # # Đánh giá mô hình
-    evaluation_train = model.forecast_accuracy(train_data[n_steps:], predicted_train)
-    evaluation_test = model.forecast_accuracy(test_data[n_steps:], predicted_test)
+    predicted_train = np.concatenate([train_data.iloc[:n_steps]['price'].values, predicted_train_initial.flatten()])
+    predicted_test = np.concatenate([test_data.iloc[:n_steps]['price'].values, predicted_test_initial.flatten()])
+    
+    # Đánh giá mô hình
+    evaluation_train = model.forecast_accuracy(train_data, predicted_train)
+    evaluation_test = model.forecast_accuracy(test_data, predicted_test)
     print("Evaluation on train data:", evaluation_train)
     print("Evaluation on test data:", evaluation_test)
     

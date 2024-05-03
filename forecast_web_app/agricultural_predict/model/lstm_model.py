@@ -182,7 +182,7 @@ if __name__ == '__main__':
 
     predicted_train = np.concatenate([train_data.iloc[:n_steps]['price'].values, predicted_train_initial.flatten()])
     predicted_test = np.concatenate([test_data.iloc[:n_steps]['price'].values, predicted_test_initial.flatten()])
-
+    
     # Đánh giá mô hình
     evaluation_train = model.forecast_accuracy(train_data, predicted_train)
     evaluation_test = model.forecast_accuracy(test_data, predicted_test)

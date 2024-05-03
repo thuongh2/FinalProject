@@ -45,11 +45,11 @@ header %}{% endblock %} {% block content %}
       <div class="row"> 
         <div class="col-xl-2">
           <select id="model-select" class="form-control form-select col-xl-12" style="color: black">
-            >
-            <option value="LSTM" selected>LSTM</option>
-            <option value="GRU">GRU</option>
-            <option value="BiLSTM">BiLSTM</option>
+            {% for model in models %}
+              <option value="{{model.name}}">{{model.name}}</option>
+            {% endfor %}
           </select>
+          
         </div>
     
         <div class="col-xl-2">

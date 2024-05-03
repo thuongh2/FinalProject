@@ -12,12 +12,6 @@ from flask import current_app
 main_router = Blueprint('main_router', __name__, static_folder='static',
             template_folder='templates')
 
-
-@main_router.route('/')
-def hello():
-    return render_template('index.html')
-
-
 @main_router.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -43,7 +37,6 @@ def register():
 
     return render_template('register.html')
 
-
 @main_router.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -64,8 +57,6 @@ def login():
 
     return render_template('login.html')
 
-
-
 @main_router.route('/logout', methods=['GET'])
 def logout():
 
@@ -74,15 +65,10 @@ def logout():
         del session['username']
     return redirect('/')
 
-
 @main_router.route('/train-model')
 def admin_train_model():
     return render_template('admin/train-model.html')
 
-
-
 @main_router.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
-
-

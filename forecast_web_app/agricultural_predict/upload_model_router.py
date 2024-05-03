@@ -240,3 +240,8 @@ def admin():
         filename = url_parts[-1]
         record['data_name'] = filename
     return render_template('admin/index.html', train_model_list=records, total_model = len(records))
+
+@upload_model_router.route('/')
+def index():
+    records = list(model.find())
+    return render_template('index.html', models=records)

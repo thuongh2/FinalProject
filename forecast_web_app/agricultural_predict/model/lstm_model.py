@@ -108,7 +108,7 @@ class LSTMModel():
                                  line=dict(color='rgba(0, 0, 255, 0.5)'), fill='tozeroy',
                                  fillcolor='rgba(173, 216, 230, 0.7)', visible=True))
         fig.add_trace(go.Scatter(x=list_predicted['date'], y=list_predicted['price'], mode='lines', name='Giá dự đoán',
-                                 line=dict(color='rgba(255, 165, 0, 0.5)'), fill='tozeroy',
+                                 line=dict(color='red'), fill='tozeroy',
                                  fillcolor='rgba(255, 165, 0, 0.2)', visible=True))
         fig.update_layout(
             title={
@@ -126,7 +126,7 @@ class LSTMModel():
             paper_bgcolor='rgba(0,0,0,0)',
             xaxis=dict(
                 tickformat='%d/%m/%Y',
-                tickvals=data_predicted['date'][::14],
+                tickvals=data_predicted['date'][::30],
             ))
 
         pio.write_html(fig, '../templates/chart/lstm_univariate_coffee_30days.html')

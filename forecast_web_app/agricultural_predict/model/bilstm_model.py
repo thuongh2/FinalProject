@@ -128,7 +128,22 @@ class BiLSTMModel():
                     ))
         
         pio.write_html(fig, '../templates/chart/bilstm_univariate_coffee_60days.html')
-       
+
+
+    def train_for_upload_mode(self, n_periods, test_data):
+        n_steps = 10
+        forecast = self.predict(test_data, n_steps)
+        forecast = np.concatenate([test_data.iloc[:n_steps]['price'].values, forecast.flatten()])
+        self.forecast_data = pd.DataFrame(forecast, columns=['price'])
+        self.forecast_data.set_index(test_data.index, inplace=True)
+
+        if self.forecast_data.empty:
+            raise Exception("Không tìm thấy model")
+        print(self.forecast_data.info())
+
+        self.accuracy = self.forecast_accuracy(self.test_data.price.values, self.forecast_data.price.values)
+        return self.forecast_data, self.accuracy
+
     def forecast_future(self, forecast_num, data, n_steps):
         predicted = self.predict_ensemble(forecast_num, data, n_steps, n_steps+1)
         last_date = data.index[-1]

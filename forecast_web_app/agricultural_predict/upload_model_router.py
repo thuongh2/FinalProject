@@ -120,52 +120,56 @@ def get_data_train_model():
 
 @upload_model_router.route('/upload-model', methods=['POST'])
 def admin_train_model():
-    name_train = request.form['name_train']
-    model_name = request.args.get('model_name')
-    data_name = request.form['data_name']
-    data_name = ast.literal_eval(data_name)
-    file = request.files["file"]
-    # If the user does not select a file, the browser submits an
-     # empty file without a filename.
-    if file.filename == "":
-        current_app.logger.info("KHÔNG TRỐNG")
-        return redirect(request.url)
-    if file:
-        size = os.fstat(file.fileno()).st_size
-        file_after_upload = upload_object(file.filename, file, size)
-        current_app.logger.info(file_after_upload.__dir__())
-        current_app.logger.info(file_after_upload.object_name)
-        current_app.logger.info(file_after_upload.version_id)
-        current_app.logger.info(file_after_upload.etag)
-        
-    # kiểm tra model
+    try:
+        name_train = request.form['name_train']
+        model_name = request.args.get('model_name')
+        data_name = request.form['data_name']
+        data_name = ast.literal_eval(data_name)
+        file = request.files["file"]
 
-    factory_model = FactoryModel(model_name).factory()
-    model_url = get_minio_object(file_after_upload.object_name)
-    current_app.logger.info(model_url)
-    factory_model.model_url = model_url
-    factory_model.data_uri = data_name.get('data')
-    _, test_data = factory_model.prepare_data(factory_model.data_uri)
-    # xử lí dữ liệu (cho trai trên web)
-    current_app.logger.info(test_data.head())
-    data, ac = factory_model.train_for_upload_mode(len(test_data), test_data)
-    current_app.logger.info(ac)
+        if file.filename == "":
+            current_app.logger.info("Không tìm thấy file")
+            return redirect(request.url)
+        if file:
+            size = os.fstat(file.fileno()).st_size
+            file_after_upload = upload_object(file.filename, file, size)
+            current_app.logger.info(file_after_upload.__dir__())
+            current_app.logger.info(file_after_upload.object_name)
+            current_app.logger.info(file_after_upload.version_id)
+            current_app.logger.info(file_after_upload.etag)
 
-    
-    data_model = {"user_id": session.get('username'),
-                "name": name_train,
-                "model_name": model_name,
-                "algricutural_name": data_name['type'],
-                "data_name": data_name['data'],
-                "file_name": file_after_upload.object_name,
-                "file_etag": file_after_upload.etag,
-                "create_time": datetime.now(), 
-                "score": ac,
-                "type": "UPLOAD_MODEL",
-                "isUsed": False}
+        # kiểm tra model
 
-    train_model.insert_one(data_model)
-    return redirect("detail-model?model_id=" + str(data_model.get('_id')))
+        factory_model = FactoryModel(model_name).factory()
+        model_url = get_minio_object(file_after_upload.object_name)
+        current_app.logger.info(model_url)
+        factory_model.model_url = model_url
+        factory_model.data_uri = data_name.get('data')
+        _, test_data = factory_model.prepare_data(factory_model.data_uri)
+        # xử lí dữ liệu (cho trai trên web)
+        current_app.logger.info(test_data.head())
+        data, ac = factory_model.train_for_upload_mode(len(test_data), test_data)
+        current_app.logger.info(ac)
+
+
+        data_model = {"user_id": session.get('username'),
+                    "name": name_train,
+                    "model_name": model_name,
+                    "algricutural_name": data_name['type'],
+                    "data_name": data_name['data'],
+                    "file_name": file_after_upload.object_name,
+                    "file_etag": file_after_upload.etag,
+                    "create_time": datetime.now(),
+                    "score": ac,
+                    "type": "UPLOAD_MODEL",
+                    "isUsed": False}
+
+        train_model.insert_one(data_model)
+        return redirect("detail-model?model_id=" + str(data_model.get('_id')))
+    except Exception as e:
+        flash(e)
+        redirect("/upload-model")
+
     
     
 

@@ -81,6 +81,20 @@ class GRUModel():
 
         return {'mape': round(mape, 2), 'rmse': round(rmse, 2)}
 
+
+    def train_for_upload_mode(self, n_periods, test_data):
+        n_steps = 10
+        forecast = self.predict(test_data, n_steps)
+        forecast = np.concatenate([test_data.iloc[:n_steps]['price'].values, forecast.flatten()])
+        self.forecast_data = pd.DataFrame(forecast, columns=['price'])
+        self.forecast_data.set_index(test_data.index, inplace=True)
+
+        if self.forecast_data.empty:
+            raise Exception("Không tìm thấy model")
+        print(self.forecast_data.info())
+
+        self.accuracy = self.forecast_accuracy(self.test_data.price.values, self.forecast_data.price.values)
+        return self.forecast_data, self.accuracy
     
     def predict_ensemble(self, forecast_num, data, n_steps, time):
         model = load_model(self.model_url)

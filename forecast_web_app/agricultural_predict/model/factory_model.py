@@ -3,6 +3,8 @@ from model.arimax_model import ARIMAXModel
 from model.var_model import VARModel
 from model.varma_model import VARMAModel
 from model.lstm_model import LSTMModel
+from model.gru_model import GRUModel
+from model.bilstm_model import BiLSTMModel
 
 
 class FactoryModel:
@@ -14,10 +16,12 @@ class FactoryModel:
         """Factory Method"""
         localizers = {
             "ARIMA": ARIMAModel,
+            "SARIMA": ARIMAModel,
             "ARIMAX": ARIMAXModel,
             "VAR": VARModel,
             "VARMAX": VARMAModel,
             "LSTM": LSTMModel,
+            "GRU": GRUModel,
+            "BiLSTM": BiLSTMModel,
         }
-        print(self.model)
         return localizers[self.model]()

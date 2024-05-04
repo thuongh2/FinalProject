@@ -69,13 +69,16 @@ header %}{% endblock %} {% block content %}
         <div class="card-body">
           <div id="charts-container" style="height: 100%;">
             <div id="LSTM-30days-univariate-coffee" class="chart-area" style="height: auto; position: relative; opacity: 1;">
-              {% include './chart/lstm_univariate_coffee_30days.html' %}
+              {% include './chart/lstm-30days-univariate-coffee.html' %}
             </div>
             {% for model in models %}
-            <div id="{{ model.name }}-30days-univariate-coffee" class="chart-area" style="height: auto; position: absolute; opacity: 0;">
-                {% set chart_filename = (model.name|lower) + '_univariate_coffee_30days.html' %}
-                {% include url_for('static', filename='chart/' + chart_filename) %}
-            </div>
+              {% for time in ["30days", "60days"] %}
+                {% set chart_type = "coffee" %}
+                  <div id="{{ model.name }}-{{ time }}-univariate-coffee" class="chart-area" style="height: auto; position: absolute; opacity: 0;">
+                    {% set chart_filename = model.name + '-' + time + '-univariate-' + chart_type + '.html' %}
+                    {% include url_for('static', filename='chart/' + chart_filename) %}
+                  </div>
+              {% endfor %}
             {% endfor %}
           </div>  
         </div>   

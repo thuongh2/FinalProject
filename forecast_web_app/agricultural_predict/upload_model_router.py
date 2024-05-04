@@ -170,10 +170,6 @@ def admin_train_model():
         flash(e)
         redirect("/upload-model")
 
-    
-    
-
-
 def create_chart_mode(data_actual, data_predicted, model_name):
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=data_actual.index, y=data_actual['price'], mode='lines', name='Giá thực tế',
@@ -190,7 +186,6 @@ def create_chart_mode(data_actual, data_predicted, model_name):
                        dtick='7D', 
                        tickformat='%d-%m-%Y' 
                    ))
-    # fig.show()
     current_app.logger.info("CREATE CHART " + model_name)
     pio.write_html(fig, './templates/chart/' + model_name + '.html')
 

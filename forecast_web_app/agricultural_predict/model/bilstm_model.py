@@ -111,7 +111,7 @@ class BiLSTMModel():
         fig.add_trace(go.Scatter(x=list_predicted['date'], y=list_predicted['price'], mode='lines', name='Giá dự đoán', line=dict(color='rgba(255, 165, 0, 0.5)'), fill='tozeroy', fillcolor='rgba(255, 165, 0, 0.2)', visible=True))
         fig.update_layout(
                         title={
-                            'text': "BIỂU ĐỒ DỰ ĐOÁN GIÁ CÀ PHÊ",
+                            'text': "BIỂU ĐỒ DỰ ĐOÁN GIÁ CÀ PHÊ (BiLSTM)",
                             'font': {
                                 'family': 'Arial',
                                 'size': 20,
@@ -128,7 +128,7 @@ class BiLSTMModel():
                             tickvals=data_predicted['date'][::14],                                 
                     ))
         
-        pio.write_html(fig, '../templates/chart/bilstm_univariate_coffee_60days.html')
+        pio.write_html(fig, '../templates/chart/BiLSTM-30days-univariate-coffee.html')
 
 
     def train_for_upload_mode(self, n_periods, test_data):
@@ -191,7 +191,7 @@ if __name__ == '__main__':
     print("Evaluation on test data:", evaluation_test)
     
     # Dự đoán giá trong tương lai
-    forecast_num = 60
+    forecast_num = 30
     predicted_df = model.forecast_future(forecast_num, test_data, n_steps)
 
     # Nối dữ liệu dự đoán vào tập dữ liệu gốc

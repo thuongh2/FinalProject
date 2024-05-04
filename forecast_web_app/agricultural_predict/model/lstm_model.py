@@ -108,11 +108,11 @@ class LSTMModel():
                                  line=dict(color='rgba(0, 0, 255, 0.5)'), fill='tozeroy',
                                  fillcolor='rgba(173, 216, 230, 0.7)', visible=True))
         fig.add_trace(go.Scatter(x=list_predicted['date'], y=list_predicted['price'], mode='lines', name='Giá dự đoán',
-                                 line=dict(color='red'), fill='tozeroy',
+                                 line=dict(color='rgba(255, 165, 0, 0.5)'), fill='tozeroy',
                                  fillcolor='rgba(255, 165, 0, 0.2)', visible=True))
         fig.update_layout(
             title={
-                'text': "BIỂU ĐỒ DỰ ĐOÁN GIÁ CÀ PHÊ",
+                'text': "BIỂU ĐỒ DỰ ĐOÁN GIÁ CÀ PHÊ (LSTM)",
                 'font': {
                     'family': 'Arial',
                     'size': 20,
@@ -129,7 +129,8 @@ class LSTMModel():
                 tickvals=data_predicted['date'][::30],
             ))
 
-        pio.write_html(fig, '../templates/chart/lstm_univariate_coffee_30days.html')
+        # pio.write_html(fig, '../templates/chart/LSTM-30days-univariate-coffee.html')
+        pio.write_html(fig, '../templates/chart/LSTM-60days-univariate-coffee.html')
 
     def forecast_future(self, forecast_num, data, n_steps):
         predicted = self.predict_ensemble(forecast_num, data, n_steps, n_steps + 1)
@@ -190,7 +191,7 @@ if __name__ == '__main__':
     print("Evaluation on test data:", evaluation_test)
 
     # Dự đoán giá trong tương lai
-    forecast_num = 30
+    forecast_num = 60
     predicted_df = model.forecast_future(forecast_num, test_data, n_steps)
 
     # Nối dữ liệu dự đoán vào tập dữ liệu gốc

@@ -10426,7 +10426,7 @@ body.sidebar-toggled footer.sticky-footer {
   text-decoration: none;
   font-family: Arial, Helvetica, sans-serif;
   font-weight: bold;
-  font-size: 64px;
+  font-size: 58px;
   text-shadow: 6px 6px 12px rgba(0, 0, 0, 0.8);
 }
 
@@ -10440,4 +10440,34 @@ body.sidebar-toggled footer.sticky-footer {
 html,
 body {
   scroll-behavior: smooth;
+}
+
+.price-agricutural {
+  padding: 0;
+  border-radius: 0;
+  border: 0;
+}
+
+.card-price {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  word-wrap: break-word;
+  background-color: #fff;
+  background-clip: border-box;
+  border: 1px solid #e3e6f0;
+  padding: 12px 36px 12px 36px;
+  text-decoration: none;
+}
+
+a.price-agricutural {
+  text-decoration: none;
+  transition: box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+a.price-agricutural:hover {
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+  opacity: 0.5;
+  color: inherit;
 }

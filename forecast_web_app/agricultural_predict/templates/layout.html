@@ -292,29 +292,7 @@
       crossorigin="anonymous"
     ></script>
 
-    <!-- <script>
-      document
-        .getElementById("model-select")
-        .addEventListener("change", function () {
-          var selectedModel = this.value;
-
-          // Ẩn tất cả các biểu đồ
-          var charts = document.querySelectorAll(".chart-area");
-          charts.forEach(function (chart) {
-            chart.style.opacity = "0";
-            chart.style.position = "absolute";
-          });
-
-          // Hiển thị biểu đồ tương ứng với mô hình được chọn
-          var selectedChart = document.getElementById(selectedModel + "-chart");
-          if (selectedChart) {
-            selectedChart.style.opacity = "1";
-            selectedChart.style.position = "relative";
-          }
-        });
-    </script> -->
     <script>
-      // Lắng nghe sự kiện thay đổi trên select box model-select và time-select
       document
         .getElementById("model-select")
         .addEventListener("change", updateCharts);
@@ -326,22 +304,18 @@
         var selectedModel = document.getElementById("model-select").value;
         var selectedTime = document.getElementById("time-select").value;
 
-        // Kiểm tra xem người dùng đã chọn thời gian dự đoán hay chưa
         if (selectedTime === "") {
-          // Nếu chưa chọn thời gian dự đoán, hiển thị biểu đồ LSTM mặc định
           selectedModel = "LSTM";
         }
 
-        // Ẩn tất cả các biểu đồ
         var charts = document.querySelectorAll(".chart-area");
         charts.forEach(function (chart) {
           chart.style.opacity = "0";
           chart.style.position = "absolute";
         });
 
-        // Hiển thị biểu đồ tương ứng với mô hình và thời gian được chọn
         var selectedChart = document.getElementById(
-          selectedModel + "-" + selectedTime + "-chart"
+          selectedModel + "-" + selectedTime + "-univariate-coffee"
         );
         if (selectedChart) {
           selectedChart.style.opacity = "1";

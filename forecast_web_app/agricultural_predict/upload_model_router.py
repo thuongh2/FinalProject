@@ -209,7 +209,7 @@ def admin_detail_model():
         arima_model.model_url = model_url
         arima_model.data_uri = model_data.get('data_name')
         _ , test_data = arima_model.prepare_data(arima_model.data_uri)
-        # xử lí dữ liệu (cho trai trên web)
+        # xử lí dữ liệu (cho train trên web)
         current_app.logger.info(test_data.head())
         data , ac = arima_model.train_for_upload_mode(len(test_data), test_data)
         current_app.logger.info(ac)

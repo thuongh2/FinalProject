@@ -21,16 +21,17 @@ header %}{% endblock %} {% block content %}
 
 
 <div id="container-fluid" class="container-fluid" style="padding-top: 4px">
-
       <div class="row"> 
-        
         <div class="col-xl-2">
           <select id="model-select" class="form-control form-select col-xl-12" style="color: black">
             {% for model in models %}
-              <option value="{{model.name}}">{{model.name}}</option>
+              {% if model.name == 'LSTM' %}
+              <option value="{{model.name}}" selected>{{model.name}}</option> 
+              {% else %}
+                <option value="{{model.name}}">{{model.name}}</option>
+              {% endif %}
             {% endfor %}
-          </select>
-          
+          </select>        
         </div>
     
         <div class="col-xl-2">
@@ -43,12 +44,11 @@ header %}{% endblock %} {% block content %}
     
         <div class="col-xl-2">
             <select id="time-select" class="form-control form-select col-xl-12" style="color: black">
-              <option value="dudoan30ngay" selected>30 ngày</option>
-              <option value="dudoan60ngay">60 ngày</option>
+              <option value="30days" selected>30 ngày</option>
+              <option value="60days">60 ngày</option>
             </select>
         </div>
-    
-        </div>
+      </div>
    
 </div>
   <!-- Content Row -->
@@ -68,21 +68,17 @@ header %}{% endblock %} {% block content %}
         <!-- Card Body -->
         <div class="card-body">
           <div id="charts-container" style="height: 100%;">
-            <div id="LSTM-dudoan30ngay-chart" class="chart-area" style="height: auto; position: relative; opacity: 1;">
+            <div id="LSTM-30days-univariate-coffee" class="chart-area" style="height: auto; position: relative; opacity: 1;">
               {% include './chart/lstm_univariate_coffee_30days.html' %}
             </div>
-            <div id="GRU-dudoan30ngay-chart" class="chart-area" style="height: auto; position: absolute; opacity: 0;">
-              {% include './chart/gru_univariate_coffee_30days.html' %}
+            {% for model in models %}
+            <div id="{{ model.name }}-30days-univariate-coffee" class="chart-area" style="height: auto; position: absolute; opacity: 0;">
+                {% set chart_filename = (model.name|lower) + '_univariate_coffee_30days.html' %}
+                {% include url_for('static', filename='chart/' + chart_filename) %}
             </div>
-            <div id="BiLSTM-dudoan30ngay-chart" class="chart-area" style="height: auto; position: absolute; opacity: 0;">
-              {% include './chart/bilstm_univariate_coffee_30days.html' %}
-            </div>
-            <div id="BiLSTM-dudoan60ngay-chart" class="chart-area" style="height: auto; position: absolute; opacity: 0;">
-              {% include './chart/bilstm_univariate_coffee_60days.html' %}
-            </div>
-          </div>
-          
-        </div>
+            {% endfor %}
+          </div>  
+        </div>   
       </div>
     </div>
     <!-- Pie Chart -->

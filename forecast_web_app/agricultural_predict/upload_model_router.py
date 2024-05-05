@@ -236,7 +236,28 @@ def admin():
         record['data_name'] = filename
     return render_template('admin/index.html', train_model_list=records, total_model = len(records))
 
+import pandas as pd
+import requests
+from flask import render_template
+
 @upload_model_router.route('/')
 def index():
     records = list(model.find())
-    return render_template('index.html', models=records)
+    train_model_list = train_model.find()
+    records_data = list(train_model.find())
+    for record in records_data:
+        data_url = record.get('data_name')
+
+    response = requests.get(data_url)
+    if response.status_code == 200:
+        df = pd.read_csv(data_url)
+        last_10_rows = df.tail(50)
+        last_10_records = last_10_rows.to_dict('records')
+        last_10_records.reverse()
+    else:
+        last_10_records = []
+        error_message = "Failed to fetch data from URL"
+        return render_template('index.html', models=records, train_model_list=records_data, error_message=error_message)
+    
+    return render_template('index.html', models=records, train_model_list=records_data, last_10_records=last_10_records)
+

@@ -23,7 +23,7 @@ header %}{% endblock %} {% block content %}
 <div id="container-fluid" class="container-fluid mt-2" style='padding: 0'>
   <div class="row shadow" style="padding: 0">
     <!-- Card 1 -->
-    <a href="#" class="col-xl-4 price-agricutural">
+    <a id="coffee" href="#coffee" class="col-xl-4 price-agricutural active">
       <div class="card-price h-100 py-2">
         <div class="card-body">
           <div class="row no-gutters align-items-center">
@@ -43,7 +43,7 @@ header %}{% endblock %} {% block content %}
       </div>
     </a>
     <!-- Card 2 -->
-    <a href="#" class="col-xl-4 price-agricutural">
+    <a id="mango" href="#mango" class="col-xl-4 price-agricutural">
       <div class="card-price h-100 py-2">
         <div class="card-body">
           <div class="row no-gutters align-items-center">
@@ -63,7 +63,7 @@ header %}{% endblock %} {% block content %}
       </div>
     </a>
     <!-- Card 3 -->
-    <a href="#" class="col-xl-4 price-agricutural">
+    <a id="watermelon" href="#watermelon" class="col-xl-4 price-agricutural">
       <div class="card-price h-100 py-2">
         <div class="card-body">
           <div class="row no-gutters align-items-center">
@@ -124,12 +124,12 @@ header %}{% endblock %} {% block content %}
         <div class="row no-gutters">
           <div class="col mr-2">
             <div
-              class="h4 font-weight-bold text-uppercase mb-1" style="text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2);"
+              class="h4 font-weight-bold text-uppercase text-gray-800 mb-1" style="text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);"
             >
-              Giá cà phê ngày 5/5/2024: <strong>100.000đ</strong>
+              Giá cà phê 5/5/2024: <strong>100.000đ</strong>
             </div>
             <div
-              class="h4 mb-0 font-weight-bold text-warning"
+              class="h4 mb-0 font-weight-bold text-warning" style="text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);"
             >
               Giá dự đoán: 100.000đ
             </div>
@@ -171,7 +171,7 @@ header %}{% endblock %} {% block content %}
   <!-- Content Row -->
   <div class="row">
     <!-- Content Column -->
-    <div class="col-lg-8 mb-4 mt-4">
+    <div class="col-lg-6 mb-4 mt-4">
       <div class="card shadow mb-4">
         <div class="card-header py-3">
           <h5 class="m-0 font-weight-bold text-primary">Giá nông sản</h5>
@@ -208,7 +208,7 @@ header %}{% endblock %} {% block content %}
                           aria-label="Name: activate to sort column descending"
                           style="width: 160px"
                         >
-                          Ngày
+                          <strong>Ngày</strong>
                         </th>
                         <th
                           class="sorting"
@@ -219,37 +219,19 @@ header %}{% endblock %} {% block content %}
                           aria-label="Position: activate to sort column ascending"
                           style="width: 246px"
                         >
-                          Giá
+                          <strong>Giá</strong>
                         </th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr class="odd">
-                        <td class="sorting_1">04/01/2002</td>
-                        <td>$999,999.00</td>
+                      {% for data in last_10_records %}
+                      <tr style="font-weight: normal;" onmouseover="this.style.fontWeight='bold';" onmouseout="this.style.fontWeight='normal';">
+                        <td>{{ data.date }}</td>
+                        <td>{{ data.price }}</td>
                       </tr>
-                      <tr class="odd">
-                        <td class="sorting_1">04/01/2002</td>
-                        <td>$999,999.00</td>
-                      </tr>
-                      <tr class="odd">
-                        <td class="sorting_1">04/01/2002</td>
-                        <td>$999,999.00</td>
-                      </tr>
-                      <tr class="odd">
-                        <td class="sorting_1">04/01/2002</td>
-                        <td>$999,999.00</td>
-                      </tr>
-                      <tr class="odd">
-                        <td class="sorting_1">04/01/2002</td>
-                        <td>$999,999.00</td>
-                      </tr>
-                      <tr class="odd">
-                        <td class="sorting_1">04/01/2002</td>
-                        <td>$999,999.00</td>
-                      </tr>
-                      <tr class="even"></tr>
+                      {% endfor %}
                     </tbody>
+                    
                   </table>
                 </div>
               </div>
@@ -259,7 +241,7 @@ header %}{% endblock %} {% block content %}
       </div>
     </div>
 
-    <div class="col-lg-4 mb-4 mt-4">
+    <div class="col-lg-6 mb-4 mt-4">
       <div class="card shadow mb-4">
         <!-- Card Header - Dropdown -->
         <div

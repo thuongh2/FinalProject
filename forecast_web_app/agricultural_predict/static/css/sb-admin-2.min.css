@@ -10471,3 +10471,9 @@ a.price-agricutural:hover {
   opacity: 0.5;
   color: inherit;
 }
+
+.card-price.active {
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+  background-color: #f8f9fc;
+  border-color: #d1d3e2;
+}

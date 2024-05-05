@@ -287,6 +287,13 @@
     <script src="js/demo/chart-area-demo.js"></script>
     <script src="js/demo/chart-pie-demo.js"></script>
 
+    <!-- Page level plugins -->
+    <script src="vendor/datatables/jquery.dataTables.min.js"></script>
+    <script src="vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
+    <!-- Page level custom scripts -->
+    <script src="js/demo/datatables-demo.js"></script>
+
     <script
       src="https://kit.fontawesome.com/03fd139e3c.js"
       crossorigin="anonymous"
@@ -322,6 +329,24 @@
           selectedChart.style.position = "relative";
         }
       }
+    </script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        document.querySelector("#coffee .card-price").classList.add("active");
+        document.querySelectorAll(".price-agricutural").forEach((item) => {
+          item.addEventListener("click", (event) => {
+            document
+              .querySelectorAll(".price-agricutural .card-price")
+              .forEach((card) => {
+                card.classList.remove("active");
+              });
+            event.currentTarget
+              .querySelector(".card-price")
+              .classList.add("active");
+          });
+        });
+      });
     </script>
   </body>
 </html>

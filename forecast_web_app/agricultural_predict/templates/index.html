@@ -43,13 +43,13 @@ header %}{% endblock %} {% block content %}
       </div>
     </a>
     <!-- Card 2 -->
-    <a id="mango" href="#mango" class="col-xl-4 price-agricutural">
+    <a id="rice" href="#rice" class="col-xl-4 price-agricutural">
       <div class="card-price h-100 py-2">
         <div class="card-body">
           <div class="row no-gutters align-items-center">
             <div class="col mr-2">
               <div class="h5 font-weight-bold text-primary text-uppercase mb-1">
-                Giá xoài
+                Giá lúa
               </div>
               <div class="h5 mb-0 font-weight-bold text-gray-800">
                 Hôm nay: 10.000đ
@@ -119,11 +119,9 @@ header %}{% endblock %} {% block content %}
       </div>
     </div>
     <!-- Select area -->
-    <div class="col-xl-3 mt-4">
-      <div class="col-xl-12 mt-4 mb-4">
-        <div class="row no-gutters">
-          <div class="col mr-2">
-            <div
+    <div class="col-xl-3 card shadow mt-4" style="height: 547px;">
+      <div class="col-xl-12 mt-4">
+        <div
               class="h4 font-weight-bold text-uppercase text-gray-800 mb-1" style="text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);"
             >
               Giá cà phê 5/5/2024: <strong>100.000đ</strong>
@@ -132,39 +130,33 @@ header %}{% endblock %} {% block content %}
               class="h4 mb-0 font-weight-bold text-warning" style="text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);"
             >
               Giá dự đoán: 100.000đ
-            </div>
-          </div>
-        </div>      
-      </div>      
-
-        <div class="row mr-2"> 
-          <div class="col-xl-12 col-md-6 mt-4">
-            <select id="model-select" class="form-control form-select col-xl-12" style="color: black">
-              {% for model in models %}
-                {% if model.name == 'LSTM' %}
-                <option value="{{model.name}}" selected>{{model.name}}</option> 
-                {% else %}
-                  <option value="{{model.name}}">{{model.name}}</option>
-                {% endif %}
-              {% endfor %}
-            </select>        
-          </div>
-      
-          <div class="col-xl-12 col-md-6 mt-4">
-            <select class="form-control form-select col-xl-12" style="color: black">
-              <option value="giacaphe" selected>Giá cà phê</option>
-              <option value="xuatkhau">Giá cà phê và xuất khẩu</option>
-              <option value="giaxang">Giá cà phê và xăng</option>
-            </select>
-          </div>
-      
-          <div class="col-xl-12 col-md-6 mt-4">
-              <select id="time-select" class="form-control form-select col-xl-12" style="color: black">
-                <option value="30days" selected>30 ngày</option>
-                <option value="60days">60 ngày</option>
-              </select>
-          </div>
         </div>
+        <div class="pt-4"></div>
+        <div class="mt-4">
+          <select id="model-select" class="form-control form-select col-xl-12" style="color: black">
+            {% for model in models %}
+              {% if model.name == 'LSTM' %}
+              <option value="{{model.name}}" selected>{{model.name}}</option> 
+              {% else %}
+                <option value="{{model.name}}">{{model.name}}</option>
+              {% endif %}
+            {% endfor %}
+          </select>        
+        </div>
+        <div class="mt-4">
+          <select class="form-control form-select col-xl-12" style="color: black">
+            <option value="giacaphe" selected>Giá cà phê</option>
+            <option value="xuatkhau">Giá cà phê và xuất khẩu</option>
+            <option value="giaxang">Giá cà phê và xăng</option>
+          </select>
+        </div>
+        <div class="mt-4">
+          <select id="time-select" class="form-control form-select col-xl-12" style="color: black">
+            <option value="30days" selected>30 ngày</option>
+            <option value="60days">60 ngày</option>
+          </select>
+        </div>      
+      </div>
     </div>
   </div>
 
@@ -174,7 +166,7 @@ header %}{% endblock %} {% block content %}
     <div class="col-lg-6 mb-4 mt-4">
       <div class="card shadow mb-4">
         <div class="card-header py-3">
-          <h5 class="m-0 font-weight-bold text-primary">Giá nông sản</h5>
+          <h5 class="m-0 font-weight-bold text-primary">Bảng giá nông sản</h5>
         </div>
         <div class="card-body">
           <div class="table-responsive" style="overflow-x: hidden">
@@ -224,14 +216,13 @@ header %}{% endblock %} {% block content %}
                       </tr>
                     </thead>
                     <tbody>
-                      {% for data in last_10_records %}
+                      {% for data in last_records %}
                       <tr style="font-weight: normal;" onmouseover="this.style.fontWeight='bold';" onmouseout="this.style.fontWeight='normal';">
                         <td>{{ data.date }}</td>
                         <td>{{ data.price }}</td>
                       </tr>
                       {% endfor %}
-                    </tbody>
-                    
+                    </tbody>  
                   </table>
                 </div>
               </div>

@@ -11,12 +11,14 @@ from flask import session
 import hashlib
 from flask import current_app
 from minio import Minio
+import numpy as np
 import os
 import pandas as pd
 from werkzeug.utils import secure_filename
 import json
 from pprint import pprint
 from datetime import datetime, timedelta
+from statsmodels.tsa.stattools import acf, pacf
 
 from model.factory_model import FactoryModel
 from model.arima_model import ARIMAModel
@@ -25,6 +27,7 @@ import matplotlib.pyplot as plt
 import plotly.graph_objs as go
 import plotly.io as pio
 import ast
+from statsmodels.tsa.stattools import adfuller
 
 
 train_model_router = Blueprint('train_model_router', __name__, static_folder='static',
@@ -73,3 +76,61 @@ def get_data_train_model():
         plot_data.append(trace)
 
     return plot_data
+
+
+def adf_test(series):
+    result = adfuller(series.dropna())
+    labels = ['ADF test statistic','p-value','# lags used','# observations']
+    out = pd.Series(result[0:4],index=labels)
+    current_app.logger.info(out)
+    return result[1]
+
+@train_model_router.route('/stationary-train-model', methods=['GET'])
+def make_stationary_data_train_model():
+    model_name = request.args.get('model_name')
+    model_data = request.args.get('model_data')
+    is_stationary = request.args.get('is_stationary')
+    diff_type = request.args.get('diff_type')
+    lag = request.args.get('lag')
+
+    # dif
+
+    data = pd.read_csv(model_data)
+    data['date'] = pd.to_datetime(data['date'])
+    data.set_index(['date'], inplace=True)
+    if data.empty:
+        return jsonify({'error': 'Data is empty'})
+
+
+    df1 = data.copy()
+    if(is_stationary == 'True'):
+        if(diff_type == 'log'):
+            df1 = np.sqrt(df1)
+        else:
+            if not lag:
+                lag = 1
+            df1 = df1 - df1.shift(int(lag))
+        df1 = df1.dropna()
+    current_app.logger.info(df1.head())
+    # p value
+    p_values = adf_test(df1.price)
+    current_app.logger.info(p_values)
+
+    # return acf pacf transformed data
+    df_acf =  acf(df1.price, nlags=10).tolist()
+
+    df_pacf =  pacf(df1.price, nlags=10).tolist()
+
+    plot_data = []
+    for columns in df1.columns:
+        df1[columns] = df1[columns].astype(float)
+       
+        trace = dict(
+            x = df1.index.tolist(),
+            y = df1[columns].values.tolist(),
+            mode = 'lines'
+        )
+        plot_data.append(trace)
+
+
+    return {'p_values': p_values, 'acf': df_acf, 'df_pacf': df_pacf, 'plot_data': plot_data}

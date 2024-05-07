@@ -65,9 +65,6 @@ def logout():
         del session['username']
     return redirect('/')
 
-@main_router.route('/train-model')
-def admin_train_model():
-    return render_template('admin/train-model.html')
 
 @main_router.errorhandler(404)
 def page_not_found(e):

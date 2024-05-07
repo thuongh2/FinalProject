@@ -56,128 +56,149 @@
 </div>
 
 
-
-<!-- Begin Page Content -->
-<div class="container-fluid  p-0 mb-3">
-    <!-- Content Row -->
-    <div class="row">
-        <!-- Earnings (Monthly) Card Example -->
-        <form>
-            <div class="col-12 d-flex p-0">
-                <div class=" mt-2  col-6">
-                    <input type="text" class="form-control" placeholder="Name" aria-describedby="basic-addon1">
-                </div>
-
-                <div class=" mt-2  col-6">
-
-                    <select class="form-control form-select">
-                        <option selected>Open this select model</option>
-                        <option value="ARIMA">ARIMA</option>
-                        <option value="LSTM">LSTM</option>
-                        <option value="GRU">GRU</option>
-                    </select>
-
-                </div>
-                <div class=" mt-2 col-6">
-                    <button type="submit" class=" btn btn-primary">Save</button>
-                </div>
-            </div>
-        </form>
-
-    </div>
-
-</div>
-
-
 <div class="row">
     <div class="col-2">
         <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
             <button class="nav-link active mt-2 border-0" id="v-pills-home-tab" data-toggle="pill"
                 data-target="#v-pills-home" type="button" role="tab" aria-controls="v-pills-home"
-                aria-selected="true">Bước 1:</button>
+                aria-selected="true">Bước 1:
+            </button>
             <button class="nav-link mt-2 border-0" id="v-pills-profile-tab" data-toggle="pill"
                 data-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile"
-                aria-selected="false">Bước 2:</button>
+                aria-selected="false">Bước 2:
+            </button>
             <button class="nav-link mt-2 border-0" id="v-pills-messages-tab" data-toggle="pill"
                 data-target="#v-pills-messages" type="button" role="tab" aria-controls="v-pills-messages"
-                aria-selected="false">Bước 3:</button>
+                aria-selected="false">Bước 3:
+            </button>
             <button class="nav-link mt-2 border-0" id="v-pills-settings-tab" data-toggle="pill"
                 data-target="#v-pills-settings" type="button" role="tab" aria-controls="v-pills-settings"
-                aria-selected="false">Bước 4:</button>
+                aria-selected="false">Bước 4:
+            </button>
         </div>
     </div>
     <div class="col-10">
         <div class="tab-content" id="v-pills-tabContent">
             <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
-                ...</div>
-            <div class="tab-pane fade" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">...
-            </div>
-            <div class="tab-pane fade" id="v-pills-messages" role="tabpanel" aria-labelledby="v-pills-messages-tab">...
-            </div>
-            <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab">...
+                <form>
+                    <div class=" mt-2 col-12">
+                        <select name="model_name" onchange="this.options[this.selectedIndex].value
+                        && (window.location = this.options[this.selectedIndex].value);" id="select"
+                            class="form-control form-select">
+                            <option value="upload-model" selected>Mô hình</option>
+                            {% for item in model_names %}
+                            <option value="{{ 'train-model?model_name=' ~ item }}" {% if item==model_name %} selected {%
+                                endif %}>{{ item }}</option>
+
+                            {% endfor %}
+                        </select>
+                    </div>
+
+
+                    <div class="col-12 flex p-0 mt-3">
+                        <div class="mt-2  col-12">
+                            <select id="data_name" name="data_name" class="form-control form-select">
+                                <option>Tập dữ liệu</option>
+                                {% for item in data.data %}
+                                <option value="{{ item }}">{{ item['name'] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id='myDiv' class="col-12"></div>
+
+                    
+                    <div class=" mt-2 col-6">
+                        <button type="submit" class=" btn btn-primary">Tiếp theo</button>
+                    </div>
+                </form>
+
+               
+
+                </div>
+                <div class="tab-pane fade" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+                    ...
+                </div>
+                <div class="tab-pane fade" id="v-pills-messages" role="tabpanel" aria-labelledby="v-pills-messages-tab">
+                    ...
+                </div>
+                <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab">
+                    ...
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 
 </div>
-<!-- /.container-fluid -->
+<!-- /.container-fluid -->\
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+    crossorigin="anonymous"></script>
+<script src='https://cdn.plot.ly/plotly-2.32.0.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'></script>
 
 <script>
-    let dropArea = document.getElementById("drop-area");
 
-    ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
-        dropArea.addEventListener(eventName, preventDefaults, false);
-        document.body.addEventListener(eventName, preventDefaults, false);
+    // JavaScript:
+
+    $('#data_name').change(function () {
+        const selectedValue = JSON.parse($(this).val().replace(/'/g, '"'))
+        console.log(selectedValue.data)
+        callDrawPlot(selectedValue.data);
+        return;
     });
 
-    ["dragenter", "dragover"].forEach((eventName) => {
-        dropArea.addEventListener(eventName, highlight, false);
-    });
 
-    ["dragleave", "drop"].forEach((eventName) => {
-        dropArea.addEventListener(eventName, unhighlight, false);
-    });
+    function callDrawPlot(selectedValue) {
+        d3.csv(selectedValue, function (err, rows) {
 
-    dropArea.addEventListener("drop", handleDrop, false);
+            function unpack(rows, key) {
+                return rows.map(function (row) {
+                    if (key === 'date') {
+                        return new Date(row[key]);
+                    } else {
+                        return parseFloat(row[key]);
+                    }
+                }
+                );
+            }
 
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
+
+
+            Object.keys(rows[0]).forEach(function (row) {
+                var data = new Array();
+                if (row === 'date') return;
+                var trace = {
+                    type: "scatter",
+                    mode: "lines",
+                    name: row,
+                    x: unpack(rows, 'date'),
+                    y: unpack(rows, row),
+                    line: { color: '#17BECF' }
+                }
+                data.push(trace);
+
+                const nodeName = "myDiv" + row;
+                const node = document.createElement("div");
+                node.id = nodeName;
+                // Append the "li" node to the list:
+                document.getElementById("myDiv").appendChild(node);
+
+                var layout = {
+                    title: 'Biểu đồ giá ' + row,
+                };
+
+                Plotly.newPlot(nodeName, data, layout);
+
+            });
+
+
+        })
+
     }
 
-    function highlight(e) {
-        dropArea.classList.add("highlight");
-    }
 
-    function unhighlight(e) {
-        dropArea.classList.remove("highlight");
-    }
-
-    function handleDrop(e) {
-        let dt = e.dataTransfer;
-        let files = dt.files;
-        handleFiles(files);
-    }
-
-    function handleFiles(files) {
-        [...files].forEach(uploadFile);
-    }
-
-    function uploadFile(file) {
-        // thêm code update ơ day
-        console.log("Uploading", file.name);
-    }
-
-    dropArea.addEventListener("click", () => {
-        fileElem.click();
-    });
-
-    let fileElem = document.getElementById("fileElem");
-    fileElem.addEventListener("change", function (e) {
-        handleFiles(this.files);
-    });
 </script>
 
 {% endblock %}

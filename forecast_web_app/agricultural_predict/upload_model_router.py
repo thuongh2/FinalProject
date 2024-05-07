@@ -25,7 +25,6 @@ import matplotlib.pyplot as plt
 import plotly.graph_objs as go
 import plotly.io as pio
 import ast
-import requests
 
 
 upload_model_router = Blueprint('upload_model_router', __name__, static_folder='static',
@@ -236,24 +235,3 @@ def admin():
         filename = url_parts[-1]
         record['data_name'] = filename
     return render_template('admin/index.html', train_model_list=records, total_model = len(records))
-
-@upload_model_router.route('/')
-def index():
-    records = list(model.find())
-    train_model_list = train_model.find()
-    records_data = list(train_model.find())
-    for record in records_data:
-        data_url = record.get('data_name')
-
-    response = requests.get(data_url)
-    if response.status_code == 200:
-        df = pd.read_csv(data_url)
-        last_rows = df.tail(50)
-        last_records = last_rows.to_dict('records')
-    else:
-        last_records = []
-        error_message = "Failed to fetch data from URL"
-        return render_template('index.html', models=records, train_model_list=records_data, error_message=error_message)
-    
-    return render_template('index.html', models=records, train_model_list=records_data, last_records=last_records)
-

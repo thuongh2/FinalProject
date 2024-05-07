@@ -331,21 +331,73 @@
       }
     </script>
 
+    <!-- Active card, hiển thị dữ liệu -->
     <script>
       document.addEventListener("DOMContentLoaded", function () {
+        let activeId = "coffee";
+
         document.querySelector("#coffee .card-price").classList.add("active");
+
         document.querySelectorAll(".price-agricutural").forEach((item) => {
           item.addEventListener("click", (event) => {
+            activeId = event.currentTarget.id;
+
             document
               .querySelectorAll(".price-agricutural .card-price")
               .forEach((card) => {
                 card.classList.remove("active");
               });
+
             event.currentTarget
               .querySelector(".card-price")
               .classList.add("active");
+
+            showPriceData();
           });
         });
+
+        function showPriceData() {
+          const rows = document.querySelectorAll("#priceDataTable tbody tr");
+
+          rows.forEach((row) => {
+            const agriculturalName =
+              row.querySelector("td:nth-child(3)").textContent;
+
+            if (
+              (activeId === "coffee" && agriculturalName === "CAFE") ||
+              (activeId === "rice" && agriculturalName === "LUA")
+            ) {
+              row.style.display = "";
+            } else {
+              row.style.display = "none";
+            }
+          });
+        }
+
+        showPriceData();
+      });
+    </script>
+
+    <!-- Croll dữ liệu -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const table = document.getElementById("priceDataTable");
+        const scrollbar = document.getElementById("scrollbar");
+
+        scrollbar.addEventListener("scroll", function () {
+          table.style.transform = `translateY(-${scrollbar.scrollTop}px)`;
+        });
+
+        function updateScrollbarHeight() {
+          const totalHeight = table.clientHeight;
+          const visibleHeight = scrollbar.clientHeight;
+          const scrollHeight = (visibleHeight / totalHeight) * visibleHeight;
+          scrollbar.style.height = `${scrollHeight}px`;
+        }
+
+        updateScrollbarHeight();
+
+        window.addEventListener("resize", updateScrollbarHeight);
       });
     </script>
   </body>

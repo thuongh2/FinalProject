@@ -3,14 +3,41 @@ from flask import render_template, request, redirect, url_for, flash
 from flask import render_template
 from flask import send_from_directory
 from pymongo import MongoClient
-from config.db import db, model, user
 from flask import session
 import hashlib
 from flask import current_app
-
+from config.db import db, model, user, train_model
+import requests
+import pandas as pd
 
 main_router = Blueprint('main_router', __name__, static_folder='static',
             template_folder='templates')
+
+@main_router.route('/')
+def index():
+    records = list(model.find())
+    records_data = list(train_model.find())
+    price_data = []
+    seen_urls = set()
+    
+    for record_data in records_data:
+        data_url = record_data.get('data_name')
+        if data_url not in seen_urls:
+            response = requests.get(data_url)
+            
+            if response.status_code == 200:
+                df = pd.read_csv(data_url)
+                last_rows = df.tail(20)
+                for index, row in last_rows.iterrows():
+                    price_data.insert(0, {
+                        'date': row['date'],
+                        'price': row['price'],
+                        'algricutural_name': record_data.get('algricutural_name')
+                    })
+
+                seen_urls.add(data_url)
+    
+    return render_template('index.html', models=records, records_data=records_data, price_data=price_data)
 
 @main_router.route('/register', methods=['GET', 'POST'])
 def register():

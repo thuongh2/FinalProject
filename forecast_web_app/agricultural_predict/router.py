@@ -18,11 +18,11 @@ def index():
     records = list(model.find())
     records_data = list(train_model.find())
     price_data = []
-    seen_urls = set()
+    seen_algricutural_names = set()
     
     for record_data in records_data:
         data_url = record_data.get('data_name')
-        if data_url not in seen_urls:
+        if record_data.get('algricutural_name') not in seen_algricutural_names:
             response = requests.get(data_url)
             
             if response.status_code == 200:
@@ -35,7 +35,7 @@ def index():
                         'algricutural_name': record_data.get('algricutural_name')
                     })
 
-                seen_urls.add(data_url)
+                seen_algricutural_names.add(record_data.get('algricutural_name'))
     
     return render_template('index.html', models=records, records_data=records_data, price_data=price_data)
 

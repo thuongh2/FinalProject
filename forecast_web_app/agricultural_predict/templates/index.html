@@ -132,6 +132,7 @@ header %}{% endblock %} {% block content %}
               Giá dự đoán: 100.000đ
         </div>
         <div class="pt-4"></div>
+        <!-- Chọn mô hình -->
         <div class="mt-4">
           <select id="model-select" class="form-control form-select col-xl-12" style="color: black">
             {% for model in models %}
@@ -143,13 +144,21 @@ header %}{% endblock %} {% block content %}
             {% endfor %}
           </select>        
         </div>
+        <!-- Chọn dữ liệu -->
         <div class="mt-4">
-          <select class="form-control form-select col-xl-12" style="color: black">
-            <option value="giacaphe" selected>Giá cà phê</option>
-            <option value="xuatkhau">Giá cà phê và xuất khẩu</option>
-            <option value="giaxang">Giá cà phê và xăng</option>
+          <select id="data-select" class="form-control form-select col-xl-12" style="color: black">
+              {% for model in models %}
+                  {% if model.name == 'LSTM' %}
+                      {% for data_item in model.attrs.data %}
+                          {% if data_item.type == 'CAFE' %}
+                              <option value="{{ data_item.data }}">{{ data_item.name }}</option>
+                          {% endif %}
+                      {% endfor %}
+                  {% endif %}
+              {% endfor %}
           </select>
         </div>
+        <!-- Chọn thời gian -->
         <div class="mt-4">
           <select id="time-select" class="form-control form-select col-xl-12" style="color: black">
             <option value="30days" selected>30 ngày</option>

@@ -354,11 +354,33 @@
               .querySelector(".card-price")
               .classList.add("active");
 
-            showPriceData();
+            showDataByType(activeId);
+            showPriceData(activeId);
           });
         });
 
-        function showPriceData() {
+        function showDataByType(activeId) {
+          const selectedType = activeId === "rice" ? "LUA" : "CAFE";
+          const dataSelect = document.getElementById("data-select");
+          const options = dataSelect.querySelectorAll("option");
+
+          options.forEach((option) => {
+            if (option.value === selectedType) {
+              option.style.display = "block";
+            } else {
+              option.style.display = "none";
+            }
+          });
+
+          const firstVisibleOption = dataSelect.querySelector(
+            "option[style='display: block;']"
+          );
+          if (firstVisibleOption) {
+            firstVisibleOption.selected = true;
+          }
+        }
+
+        function showPriceData(activeId) {
           const rows = document.querySelectorAll("#priceDataTable tbody tr");
 
           rows.forEach((row) => {
@@ -376,10 +398,10 @@
           });
         }
 
-        showPriceData();
+        showDataByType(activeId);
+        showPriceData(activeId);
       });
     </script>
-
     <!-- Croll dữ liệu -->
     <script>
       document.addEventListener("DOMContentLoaded", function () {
@@ -402,32 +424,62 @@
         window.addEventListener("resize", updateScrollbarHeight);
       });
     </script>
+
+    <!-- Load model và tập dữ liệu -->
     <script>
       $(document).ready(function () {
         $.ajax({
-          url: "/search-upload-model",
+          url: "/search-model",
           method: "GET",
-          data: {
-            model_name: "LSTM",
-          },
           success: function (response) {
             var options = "";
-            $.each(response.data, function (index, dataItem) {
-              options +=
-                '<option value="' +
-                dataItem.type +
-                '">' +
-                dataItem.name +
-                "</option>";
+            $.each(response, function (index, model) {
+              if (model.name === "LSTM") {
+                options +=
+                  '<option value="' +
+                  model.name +
+                  '" selected>' +
+                  model.name +
+                  "</option>";
+              } else {
+                options +=
+                  '<option value="' +
+                  model.name +
+                  '">' +
+                  model.name +
+                  "</option>";
+              }
             });
-            $("#data-select").html(options);
+            $("#model-select").html(options);
+            var selectedModel = $("#model-select").val();
+            $.ajax({
+              url: "/search-upload-model",
+              method: "GET",
+              data: {
+                model_name: selectedModel,
+              },
+              success: function (response) {
+                var dataOptions = "";
+                $.each(response.data, function (index, dataItem) {
+                  dataOptions +=
+                    '<option value="' +
+                    dataItem.type +
+                    '">' +
+                    dataItem.name +
+                    "</option>";
+                });
+                $("#data-select").html(dataOptions);
+              },
+              error: function (xhr, status, error) {
+                console.error("Lỗi:", error);
+              },
+            });
           },
           error: function (xhr, status, error) {
             console.error("Lỗi:", error);
           },
         });
 
-        // Thêm sự kiện change cho #model-select
         $("#model-select").change(function () {
           var selectedModel = $(this).val();
 

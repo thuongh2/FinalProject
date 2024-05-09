@@ -1,6 +1,5 @@
 from flask import Blueprint
-from flask import render_template, request, redirect, url_for, flash
-from flask import render_template
+from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask import send_from_directory
 from pymongo import MongoClient
 from flask import session
@@ -36,6 +35,18 @@ def index():
                     })
                 seen_algricutural_names.add(record_data.get('algricutural_name'))
     return render_template('index.html', models=records, records_data=records_data, price_data=price_data)
+
+@main_router.route('/search-model', methods=['GET'])
+def get_all_models():
+    all_models = []
+    models = model.find()
+    for model_data in models:
+        model_info = {
+            'name': model_data.get('name'),
+            'attrs': model_data.get('attrs')
+        }
+        all_models.append(model_info)
+    return jsonify(all_models)
 
 @main_router.route('/register', methods=['GET', 'POST'])
 def register():

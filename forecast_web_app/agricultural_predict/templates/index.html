@@ -135,13 +135,6 @@ header %}{% endblock %} {% block content %}
         <!-- Chọn mô hình -->
         <div class="mt-4">
           <select id="model-select" class="form-control form-select col-xl-12" style="color: black">
-            {% for model in models %}
-              {% if model.name == 'LSTM' %}
-                <option value="{{model.name}}" selected>{{model.name}}</option> 
-              {% else %}
-                <option value="{{model.name}}">{{model.name}}</option>
-              {% endif %}
-            {% endfor %}
           </select>        
         </div>
         <!-- Chọn dữ liệu -->

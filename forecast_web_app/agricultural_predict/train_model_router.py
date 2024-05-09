@@ -93,8 +93,7 @@ def make_stationary_data_train_model():
     diff_type = request.args.get('diff_type')
     lag = request.args.get('lag')
 
-    # dif
-
+    # diff
     data = pd.read_csv(model_data)
     data['date'] = pd.to_datetime(data['date'])
     data.set_index(['date'], inplace=True)
@@ -105,7 +104,6 @@ def make_stationary_data_train_model():
     df1 = data.copy()
     if(is_stationary == 'True'):
         if(diff_type == 'log'):
-            current_app.logger.info('log')
             df1 = np.log(df1)
         else:
             if not lag:
@@ -130,10 +128,10 @@ def make_stationary_data_train_model():
         trace = dict(
             x = df1.index.tolist(),
             y = df1[columns].values.tolist(),
-            mode = 'lines'
+            mode = 'lines',
+            name = columns
         )
         plot_data.append(trace)
-
     
     respose_data = {'p_values': p_values, 'acf': df_acf, 'df_pacf': df_pacf, 'plot_data': plot_data}
     return jsonify(respose_data)

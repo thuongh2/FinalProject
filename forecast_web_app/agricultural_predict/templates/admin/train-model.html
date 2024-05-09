@@ -3,353 +3,373 @@
 {% block content %}
 
 
-    <!-- Begin Page Content -->
-    <div class="container-fluid">
-        <!-- Content Row -->
-        <div class="row">
-            <!-- Earnings (Monthly) Card Example -->
-            <a href="upload-model">
-                <div class="col-xl-3 col-md-6 mb-4 ">
-                    <div class="card  shadow h-100 py-2">
-                        <div class="card-body ">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
-                                        Upload mô hình
-                                    </div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-upload fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-            </a>
-        </div>
-
+<!-- Begin Page Content -->
+<div class="container-fluid">
+    <!-- Content Row -->
+    <div class="row">
         <!-- Earnings (Monthly) Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <a href="train-model">
-                <div class="card border-primary border  border-5 shadow h-100 py-2">
-                    <div class="card-body">
+        <a href="upload-model">
+            <div class="col-xl-3 col-md-6 mb-4 ">
+                <div class="card  shadow h-100 py-2">
+                    <div class="card-body ">
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
-                                <div class="text-xs font-weight-bold  text-primary text-uppercase mb-1">
-                                    Train trên web
+                                <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
+                                    Upload mô hình
                                 </div>
                             </div>
                             <div class="col-auto">
-                                <i class="fas fa-tasks fa-2x text-gray-300"></i>
+                                <i class="fas fa-upload fa-2x text-gray-300"></i>
                             </div>
                         </div>
                     </div>
                 </div>
-            </a>
-        </div>
-
-        <!-- Earnings (Monthly) Card Example -->
-
+        </a>
     </div>
 
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Train model</h1>
-    </div>
-
-
-    <div class="row">
-        <div class="col-2">
-            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                <button class="nav-link active mt-2 border-0" id="v-pills-home-tab" data-toggle="pill"
-                        data-target="#v-pills-home" type="button" role="tab" aria-controls="v-pills-home"
-                        aria-selected="true">Bước 1:
-                </button>
-                <button class="nav-link mt-2 border-0" id="v-pills-profile-tab" data-toggle="pill"
-                        data-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile"
-                        aria-selected="false">Bước 2:
-                </button>
-                <button class="nav-link mt-2 border-0" id="v-pills-messages-tab" data-toggle="pill"
-                        data-target="#v-pills-messages" type="button" role="tab" aria-controls="v-pills-messages"
-                        aria-selected="false">Bước 3:
-                </button>
-                <button class="nav-link mt-2 border-0" id="v-pills-settings-tab" data-toggle="pill"
-                        data-target="#v-pills-settings" type="button" role="tab" aria-controls="v-pills-settings"
-                        aria-selected="false">Bước 4:
-                </button>
+    <!-- Earnings (Monthly) Card Example -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="train-model">
+            <div class="card border-primary border  border-5 shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold  text-primary text-uppercase mb-1">
+                                Train trên web
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-tasks fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="col-10">
-            <div class="tab-content" id="v-pills-tabContent">
-                <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel"
-                     aria-labelledby="v-pills-home-tab">
-                    <form>
-                        <div class=" mt-2 col-12">
-                            <select name="model_name" onchange="this.options[this.selectedIndex].value
-                        && (window.location = this.options[this.selectedIndex].value);" id="select"
-                                    class="form-control form-select">
-                                <option value="upload-model" selected>Mô hình</option>
-                                {% for item in model_names %}
-                                    <option value="{{ 'train-model?model_name=' ~ item }}" {% if item==model_name %}
-                                            selected {% endif %}>{{ item }}</option>
+        </a>
+    </div>
 
+    <!-- Earnings (Monthly) Card Example -->
+
+</div>
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Train model</h1>
+</div>
+
+
+<div class="row">
+    <div class="col-2">
+        <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+            <button class="nav-link active mt-2 border-0" id="v-pills-home-tab" data-toggle="pill"
+                data-target="#v-pills-home" type="button" role="tab" aria-controls="v-pills-home"
+                aria-selected="true">Bước 1:
+            </button>
+            <button class="nav-link mt-2 border-0" id="v-pills-profile-tab" data-toggle="pill"
+                data-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile"
+                aria-selected="false">Bước 2:
+            </button>
+            <button class="nav-link mt-2 border-0" id="v-pills-messages-tab" data-toggle="pill"
+                data-target="#v-pills-messages" type="button" role="tab" aria-controls="v-pills-messages"
+                aria-selected="false">Bước 3:
+            </button>
+            <button class="nav-link mt-2 border-0" id="v-pills-settings-tab" data-toggle="pill"
+                data-target="#v-pills-settings" type="button" role="tab" aria-controls="v-pills-settings"
+                aria-selected="false">Bước 4:
+            </button>
+        </div>
+    </div>
+    <div class="col-10">
+        <div class="tab-content" id="v-pills-tabContent">
+            <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
+                <form>
+                    <div class=" mt-2 col-12">
+                        <select name="model_name" onchange="this.options[this.selectedIndex].value
+                        && (window.location = this.options[this.selectedIndex].value);" id="select"
+                            class="form-control form-select">
+                            <option value="upload-model" selected>Mô hình</option>
+                            {% for item in model_names %}
+                            <option value="{{ 'train-model?model_name=' ~ item }}" {% if item==model_name %} selected {%
+                                endif %}>{{ item }}</option>
+
+                            {% endfor %}
+                        </select>
+                    </div>
+
+
+                    <div class="col-12 flex p-0 mt-3">
+                        <div class="mt-2  col-12">
+                            <select id="data_name" name="data_name" class="form-control form-select">
+                                <option>Tập dữ liệu</option>
+                                {% for item in data.data %}
+                                <option value="{{ item }}">{{ item['name'] }}</option>
                                 {% endfor %}
                             </select>
                         </div>
+                    </div>
+
+                    <div id='myDiv' class="col-12"></div>
+
+                    <div class=" mt-2 col-6">
+                        <button type="submit" class=" btn btn-primary">Tiếp theo</button>
+                    </div>
+                </form>
 
 
-                        <div class="col-12 flex p-0 mt-3">
-                            <div class="mt-2  col-12">
-                                <select id="data_name" name="data_name" class="form-control form-select">
-                                    <option>Tập dữ liệu</option>
-                                    {% for item in data.data %}
-                                        <option value="{{ item }}">{{ item['name'] }}</option>
-                                    {% endfor %}
-                                </select>
+            </div>
+            <div class="tab-pane fade text-dark" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+                <h3>Transform dataset to make it Stationary</h3>
+                <div class="row">
+                    <div class="col-12 col-xl-3">
+                        <div class="form-check">
+                            <div>
+                                <input class="form-check-input" value="log" type="radio" name="flexRadioDefault"
+                                    id="flexRadioDefault1">
+                                <label class="form-check-label" for="flexRadioDefault1">
+                                    Apply Log
+                                </label>
+                            </div>
+
+                            <div class="mt-2">
+                                <input class="form-check-input mr-4" value="diff" type="radio" name="flexRadioDefault"
+                                    id="flexRadioDefault1">
+                                <label class="form-check-label" for="flexRadioDefault1">
+                                    Apply Differencing
+                                </label>
+
+                                <div id="applyLog" class="d-none">
+                                    <label>Chọn Lag: </label>
+                                    <select class="form-control" id="applyDiffSeasonal">
+                                        <option>1</option>
+                                        <option>2</option>
+                                        <option>3</option>
+                                        <option>4</option>
+                                        <option>5</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div  id="stationary" class="d-none card mt-3 font-weight-bold">
+                            <div class="card-body p-1">
+                                <p id="pValue" class="mt-3"></p>
+                                <p id="pValueDesc"></p>
+                                </p>
                             </div>
                         </div>
 
-                        <div id='myDiv' class="col-12"></div>
-
-
-                        <div class=" mt-2 col-6">
-                            <button type="submit" class=" btn btn-primary">Tiếp theo</button>
-                        </div>
-                    </form>
-
-
-                </div>
-                <div class="tab-pane fade" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
-                    <h3>Transform dataset to make it Stationary</h3>
-                    <div class="row">
-                        <div class="col-12 col-xl-3">
-                            <div class="form-check">
-                                <div>
-                                    <input class="form-check-input" value="log" type="radio" name="flexRadioDefault"
-                                           id="flexRadioDefault1">
-                                    <label class="form-check-label" for="flexRadioDefault1">
-                                        Apply Log
-                                    </label>
-                                </div>
-
-                                <div>
-                                    <input class="form-check-input mr-4" value="diff" type="radio"
-                                           name="flexRadioDefault"
-                                           id="flexRadioDefault1">
-                                    <label class="form-check-label" for="flexRadioDefault1">
-                                        Apply difference
-                                    </label>
-
-                                    <div id="applyLog" class="d-none">
-                                        <select class="form-control" id="applyDiffSeasonal">
-                                            <option>1</option>
-                                            <option>2</option>
-                                            <option>3</option>
-                                            <option>4</option>
-                                            <option>5</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <p id="stationary"></p>
-
-                        </div>
-                        <div class="col-12 col-xl-9">
-
-                            <div id='myDivStationary' class="col-12"></div>
-                            <div id='myAcf' class="col-12"></div>
-                            <div id='myPacf' class="col-12"></div>
-
+                    </div>
+                    <div id="loadStationary" class="col-12 col-xl-9 d-none justify-content-center">
+                        <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+                            <span class="sr-only">Loading...</span>
                         </div>
                     </div>
+                    <div id="plotStationaryData" class="col-12 col-xl-9">
+
+                        <div id='myDivStationary' class="col-12"></div>
+                        <div id='myACF' class="col-12"></div>
+                        <div id='myPACF' class="col-12"></div>
+                    </div>
                 </div>
-                <div class="tab-pane fade" id="v-pills-messages" role="tabpanel" aria-labelledby="v-pills-messages-tab">
-                    ...
-                </div>
-                <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab">
-                    ...
-                </div>
+            </div>
+            <div class="tab-pane fade" id="v-pills-messages" role="tabpanel" aria-labelledby="v-pills-messages-tab">
+                ...
+            </div>
+            <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab">
+                ...
             </div>
         </div>
     </div>
+</div>
 
 
-    </div>
-    <!-- /.container-fluid -->\
-    <script src="https://code.jquery.com/jquery-3.7.1.js"
-            integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
-            crossorigin="anonymous"></script>
-    <script src='https://cdn.plot.ly/plotly-2.32.0.min.js'></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'></script>
+</div>
+<!-- /.container-fluid -->\
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+    crossorigin="anonymous"></script>
+<script src='https://cdn.plot.ly/plotly-2.32.0.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'></script>
 
-    <script>
+<script>
 
-        // JavaScript:
+    // JavaScript:
 
-        $('#data_name').change(function () {
-            const selectedValue = JSON.parse($(this).val().replace(/'/g, '"'))
-            console.log(selectedValue.data)
-            callDrawPlot(selectedValue.data);
-            return;
-        });
+    $('#data_name').change(function () {
+        const selectedValue = JSON.parse($(this).val().replace(/'/g, '"'))
+        console.log(selectedValue.data)
+        callDrawPlot(selectedValue.data);
+        return;
+    });
 
+    function plotAcf(data, type) {
+        var trace = {
+            x: Array.from({ length: 10 }, (x, i) => i),
+            y: data,
+            type: 'bar',
+            width: 0.05
 
-        function plotAcf(data, type) {
-            var trace = {
-                x: Array.from({length: 10}, (x, i) => i),
-                y: data,
-                type: 'bar',
-                width: 0.1
+        };
+        var data = [trace];
+        var layout = {
+            title: type,
+        };
+        Plotly.newPlot('my' + type, data, layout);
+    }
 
-            };
-            var data = [trace];
-            var layout = {
-                title: 'Autocorrelation Function',
-            };
-            Plotly.newPlot('my' + type, data, layout);
+    function checkStationary(pValue) {
+        if (pValue < 0.05) {
+            $("#pValue").text(`P value is ${pValue}`)
+            $("#pValueDesc").text(`Data is stationary`);
+            return
         }
+        $("#pValue").text(`P value is ${pValue}`)
+        $("#pValueDesc").text(`Data is None stationary`);
+    }
 
-        function checkStationary(pValue) {
-            if (pValue < 0.05) {
-                $("#stationary").html(`<p>P value is ${pValue} </p><p>Data is stationary</p>`);
-                return
+
+    function callDrawPlot(selectedValue) {
+        d3.csv(selectedValue, function (err, rows) {
+
+            function unpack(rows, key) {
+                return rows.map(function (row) {
+                    if (key === 'date') {
+                        return new Date(row[key]);
+                    } else {
+                        return parseFloat(row[key]);
+                    }
+                }
+                );
             }
-            $("#stationary").html(`<p>P value is ${pValue} </p><p>Data is None stationary</p>`);
-        }
 
 
-        function callDrawPlot(selectedValue) {
-            d3.csv(selectedValue, function (err, rows) {
-
-                function unpack(rows, key) {
-                    return rows.map(function (row) {
-                            if (key === 'date') {
-                                return new Date(row[key]);
-                            } else {
-                                return parseFloat(row[key]);
-                            }
-                        }
-                    );
+            Object.keys(rows[0]).forEach(function (row) {
+                var data = new Array();
+                if (row === 'date') return;
+                var trace = {
+                    type: "scatter",
+                    mode: "lines",
+                    name: row,
+                    x: unpack(rows, 'date'),
+                    y: unpack(rows, row),
+                    line: { color: '#17BECF' }
                 }
 
-
-                Object.keys(rows[0]).forEach(function (row) {
-                    var data = new Array();
-                    if (row === 'date') return;
-                    var trace = {
-                        type: "scatter",
-                        mode: "lines",
-                        name: row,
-                        x: unpack(rows, 'date'),
-                        y: unpack(rows, row),
-                        line: {color: '#17BECF'}
-                    }
-
-                    console.log(trace)
-                    const nodeName = "myDiv" + row;
-                    const node = document.createElement("div");
-                    node.id = nodeName;
-                    // Append the "li" node to the list:
-                    document.getElementById("myDiv").appendChild(node);
-
-                    var layout = {
-                        title: 'Biểu đồ giá ' + row,
-                    };
-
-                    Plotly.newPlot(nodeName, [trace], layout);
-
-                });
-            })
-
-        }
-
-
-        function plotStationaryData(data) {
-
-            data.forEach((value, index) => {
-                console.log(value.x)
-                xDim = new Array()
-                for (i in value.x)
-                    xDim.push(new Date(value.x[i]))
-                yDim = value.y
-                mode = value.mode
-
-                trace = {x: xDim, y: yDim, type: "scatter", mode: "lines"}
                 console.log(trace)
-                const nodeName = "myDivStationary" + index;
+                const nodeName = "myDiv" + row;
                 const node = document.createElement("div");
                 node.id = nodeName;
-                console.log(node)
-                document.getElementById("myDivStationary").appendChild(node);
+                // Append the "li" node to the list:
+                document.getElementById("myDiv").appendChild(node);
 
                 var layout = {
-                    title: 'Line and Scatter Plot'
+                    title: 'Biểu đồ giá ' + row,
                 };
+
                 Plotly.newPlot(nodeName, [trace], layout);
-            })
+
+            });
+        })
+
+    }
 
 
-        }
+    function plotStationaryData(data) {
 
+        data.forEach((value, index) => {
+            console.log(value.x)
+            xDim = new Array()
+            for (i in value.x)
+                xDim.push(new Date(value.x[i]))
+            yDim = value.y
+            mode = value.mode
 
-        function applyDiffSeasonal(value) {
-            var seasonal = parseInt($('#applyLog').find(":selected").text()) || 1;
+            trace = { x: xDim, y: yDim, type: "scatter", mode: "lines" }
+            console.log(trace)
+            const nodeName = "myDivStationary" + index;
+            const node = document.createElement("div");
+            node.id = nodeName;
+            console.log(node)
+            document.getElementById("myDivStationary").appendChild(node);
 
-            const url = 'http://localhost:5000/stationary-train-model';
-            const modelName = 'ARIMA';
-            const isStationary = 'True';
-            const diffType = value;
-            const lag = seasonal;
-            const modelData = 'https://raw.githubusercontent.com/thuongh2/FinalProject/main/data/var_data.csv';
-
-            const params = {
-                model_name: modelName,
-                is_stationary: isStationary,
-                diff_type: diffType,
-                lag: lag,
-                model_data: modelData
+            var layout = {
+                title: 'Biểu đồ dự đoán giá ' + value.name
             };
+            Plotly.newPlot(nodeName, [trace], layout);
+        })
+    }
 
-            const queryString = $.param(params);
-            const fullUrl = url + '?' + queryString;
 
-            $.ajax({
-                url: fullUrl,
-                type: 'GET',
-                contentType: 'application/json',
-                success: function (response) {
-                    console.log(response);
-
-                    checkStationary(response.p_values)
-
-                    plotAcf(response.acf, 'Acf');
-                    plotAcf(response.df_pacf, 'Pacf');
-                    plotStationaryData(response.plot_data)
-                },
-                error: function (xhr, status, error) {
-                    // Handle the error here
-                    console.log(error);
-                }
-            });
+    function loadData(state) {
+        if (state) {
+            $('#loadStationary').removeClass('d-none').addClass('d-flex');
+            $('#plotStationaryData').addClass('d-none');
+            $('#stationary').addClass('d-none');
+        } else {
+            $('#loadStationary').addClass('d-none').removeClass('d-flex');
+            $('#plotStationaryData').removeClass('d-none');
+            $('#stationary').removeClass('d-none');
         }
+    }
 
+    async function applyDiffSeasonal(value) {
+        await loadData(true);
+        var seasonal = parseInt($('#applyLog').find(":selected").text()) || 1;
 
-        $(document).ready(function () {
-            $('input[type=radio][name=flexRadioDefault]').change(function () {
-                var selectedValue = $(this).val();
-                if (selectedValue === 'diff') {
-                    $('#applyLog').removeClass('d-none');
-                } else {
-                    $('#applyLog').addClass('d-none');
-                }
-                applyDiffSeasonal(selectedValue);
-            });
+        const url = 'http://localhost:5000/stationary-train-model';
+        const modelName = 'ARIMA';
+        const isStationary = 'True';
+        const diffType = value;
+        const lag = seasonal;
+        const modelData = 'https://raw.githubusercontent.com/thuongh2/FinalProject/main/data/var_data.csv';
 
-            $('#applyLog').on('change', function () {
-                var selectedValue = $('input[type=radio][name=flexRadioDefault]:checked').val();
-                applyDiffSeasonal(selectedValue);
-            });
+        const params = {
+            model_name: modelName,
+            is_stationary: isStationary,
+            diff_type: diffType,
+            lag: lag,
+            model_data: modelData
+        };
+
+        const queryString = $.param(params);
+        const fullUrl = url + '?' + queryString;
+
+        await $.ajax({
+            url: fullUrl,
+            type: 'GET',
+            contentType: 'application/json',
+            success: function (response) {
+
+                checkStationary(response.p_values)
+
+                plotAcf(response.acf, 'ACF');
+                plotAcf(response.df_pacf, 'PACF');
+                loadData(false)
+                plotStationaryData(response.plot_data)
+            },
+            error: function (xhr, status, error) {
+                // Handle the error here
+                console.log(error);
+            }
         });
 
-    </script>
+    }
+
+
+    $(document).ready(function () {
+        $('input[type=radio][name=flexRadioDefault]').change(function () {
+            var selectedValue = $(this).val();
+            if (selectedValue === 'diff') {
+                $('#applyLog').removeClass('d-none');
+            } else {
+                $('#applyLog').addClass('d-none');
+            }
+            applyDiffSeasonal(selectedValue);
+        });
+
+        $('#applyLog').on('change', function () {
+            var selectedValue = $('input[type=radio][name=flexRadioDefault]:checked').val();
+            applyDiffSeasonal(selectedValue);
+        });
+    });
+
+</script>
 
 {% endblock %}

@@ -34,9 +34,7 @@ def index():
                         'price': row['price'],
                         'algricutural_name': record_data.get('algricutural_name')
                     })
-
                 seen_algricutural_names.add(record_data.get('algricutural_name'))
-    
     return render_template('index.html', models=records, records_data=records_data, price_data=price_data)
 
 @main_router.route('/register', methods=['GET', 'POST'])

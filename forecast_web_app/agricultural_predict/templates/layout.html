@@ -299,6 +299,8 @@
       crossorigin="anonymous"
     ></script>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <script>
       document
         .getElementById("model-select")
@@ -398,6 +400,60 @@
         updateScrollbarHeight();
 
         window.addEventListener("resize", updateScrollbarHeight);
+      });
+    </script>
+    <script>
+      $(document).ready(function () {
+        $.ajax({
+          url: "/search-upload-model",
+          method: "GET",
+          data: {
+            model_name: "LSTM",
+          },
+          success: function (response) {
+            var options = "";
+            $.each(response.data, function (index, dataItem) {
+              options +=
+                '<option value="' +
+                dataItem.type +
+                '">' +
+                dataItem.name +
+                "</option>";
+            });
+            $("#data-select").html(options);
+          },
+          error: function (xhr, status, error) {
+            console.error("Lỗi:", error);
+          },
+        });
+
+        // Thêm sự kiện change cho #model-select
+        $("#model-select").change(function () {
+          var selectedModel = $(this).val();
+
+          $.ajax({
+            url: "/search-upload-model",
+            method: "GET",
+            data: {
+              model_name: selectedModel,
+            },
+            success: function (response) {
+              var options = "";
+              $.each(response.data, function (index, dataItem) {
+                options +=
+                  '<option value="' +
+                  dataItem.type +
+                  '">' +
+                  dataItem.name +
+                  "</option>";
+              });
+              $("#data-select").html(options);
+            },
+            error: function (xhr, status, error) {
+              console.error("Lỗi:", error);
+            },
+          });
+        });
       });
     </script>
   </body>

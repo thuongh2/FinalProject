@@ -105,7 +105,8 @@ def make_stationary_data_train_model():
     df1 = data.copy()
     if(is_stationary == 'True'):
         if(diff_type == 'log'):
-            df1 = np.sqrt(df1)
+            current_app.logger.info('log')
+            df1 = np.log(df1)
         else:
             if not lag:
                 lag = 1
@@ -122,6 +123,7 @@ def make_stationary_data_train_model():
     df_pacf =  pacf(df1.price, nlags=10).tolist()
 
     plot_data = []
+    current_app.logger.info(df1.columns)
     for columns in df1.columns:
         df1[columns] = df1[columns].astype(float)
        
@@ -132,5 +134,6 @@ def make_stationary_data_train_model():
         )
         plot_data.append(trace)
 
-
-    return {'p_values': p_values, 'acf': df_acf, 'df_pacf': df_pacf, 'plot_data': plot_data}
+    
+    respose_data = {'p_values': p_values, 'acf': df_acf, 'df_pacf': df_pacf, 'plot_data': plot_data}
+    return jsonify(respose_data)

@@ -137,7 +137,7 @@ header %}{% endblock %} {% block content %}
           <select id="model-select" class="form-control form-select col-xl-12" style="color: black">
             {% for model in models %}
               {% if model.name == 'LSTM' %}
-              <option value="{{model.name}}" selected>{{model.name}}</option> 
+                <option value="{{model.name}}" selected>{{model.name}}</option> 
               {% else %}
                 <option value="{{model.name}}">{{model.name}}</option>
               {% endif %}
@@ -147,15 +147,6 @@ header %}{% endblock %} {% block content %}
         <!-- Chọn dữ liệu -->
         <div class="mt-4">
           <select id="data-select" class="form-control form-select col-xl-12" style="color: black">
-              {% for model in models %}
-                  {% if model.name == 'LSTM' %}
-                      {% for data_item in model.attrs.data %}
-                          {% if data_item.type == 'CAFE' %}
-                              <option value="{{ data_item.data }}">{{ data_item.name }}</option>
-                          {% endif %}
-                      {% endfor %}
-                  {% endif %}
-              {% endfor %}
           </select>
         </div>
         <!-- Chọn thời gian -->

@@ -411,26 +411,17 @@
         showDataByType(activeId);
 
         $.ajax({
-          url: "/search-model",
+          url: "/search-all-models",
           method: "GET",
           success: function (response) {
             var options = "";
             $.each(response, function (index, model) {
-              if (model.name === "ARIMAX") {
-                options +=
-                  '<option value="' +
-                  model.name +
-                  '" selected>' +
-                  model.name +
-                  "</option>";
-              } else {
-                options +=
-                  '<option value="' +
-                  model.name +
-                  '">' +
-                  model.name +
-                  "</option>";
-              }
+              options +=
+                '<option value="' +
+                model.name +
+                '">' +
+                model.name +
+                "</option>";
             });
             $("#model-select").html(options);
 
@@ -451,7 +442,7 @@
           var selectedModel = $(this).val();
 
           $.ajax({
-            url: "/search-upload-model",
+            url: "/search-one-model",
             method: "GET",
             data: {
               model_name: selectedModel,

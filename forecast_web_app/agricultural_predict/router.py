@@ -36,7 +36,7 @@ def index():
                 seen_algricutural_names.add(record_data.get('algricutural_name'))
     return render_template('index.html', models=records, records_data=records_data, price_data=price_data)
 
-@main_router.route('/search-model', methods=['GET'])
+@main_router.route('/search-all-models', methods=['GET'])
 def get_all_models():
     all_models = []
     models = model.find()
@@ -47,6 +47,16 @@ def get_all_models():
         }
         all_models.append(model_info)
     return jsonify(all_models)
+
+@main_router.route('/search-one-model', methods=['GET'])
+def get_data_train_model():
+    model_name = request.args.get('model_name')
+
+    data_name = request.args.get('data_name')
+    model_data_find = model.find_one({'name': model_name})
+    data = model_data_find.get('attrs')
+
+    return jsonify(data)
 
 @main_router.route('/register', methods=['GET', 'POST'])
 def register():

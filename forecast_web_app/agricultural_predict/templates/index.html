@@ -107,7 +107,7 @@ header %}{% endblock %} {% block content %}
             </div>
             {% for model in models %}
               {% for time in ["30days", "60days"] %}
-                {% set chart_type = "coffee" %}
+                {% set chart_type = "rice" %}
                   <div id="{{ model.name }}-{{ time }}-univariate-coffee" class="chart-area" style="height: auto; position: absolute; opacity: 0;">
                     {% set chart_filename = model.name + '-' + time + '-univariate-' + chart_type + '.html' %}
                     {% include url_for('static', filename='chart/' + chart_filename) %}
@@ -257,5 +257,217 @@ header %}{% endblock %} {% block content %}
   </div>
   <!-- /.container-fluid -->
 
+  <!-- Javascript -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    document
+      .getElementById("model-select")
+      .addEventListener("change", updateCharts);
+    document
+      .getElementById("time-select")
+      .addEventListener("change", updateCharts);
+
+    function updateCharts() {
+      var selectedModel = document.getElementById("model-select").value;
+      var selectedTime = document.getElementById("time-select").value;
+
+      if (selectedTime === "") {
+        selectedModel = "LSTM";
+      }
+
+      var charts = document.querySelectorAll(".chart-area");
+      charts.forEach(function (chart) {
+        chart.style.opacity = "0";
+        chart.style.position = "absolute";
+      });
+
+      var selectedChart = document.getElementById(
+        selectedModel + "-" + selectedTime + "-univariate-coffee"
+      );
+      if (selectedChart) {
+        selectedChart.style.opacity = "1";
+        selectedChart.style.position = "relative";
+      }
+    }
+  </script>
+
+  <!-- Active card, hiển thị dữ liệu tương úng-->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      let activeId = "coffee";
+
+      document.querySelector("#coffee .card-price").classList.add("active");
+
+      document.querySelectorAll(".price-agricutural").forEach((item) => {
+        item.addEventListener("click", (event) => {
+          activeId = event.currentTarget.id;
+
+          document
+            .querySelectorAll(".price-agricutural .card-price")
+            .forEach((card) => {
+              card.classList.remove("active");
+            });
+
+          event.currentTarget
+            .querySelector(".card-price")
+            .classList.add("active");
+
+          showPriceData(activeId);
+        });
+      });
+
+      function showPriceData(activeId) {
+        const rows = document.querySelectorAll("#priceDataTable tbody tr");
+
+        rows.forEach((row) => {
+          const agriculturalName =
+            row.querySelector("td:nth-child(3)").textContent;
+
+          if (
+            (activeId === "coffee" && agriculturalName === "CAFE") ||
+            (activeId === "rice" && agriculturalName === "LUA")
+          ) {
+            row.style.display = "";
+          } else {
+            row.style.display = "none";
+          }
+        });
+      }
+
+      showPriceData(activeId);
+    });
+  </script>
+
+  <!-- Croll dữ liệu -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const table = document.getElementById("priceDataTable");
+      const scrollbar = document.getElementById("scrollbar");
+
+      scrollbar.addEventListener("scroll", function () {
+        table.style.transform = `translateY(-${scrollbar.scrollTop}px)`;
+      });
+
+      function updateScrollbarHeight() {
+        const totalHeight = table.clientHeight;
+        const visibleHeight = scrollbar.clientHeight;
+        const scrollHeight = (visibleHeight / totalHeight) * visibleHeight;
+        scrollbar.style.height = `${scrollHeight}px`;
+      }
+
+      updateScrollbarHeight();
+
+      window.addEventListener("resize", updateScrollbarHeight);
+    });
+  </script>
+
+  <!-- Load model và tập dữ liệu -->
+  <script>
+    $(document).ready(function () {
+      var activeId = "coffee";
+
+      showDataByType(activeId);
+
+      $.ajax({
+        url: "/search-all-models",
+        method: "GET",
+        success: function (response) {
+          var options = "";
+          $.each(response, function (index, model) {
+            options +=
+              '<option value="' +
+              model.name +
+              '">' +
+              model.name +
+              "</option>";
+          });
+          $("#model-select").html(options);
+
+          var activeId = document.querySelector(
+            ".price-agricutural .card-price.active"
+          ).parentElement.id;
+
+          showDataByType(activeId);
+
+          $("#model-select").val("LSTM").change();
+        },
+        error: function (xhr, status, error) {
+          console.error("Lỗi:", error);
+        },
+      });
+
+      $("#model-select").change(function () {
+        var selectedModel = $(this).val();
+
+        $.ajax({
+          url: "/search-one-model",
+          method: "GET",
+          data: {
+            model_name: selectedModel,
+          },
+          success: function (response) {
+            var options = "";
+            $.each(response.data, function (index, dataItem) {
+              options +=
+                '<option value="' +
+                dataItem.type +
+                '">' +
+                dataItem.name +
+                "</option>";
+            });
+            $("#data-select").html(options);
+
+            var activeId = document.querySelector(
+              ".price-agricutural .card-price.active"
+            ).parentElement.id;
+
+            showDataByType(activeId);
+          },
+          error: function (xhr, status, error) {
+            console.error("Lỗi:", error);
+          },
+        });
+      });
+
+      document.querySelectorAll(".price-agricutural").forEach((item) => {
+        item.addEventListener("click", (event) => {
+          var activeId = event.currentTarget.id;
+
+          document
+            .querySelectorAll(".price-agricutural .card-price")
+            .forEach((card) => {
+              card.classList.remove("active");
+            });
+
+          event.currentTarget
+            .querySelector(".card-price")
+            .classList.add("active");
+
+          showDataByType(activeId);
+        });
+      });
+
+      function showDataByType(activeId) {
+        const selectedType = activeId === "rice" ? "LUA" : "CAFE";
+        const dataSelect = document.getElementById("data-select");
+        const options = dataSelect.querySelectorAll("option");
+
+        options.forEach((option) => {
+          if (option.value === selectedType) {
+            option.style.display = "block";
+          } else {
+            option.style.display = "none";
+          }
+        });
+
+        const firstVisibleOption = dataSelect.querySelector(
+          "option[style='display: block;']"
+        );
+        if (firstVisibleOption) {
+          firstVisibleOption.selected = true;
+        }
+      }
+    });
+  </script>
   {% endblock %}
 </div>

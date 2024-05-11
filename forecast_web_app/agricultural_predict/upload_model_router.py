@@ -197,7 +197,7 @@ def admin_detail_model():
     current_app.logger.info(model_data)
     # load model
     if model_data:
-        
+
         arima_model = FactoryModel(model_data.get('model_name')).factory()
         model_url = get_minio_object(model_data.get('file_name'))
         current_app.logger.info(model_url)

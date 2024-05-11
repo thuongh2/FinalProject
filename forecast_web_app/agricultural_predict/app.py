@@ -7,11 +7,15 @@ from flask import session
 from router import main_router
 from upload_model_router import upload_model_router
 from train_model_router import train_model_router
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__,
             static_url_path='', 
             static_folder='static',
             template_folder='templates')
+
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 app.secret_key = "cqH3HoQ1Cp4zafXn"
 

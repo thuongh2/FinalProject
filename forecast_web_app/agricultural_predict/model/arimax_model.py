@@ -5,6 +5,9 @@ import mlflow
 from mlflow.models import infer_signature
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
+import pmdarima as pm
+import logging
+
 
 class ARIMAXModel:
 
@@ -25,7 +28,8 @@ class ARIMAXModel:
         self.forecast_data = pd.DataFrame()
         # accuracy
         self.accuracy = {}
-        self.list_feature = []
+
+        self.exogenous = []
 
     def predict(self, n_periods):
         self.model = joblib.load(self.model_url)
@@ -50,14 +54,66 @@ class ARIMAXModel:
         self.accuracy = self.forecast_accuracy(self.forecast_data, test_data.price.values)
         return self.forecast_data, self.accuracy
 
+    def __prepare_data_for_self_train(self, split_size=0.8):
+        logging.info('Start prepare data ' + self.data_uri)
+        self.prepare_data(self.data_uri, split_size)
+
+    def train_model(self, argument):
+        """
+        Train model in web
+        params argument
+            size: size split data
+            start_p: start p
+            start_q: start q
+            max_p: max p
+            max_q: max q
+            set exogenous list
+        return ARIMA MODEL
+
+        """
+
+        if argument.get('size', 0.8) is None:
+            raise Exception("Size is required")
+
+        self.__prepare_data_for_self_train(argument['size'])
+
+        logging.info('Start train ARIMA MODEL')
+
+        self.model = pm.auto_arima(self.train_data.price.values,
+                                   exogenous=self.train_data[self.exogenous],
+                                   start_p=argument.get('start_p', 0),
+                                   start_q=argument.get('start_q', 0),
+                                   test='adf',  # use adftest to find optimal 'd'
+                                   max_p=argument.get('max_p', 0),
+                                   max_q=argument.get('max_q', 0),  # maximum p and q
+                                   m=1,  # frequency of series
+                                   d=argument.get('d', None),  # let model determine 'd'
+                                   seasonal=False,
+                                   start_P=0,
+                                   D=0,
+                                   trace=True,
+                                   error_action='ignore',
+                                   suppress_warnings=True,
+                                   stepwise=True)
+
+        n_periods = len(self.test_data)
+        self.forecast_data = self.__predict_self_train(n_periods)
+
+        if self.forecast_data.empty:
+            raise Exception("Data predict not found")
+
+        print(self.forecast_data.info())
+
+        self.accuracy = self.forecast_accuracy(self.forecast_data.price.values, self.test_data.price.values)
+        return self.forecast_data, self.accuracy, self.model
+
+
     def forecast_accuracy(self, test_data, predicted_values):
         mape = np.mean(np.abs((test_data - predicted_values) / test_data)) * 100
         mse = mean_squared_error(test_data, predicted_values)
         rmse = np.sqrt(mse)
 
         return {'mape': round(mape, 2), 'rmse': round(rmse, 2)}
-
-
 
     def prepare_data(self, train_url, test_url):
         if train_url:

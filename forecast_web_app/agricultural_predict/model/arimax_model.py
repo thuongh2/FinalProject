@@ -7,7 +7,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 import pmdarima as pm
 import logging
-from base_model import BaseModel
+from model.base_model import BaseModel
 
 class ARIMAXModel(BaseModel):
 

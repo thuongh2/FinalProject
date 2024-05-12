@@ -11,7 +11,7 @@ from statsmodels.tsa.statespace.varmax import VARMAX
 import logging
 import warnings
 from statsmodels.tools.sm_exceptions import ConvergenceWarning
-from base_model import BaseModel
+from model.base_model import BaseModel
 
 class VARMAModel(BaseModel):
 

@@ -22,38 +22,34 @@ from datetime import datetime, timedelta
 from statsmodels.tsa.stattools import acf, pacf
 
 from model.factory_model import FactoryModel
-from model.arima_model import ARIMAModel
-from bson.objectid import ObjectId
-import matplotlib.pyplot as plt
-import plotly.graph_objs as go
-import plotly.io as pio
-import ast
+from bson import json_util
 from statsmodels.tsa.stattools import adfuller
-import io
+import joblib
+import uuid
+import os
 
 train_model_router = Blueprint('train_model_router', __name__, static_folder='static',
-            template_folder='templates')
+                               template_folder='templates')
 
 
 @train_model_router.route('/train-model', methods=['GET'])
-def train_model():
+def train_model_page():
     current_app.logger.info("VO")
     model_name = request.args.get('model_name')
     model_data = model.find()
 
     model_names = [m.get('name') for m in model_data]
     current_app.logger.info(model_names)
-   
-    if(model_name):
+
+    if (model_name):
         model_data_find = model.find_one({'name': model_name})
         data = model_data_find.get('attrs')
-    
+
         return render_template('admin/train-model.html', model_names=model_names, data=data, model_name=model_name
                                )
 
-    return render_template('admin/train-model.html', 
+    return render_template('admin/train-model.html',
                            model_names=model_names, data=None, model_name="")
-
 
 
 @train_model_router.route('/search-train-model', methods=['GET'])
@@ -68,11 +64,11 @@ def get_data_train_model():
     plot_data = []
     for columns in data.columns:
         data[columns] = data[columns].astype(float)
-       
+
         trace = dict(
-            x = data.index.tolist(),
-            y = data[columns].values.tolist(),
-            mode = 'lines'
+            x=data.index.tolist(),
+            y=data[columns].values.tolist(),
+            mode='lines'
         )
         plot_data.append(trace)
 
@@ -81,10 +77,11 @@ def get_data_train_model():
 
 def adf_test(series):
     result = adfuller(series.dropna())
-    labels = ['ADF test statistic','p-value','# lags used','# observations']
-    out = pd.Series(result[0:4],index=labels)
+    labels = ['ADF test statistic', 'p-value', '# lags used', '# observations']
+    out = pd.Series(result[0:4], index=labels)
     current_app.logger.info(out)
     return result[1]
+
 
 @train_model_router.route('/stationary-train-model', methods=['GET'])
 @cross_origin()
@@ -93,7 +90,7 @@ def make_stationary_data_train_model():
     model_data = request.args.get('model_data')
     is_stationary = request.args.get('is_stationary')
     diff_type = request.args.get('diff_type')
-    lag = request.args.get('lag')
+    lag = request.args.get('lag', 1)
 
     # diff
     data = pd.read_csv(model_data)
@@ -102,17 +99,14 @@ def make_stationary_data_train_model():
     if data.empty:
         return jsonify({'error': 'Data is empty'})
 
-
     df1 = data.copy()
-    if(is_stationary == 'True'):
-        if(diff_type == 'log'):
+    if (is_stationary == 'True'):
+        if (diff_type == 'log'):
             df1 = np.log(df1)
         else:
-            if not lag:
-                lag = 1
             df1 = df1 - df1.shift(int(lag))
         df1 = df1.dropna()
-    current_app.logger.info(df1.head())
+
     # p value
     p_values = adf_test(df1.price)
     current_app.logger.info(p_values)
@@ -126,12 +120,11 @@ def make_stationary_data_train_model():
     current_app.logger.info(df1.columns)
     for columns in df1.columns:
         df1[columns] = df1[columns].astype(float)
-       
         trace = dict(
-            x = df1.index.tolist(),
-            y = df1[columns].values.tolist(),
-            mode = 'lines',
-            name = columns
+            x=df1.index.tolist(),
+            y=df1[columns].values.tolist(),
+            mode='lines',
+            name=columns
         )
         plot_data.append(trace)
 
@@ -139,15 +132,67 @@ def make_stationary_data_train_model():
     return jsonify(respose_data)
 
 
-@train_model_router.route('/test-data', methods=['GET'])
-def test_data():
-    data_url = "./test_data/arima_data.csv"
-    summary_buffer = io.StringIO()
-    model = ARIMAModel()
+BUCKET_NAME = 'test'
+MINIO_URL = '20.2.210.176:9000'
+MINIO_ACCESS_KEY = 'minio'
+MINIO_SECRET = 'minio123'
 
-    _, _, model_arima =  model.train_model(data_url, {'start_p':1, 'start_q':1, 'max_p':1, 'max_q':1, 'size':0.8})
-    model_summary = model_arima.summary()
-    # model_summary.summary(print_fn=summary_buffer.write)
-    # m = summary_buffer.getvalue()
-    return
 
+def upload_object(filename, data, length= None):
+    client = Minio(MINIO_URL, MINIO_ACCESS_KEY, MINIO_SECRET, secure=False)
+
+    # Make bucket if not exist.
+    found = client.bucket_exists(BUCKET_NAME)
+    if not found:
+        client.make_bucket(BUCKET_NAME)
+    else:
+        print(f"Bucket {BUCKET_NAME} already exists")
+
+    file = client.fput_object(BUCKET_NAME, filename, data)
+    print(f"{filename} is successfully uploaded to bucket {BUCKET_NAME}.")
+    return file
+
+
+@train_model_router.route('/train-model-data', methods=['POST'])
+@cross_origin()
+def train_model_data():
+    data = request.get_json()
+
+    model_name = data.get('model_name')
+    model_data = data.get('model_data')
+    argument = data.get('argument')
+
+    data_model = {"user_id": data.get('username'),
+                  "model_name": model_name,
+                  "algricutural_name": data.get('algricutural_name'),
+                  "data_name": model_data,
+                  "type": "TRAIN_MODEL",
+                  "create_time": datetime.now(),
+                  "isUsed": False}
+
+    file_name = str(uuid.uuid4()) + '.joblib'
+    file_dir = "./temp/" + file_name
+    try:
+        factory_model = FactoryModel(model_name).factory()
+        factory_model.data_uri = model_data
+        factory_model.prepare_data_for_self_train()
+        forecast_data, accuracy, model = factory_model.train_model(argument)
+
+        joblib.dump(model, file_dir)
+
+        file_after_upload = upload_object(file_name,  file_dir)
+        data_model["file_name"] = file_after_upload.object_name
+        data_model["file_etag"] = file_after_upload.etag
+        data_model['score'] = accuracy
+        data_model['status'] = 'DONE'
+    except Exception as e:
+        print(e)
+        data_model['status'] = 'FAIL'
+
+    train_model.insert_one(data_model)
+    if os.path.exists(file_dir):
+        os.remove(file_dir)
+        print("Remove temp file " + file_name)
+    current_app.logger.info(data_model)
+
+    return json_util.dumps(data_model)

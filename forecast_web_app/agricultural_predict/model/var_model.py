@@ -9,7 +9,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 import logging
 from statsmodels.tsa.api import VAR
-from base_model import BaseModel
+from model.base_model import BaseModel
 
 
 class VARModel(BaseModel):

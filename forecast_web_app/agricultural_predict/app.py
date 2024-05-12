@@ -14,7 +14,7 @@ app = Flask(__name__,
             static_folder='static',
             template_folder='templates')
 
-cors = CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 app.secret_key = "cqH3HoQ1Cp4zafXn"
@@ -25,6 +25,11 @@ app.register_blueprint(main_router)
 app.register_blueprint(upload_model_router)
 app.register_blueprint(train_model_router)
 
+
+@app.after_request
+def add_header(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
 
 if __name__ == '__main__':
     db.init_app()

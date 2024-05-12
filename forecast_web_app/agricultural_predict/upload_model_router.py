@@ -155,7 +155,7 @@ def admin_train_model():
         data_model = {"user_id": session.get('username'),
                     "name": name_train,
                     "model_name": model_name,
-                    "algricutural_name": data_name['type'],
+                    "agricutural_name": data_name['type'],
                     "data_name": data_name['data'],
                     "file_name": file_after_upload.object_name,
                     "file_etag": file_after_upload.etag,

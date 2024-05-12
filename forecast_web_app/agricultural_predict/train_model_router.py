@@ -164,7 +164,7 @@ def train_model_data():
 
     data_model = {"user_id": data.get('username'),
                   "model_name": model_name,
-                  "algricutural_name": data.get('algricutural_name'),
+                  "agricutural_name": data.get('agricutural_name'),
                   "data_name": model_data,
                   "type": "TRAIN_MODEL",
                   "create_time": datetime.now(),
@@ -175,7 +175,6 @@ def train_model_data():
     try:
         factory_model = FactoryModel(model_name).factory()
         factory_model.data_uri = model_data
-        factory_model.prepare_data_for_self_train()
         forecast_data, accuracy, model = factory_model.train_model(argument)
 
         joblib.dump(model, file_dir)
@@ -185,14 +184,31 @@ def train_model_data():
         data_model["file_etag"] = file_after_upload.etag
         data_model['score'] = accuracy
         data_model['status'] = 'DONE'
+
+        
+        trace_predict = dict(
+            x=forecast_data.index.tolist(),
+            y=forecast_data.price.values.tolist(),
+            mode='lines',
+            name='Dự đoán'
+        )
+        trace_actual = dict(
+            x=factory_model.test_data.index.tolist(),
+            y=factory_model.test_data.price.values.tolist(),
+            mode='lines',
+            name='thực tế'
+        )
+        plot_data = [trace_predict, trace_actual]
+        data_model['plot_data'] = plot_data
     except Exception as e:
         print(e)
         data_model['status'] = 'FAIL'
 
-    train_model.insert_one(data_model)
+    # train_model.insert_one(data_model)
     if os.path.exists(file_dir):
         os.remove(file_dir)
         print("Remove temp file " + file_name)
     current_app.logger.info(data_model)
 
     return json_util.dumps(data_model)
+

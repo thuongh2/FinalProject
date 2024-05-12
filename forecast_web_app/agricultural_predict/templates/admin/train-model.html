@@ -2,6 +2,15 @@
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/alertify.min.js"
+    integrity="sha512-JnjG+Wt53GspUQXQhc+c4j8SBERsgJAoHeehagKHlxQN+MtCCmFDghX9/AcbkkNRZptyZU4zC8utK59M5L45Iw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/css/alertify.css"
+    integrity="sha512-MpdEaY2YQ3EokN6lCD6bnWMl5Gwk7RjBbpKLovlrH6X+DRokrPRAF3zQJl1hZUiLXfo2e9MrOt+udOnHCAmi5w=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/css/themes/bootstrap.min.css"
+    integrity="sha512-6xVTeh6P+fsqDhF7t9sE9F6cljMrK+7eR7Qd+Py7PX5QEVVDLt/yZUgLO22CXUdd4dM+/S6fP0gJdX2aSzpkmg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 <!-- Begin Page Content -->
 <div class="container-fluid">
@@ -71,9 +80,8 @@
                 data-target="#v-pills-messages" type="button" role="tab" aria-controls="v-pills-messages"
                 aria-selected="false">Bước 3:
             </button>
-            <button class="nav-link mt-2 border-0" id="v-pills-settings-tab" data-toggle="pill"
-                data-target="#v-pills-settings" type="button" role="tab" aria-controls="v-pills-settings"
-                aria-selected="false">Bước 4:
+            <button class="nav-link mt-2 border-0" id="detail-tab" data-toggle="pill" data-target="#detail-content"
+                type="button" role="tab" aria-controls="detail-content" aria-selected="false">Bước 4:
             </button>
         </div>
     </div>
@@ -106,7 +114,7 @@
                         </div>
                     </div>
 
-                    <div id='myDiv' class="col-12"></div>
+                    <div id='myDiv' class="col-12 mt-3"></div>
 
                     <div class=" mt-2 col-6">
                         <button type="submit" class=" btn btn-primary">Tiếp theo</button>
@@ -117,7 +125,7 @@
             </div>
             <div class="tab-pane fade text-dark" id="v-pills-profile" role="tabpanel"
                 aria-labelledby="v-pills-profile-tab">
-                <h3>Transform dataset to make it Stationary</h3>
+                <h3 class="text-uppercase">Transform dataset to make it Stationary</h3>
                 <div class="row">
                     <div class="col-12 col-xl-3">
                         <div class="form-check">
@@ -140,7 +148,7 @@
                                     <label>Chọn Lag: </label>
                                     <select class="form-control" id="applyDiffSeasonal">
                                         {% for n in range(1, 30) %}
-                                            <option>{{n}}</option>
+                                        <option>{{n}}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -172,48 +180,111 @@
             <div class="tab-pane fade text-dark" id="v-pills-messages" role="tabpanel"
                 aria-labelledby="v-pills-messages-tab">
 
-                <h4>Select the train percentage:</h4>
-                <div class="d-flex align-items-center my-3">
+                <form id="trainModelForm" action="" method="post">
+                    <h4>Select the train percentage:</h4>
+                    <div class="d-flex align-items-center my-3">
 
-                    <input id="myRange" value="80" min="0" max="100" type="range" class="form-range mr-2"
-                        style="width: 80%;" />
+                        <input id="size" name="size" value="80" min="0" max="100" type="range" class="form-range mr-2"
+                            style="width: 80%;" />
 
-                    <span>
-                        <span id="curr">50%</span>
-                    </span>
-                </div>
+                        <span>
+                            <span id="curr">50%</span>
+                        </span>
+                    </div>
 
-                <h4>Chọn tham số</h4>
-                <div id="param" class="col-12 col-xl-6">
-                    <div class="input-group">
-                        <span class="input-group-text  rounded-start">p</span>
-                        <input type="text" placeholder="Start P" aria-label="First name" class="form-control">
-                        <input type="text" placeholder="End P" aria-label="Last name" class="form-control">
+                    <h4>Chọn tham số</h4>
+                    <div id="param" class="col-12 col-xl-6">
+                        <!-- <div class="input-group">
+                            <span class="input-group-text  rounded-start">p</span>
+                            <input type="text" id="start_p" name="start_p" placeholder="Start P" aria-label="First name"
+                                class="form-control">
+                            <input type="text" id="end_p" name="end_p" placeholder="End P" aria-label="Last name"
+                                class="form-control">
+                        </div>
+                        <div class="input-group mt-3">
+                            <span class="input-group-text">d</span>
+                            <input type="text" id="start_d"  name="start_d" placeholder="Start D" aria-label="First name"
+                                class="form-control">
+                            <input type="text" id="end_d" name="end_d" placeholder="End D" aria-label="Last name"
+                                class="form-control">
+                        </div>
+                        <div class="input-group mt-3">
+                            <span class="input-group-text">q</span>
+                            <input type="text" id="start_q" name="start_q" placeholder="Start Q" aria-label="First name"
+                                class="form-control">
+                            <input type="text" id="end_q" name="end_q" placeholder="End Q" aria-label="Last name"
+                                class="form-control">
+                        </div> -->
+
+                        <div class="input-group mt-3">
+                            <span class="input-group-text">q</span>
+                            <input type="text" id="max_p" name="max_p" placeholder="Start Q" aria-label="First name"
+                                class="form-control">
+
+                        </div>
+
                     </div>
-                    <div class="input-group mt-3">
-                        <span class="input-group-text">d</span>
-                        <input type="text" placeholder="Start P" aria-label="First name" class="form-control">
-                        <input type="text" placeholder="End P" aria-label="Last name" class="form-control">
+                    <div id="param" class="col-12 col-xl-12 mt-3">
+                        <button type="submit" class="w-100 btn btn-primary">Train mô hình</button>
                     </div>
-                    <div class="input-group mt-3">
-                        <span class="input-group-text">q</span>
-                        <input type="text" placeholder="Start P" aria-label="First name" class="form-control">
-                        <input type="text" placeholder="End P" aria-label="Last name" class="form-control">
-                    </div>
-                </div>
-                <div id="param" class="col-12 col-xl-12 mt-3">
-                    <button type="button" class="w-100 btn btn-primary">Train mô hình</button>
-                </div>
+                </form>
 
 
             </div>
-            <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab">
-                ...
+            <div class="tab-pane fade" id="detail-content" role="tabpanel" aria-labelledby="detail-tab">
+                <h3 class="text-uppercase">Chi tiết mô hinh</h3>
+                <div class="row">
+                    <div class="col-12 col-xl-3">
+                        <div class="card shadow mb-4">
+                            <!-- Card Header - Dropdown -->
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                              <h5 class="m-0 font-weight-bold text-primary">Thông tin mô hình</h5>
+                            </div>
+                            <!-- Card Body -->
+                            <div class="card-body">
+                              <div class="chart-pie d-flex flex-column align-items-start">
+                                <h6 class="mb-4" style="display: block; text-align: left">
+                                  Tên mô hình: <span id="model_detail_name"></span>
+                                </h6>
+                                <h6 class="mb-4" style="display: block; text-align: left">
+                                  Đánh giá:
+                                </h6>
+                                <p class="mb-4 ml-2" style="display: block; text-align: left">   MAPE: <span id="model_detail_mape"></span></p>
+                                <p class="mb-4 ml-2" style="display: block; text-align: left">   RMSE: <span id="model_detail_rmse"></span></p>
+                              </div>
+                            </div>
+                          </div>
+                    </div>
+
+                    <div class="col-12 col-xl-9">
+                        <div id='myDivStationary1' class="col-12"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+
+<!-- Modal -->
+<div class="modal fade" id="modelTrainingInProcess" tabindex="-1" role="dialog"
+    aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header text-dark">
+
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </div>
+                <p>Đang xử lí</p>
+            </div>
+        </div>
+    </div>
+</div>
 
 </div>
 <!-- /.container-fluid -->\
@@ -221,10 +292,12 @@
     crossorigin="anonymous"></script>
 <script src='https://cdn.plot.ly/plotly-2.32.0.min.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'></script>
+<script src='vendor/notify/notify.min.js'></script>
+
 
 <script src="js/train-model.js">
 
-    
+
 </script>
 
 {% endblock %}

@@ -11,39 +11,51 @@ from statsmodels.tsa.statespace.varmax import VARMAX
 import logging
 import warnings
 from statsmodels.tools.sm_exceptions import ConvergenceWarning
+from base_model import BaseModel
 
-class VARMAModel:
+class VARMAModel(BaseModel):
 
     def __init__(self):
-        # model
-        self.model = None
-        # link model
-        self.model_url = ""
-        # link dữ liệu
-        self.data_uri = ""
-        # dữ liệu gốc
-        self.data = pd.DataFrame()
-        # train data
-        self.train_data = pd.DataFrame()
-        # test data
-        self.test_data = pd.DataFrame()
-        # dự báo
-        self.forecast_data = pd.DataFrame()
-        # accuracy
-        self.accuracy = {}
+        super().__init__()
 
-        self.list_feature = []
+        self.list_feature: list = []
 
     def predict(self, n_periods, df_forecast=None):
-        self.model = joblib.load(self.model_url)
         if self.model:
-            fc = self.model.forecast(steps=n_periods)
-            return fc
+            forecast = self.model.forecast(steps=n_periods)
+            return forecast
         else:
             raise Exception("Không tìm thấy model")
 
-    def train_for_upload_mode(self, n_periods, test_data):
-        self.difference_dataset()
+    def forecast_future(self, forecast_num, data=None, n_steps=None):
+        self._load_model()
+        if self.model is None:
+            raise Exception("Không tìm thấy model")
+        
+        n_periods = len(self.test_data) + forecast_num
+
+        predict_data = self.predict(n_periods)
+        self.forecast_data = pd.DataFrame(predict_data, columns=self.test_data.columns)
+
+        predicted = self.invert_transformation(self.train_data,  self.forecast_data, second_diff=True)
+        predicted['price'] = predicted['price_forecast']
+
+        last_date = self.test_data.index[-1]
+        next_dates = pd.date_range(start=last_date, periods=forecast_num + 1)[1:]
+        predicted = predicted[-forecast_num:]
+
+        predicted_df = pd.DataFrame({'date': next_dates, 'price': predicted[self.PRICE_COLUMN]})
+        
+        return predicted_df
+
+    def _load_model(self):
+        self.model = joblib.load(self.model_url)
+
+    def train_for_upload_mode(self, n_periods, data=None):
+        self._load_model()
+        if self.model is None:
+            raise Exception("Không tìm thấy model")
+        
         self.forecast_data = self.predict(n_periods)
         if self.forecast_data.size == 0:
             raise Exception("Không tìm thấy model")
@@ -52,67 +64,11 @@ class VARMAModel:
         self.forecast_data = self.invert_transformation(self.train_data[self.list_feature], self.forecast_data,
                                                         second_diff=True)
 
-        self.accuracy = self.forecast_accuracy(self.forecast_data.price.values, test_data.price.values)
+        self.accuracy = self.forecast_accuracy(self.forecast_data[self.PRICE_COLUMN].values, self.test_data[self.PRICE_COLUMN].values)
+        
         return self.forecast_data, self.accuracy
 
-    def forecast_accuracy(self, test_data, predicted_values):
-        mape = np.mean(np.abs((test_data - predicted_values) / test_data)) * 100
-        mse = mean_squared_error(test_data, predicted_values)
-        rmse = np.sqrt(mse)
-
-        return {'mape': round(mape, 2), 'rmse': round(rmse, 2)}
-
-    def difference_dataset(self, interval=None):
-        df_dif = self.train_data.copy()
-        return df_dif.diff().dropna()
-
-    def prepare_data(self, train_url, test_url):
-        if train_url:
-            self.train_data = pd.read_csv(train_url)
-        if test_url:
-            self.test_data = pd.read_csv(test_url)
-
-        return self.set_index_date(self.train_data, self.test_data)
-
-    def prepare_data(self, split_size=0.8):
-        logging.info('Read data from ' + data_url)
-        self.data = pd.read_csv(data_url)
-
-        if self.data.empty:
-            raise Exception(f'Data {data_url} empty')
-
-        self.data['date'] = pd.to_datetime(self.data['date'])
-        self.data.set_index('date', inplace=True)
-
-        size = int(len(self.data) * split_size)
-
-        self.train_data = self.data[:size]
-        self.test_data = self.data[size:]
-
-        return self.train_data, self.test_data
-
-    def set_index_date(self, train_data, test_data):
-        if 'date' in train_data.columns:
-            train_data['date'] = pd.to_datetime(train_data['date'])
-            train_data.set_index('date', inplace=True)
-
-        if 'date' in test_data.columns:
-            test_data['date'] = pd.to_datetime(test_data['date'])
-            test_data.set_index('date', inplace=True)
-
-        return train_data, test_data
-
-    def __predict_self_train(self, n_periods, df_forecast=None):
-        if self.model:
-            fc = self.model.forecast(steps=n_periods)
-            return fc
-        else:
-            raise Exception("Không tìm thấy model")
-
-    def __prepare_data_for_self_train(self, split_size=0.8):
-        logging.info('Start prepare data ' + self.data_uri)
-        self.prepare_data(split_size)
-
+   
     def train_model(self, argument):
         """
         Train model in web
@@ -123,10 +79,9 @@ class VARMAModel:
         return ARIMA MODEL
         """
 
-        self.__prepare_data_for_self_train(argument.get('size', 0.8))
+        self.prepare_data_for_self_train(argument.get('size', 0.8))
 
         df_differenced = self.difference_dataset()
-        df_differenced = df_differenced.reset_index()
 
         logging.info('Start train VAR MODEL')
 
@@ -136,7 +91,7 @@ class VARMAModel:
         self.model = model_training
 
         n_periods = len(self.test_data)
-        self.forecast_data = self.__predict_self_train(n_periods, df_differenced)
+        self.forecast_data = self.predict(n_periods, df_differenced)
 
         self.forecast_data = self.forecast_data.set_index(self.test_data.index)
         self.forecast_data = self.invert_transformation(self.train_data, self.forecast_data, second_diff=True)
@@ -162,6 +117,10 @@ class VARMAModel:
             # Roll back 1st Diff
             df_fc[str(col) + '_forecast'] = df_train[col].iloc[-1] + df_fc[str(col) + '_1d'].cumsum()
         return df_fc
+
+    def difference_dataset(self, interval=None):
+        df_dif = self.train_data.copy()
+        return df_dif.diff().dropna()
 
     def ml_flow_register(self):
         ARTIFACT_PATH = "model"
@@ -211,7 +170,11 @@ if __name__ == '__main__':
     # print(test_data.head())
     # print(test_data.iloc[0].values)
     # # dự đoná mô hình
-    # data, ac = model.train_for_upload_mode(len(test_data), test_data)
+    model.prepare_data_for_self_train()
+
+    data, ac = model.train_for_upload_mode(168)
+    model.forecast_future(10)
+
     # # register in ml flow
     # model_mflow = model.ml_flow_register()
     # print(model_mflow.model_uri)

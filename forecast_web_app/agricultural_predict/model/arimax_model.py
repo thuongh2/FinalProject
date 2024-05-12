@@ -7,56 +7,58 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 import pmdarima as pm
 import logging
+from model.base_model import BaseModel
 
-
-class ARIMAXModel:
+class ARIMAXModel(BaseModel):
 
     def __init__(self):
-        # model
-        self.model = None
-        # link model
-        self.model_url = ""
-        # link dữ liệu
-        self.data_uri = ""
-        # dữ liệu gốc
-        self.data = pd.DataFrame()
-        # train data
-        self.train_data = pd.DataFrame()
-        # test data
-        self.test_data = pd.DataFrame()
-        # dự báo
-        self.forecast_data = pd.DataFrame()
-        # accuracy
-        self.accuracy = {}
+        super().__init__()
 
         self.exogenous = []
 
-    def predict(self, n_periods):
-        self.model = joblib.load(self.model_url)
+
+    def predict(self, n_periods=30):
         if self.model:
-            fc, confint = self.model.predict(n_periods=n_periods, exogenous=self.test_data[self.list_feature])
-            fc_series = pd.Series(fc, index=self.test_data.index)
-            return fc_series
+            predict, confint = self.model.predict(n_periods=n_periods, return_conf_int=True, dynamic=True)
+            return predict, confint
         else:
             raise Exception("Không tìm thấy model")
 
-    def train_for_upload_mode(self, n_periods, test_data):
-        print(n_periods)
-        self.forecast_data = self.predict(n_periods)
-        if self.forecast_data.empty:
+
+    def forecast_future(self, forecast_num, data=None, n_steps=None):
+        self._load_model()
+        if self.model is None:
             raise Exception("Không tìm thấy model")
-        print(test_data.iloc[1])
-        print(self.forecast_data.info())
+        
+        n_periods = len(self.test_data) + forecast_num
+        predict_data, _ = self.predict(n_periods)
 
-        self.forecast_data = [self.inverse_difference(test_data.iloc[i].price, self.forecast_data[i]) for i in
-                              range(len(self.forecast_data))]
+        last_date = self.test_data.index[-1]
+        next_dates = pd.date_range(start=last_date, periods=forecast_num + 1)[1:]
+        predicted = predict_data[-forecast_num:]
 
-        self.accuracy = self.forecast_accuracy(self.forecast_data, test_data.price.values)
+        predicted_df = pd.DataFrame({'date': next_dates, 'price': predicted})
+
+        return predicted_df
+
+
+    def _load_model(self):
+        self.model = joblib.load(self.model_url)
+
+
+    def train_for_upload_mode(self, n_periods, data=None):
+        self._load_model()
+        if self.model is None:
+            raise Exception("Không tìm thấy model")
+        
+        predict_data, _ = self.predict(n_periods)
+        self.forecast_data = pd.DataFrame(predict_data, index=self.test_data.index, columns=[self.PRICE_COLUMN])
+        if self.forecast_data.empty:
+            raise Exception("Dự đoán lỗi")
+
+        self.accuracy = self.forecast_accuracy(self.forecast_data.price.values, self.test_data.price.values)
         return self.forecast_data, self.accuracy
 
-    def __prepare_data_for_self_train(self, split_size=0.8):
-        logging.info('Start prepare data ' + self.data_uri)
-        self.prepare_data(self.data_uri, split_size)
 
     def train_model(self, argument):
         """
@@ -97,53 +99,14 @@ class ARIMAXModel:
                                    stepwise=True)
 
         n_periods = len(self.test_data)
-        self.forecast_data = self.__predict_self_train(n_periods)
+        predict_data, _ = self.predict(n_periods)
 
-        if self.forecast_data.empty:
+        self.forecast_data = pd.DataFrame(predict_data, index=self.test_data.index, columns=[self.PRICE_COLUMN])
+        if self.forecast_data is None:
             raise Exception("Data predict not found")
 
-        print(self.forecast_data.info())
-
-        self.accuracy = self.forecast_accuracy(self.forecast_data.price.values, self.test_data.price.values)
+        self.accuracy = self.forecast_accuracy(self.forecast_data[self.PRICE_COLUMN].values, self.test_data[self.PRICE_COLUMN].values)
         return self.forecast_data, self.accuracy, self.model
-
-
-    def forecast_accuracy(self, test_data, predicted_values):
-        mape = np.mean(np.abs((test_data - predicted_values) / test_data)) * 100
-        mse = mean_squared_error(test_data, predicted_values)
-        rmse = np.sqrt(mse)
-
-        return {'mape': round(mape, 2), 'rmse': round(rmse, 2)}
-
-    def prepare_data(self, train_url, test_url):
-        if train_url:
-            self.train_data = pd.read_csv(train_url)
-        if test_url:
-            self.test_data = pd.read_csv(test_url)
-
-        return self.set_index_date(self.train_data, self.test_data)
-
-    def prepare_data(self, data_url):
-        self.data = pd.read_csv(data_url)
-        print(self.data.info())
-        self.data['date'] = pd.to_datetime(self.data['date'])
-        self.data.set_index('date', inplace=True)
-        size = int(len(self.data) * 0.8)
-        self.train_data = self.data[:size]
-        self.test_data = self.data[size:]
-
-        return self.train_data, self.test_data
-
-    def set_index_date(self, train_data, test_data):
-        if 'date' in train_data.columns:
-            train_data['date'] = pd.to_datetime(train_data['date'])
-            train_data.set_index('date', inplace=True)
-
-        if 'date' in test_data.columns:
-            test_data['date'] = pd.to_datetime(test_data['date'])
-            test_data.set_index('date', inplace=True)
-
-        return train_data, test_data
 
     def seasonal_diff(self, dataset, interval=1):
         diff = list()

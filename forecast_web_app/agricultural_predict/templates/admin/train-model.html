@@ -82,10 +82,10 @@
             <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
                 <form>
                     <div class=" mt-2 col-12">
-                        <select name="model_name" onchange="this.options[this.selectedIndex].value
+                        <select name="model_name" id="model_name" onchange="this.options[this.selectedIndex].value
                         && (window.location = this.options[this.selectedIndex].value);" id="select"
                             class="form-control form-select">
-                            <option value="upload-model" selected>Mô hình</option>
+                            <option value="upload-model">Mô hình</option>
                             {% for item in model_names %}
                             <option value="{{ 'train-model?model_name=' ~ item }}" {% if item==model_name %} selected {%
                                 endif %}>{{ item }}</option>
@@ -139,11 +139,9 @@
                                 <div id="applyLog" class="d-none">
                                     <label>Chọn Lag: </label>
                                     <select class="form-control" id="applyDiffSeasonal">
-                                        <option>1</option>
-                                        <option>2</option>
-                                        <option>3</option>
-                                        <option>4</option>
-                                        <option>5</option>
+                                        {% for n in range(1, 30) %}
+                                            <option>{{n}}</option>
+                                        {% endfor %}
                                     </select>
                                 </div>
                             </div>
@@ -224,194 +222,9 @@
 <script src='https://cdn.plot.ly/plotly-2.32.0.min.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'></script>
 
-<script>
+<script src="js/train-model.js">
 
-    // JavaScript:
-
-    $('#data_name').change(function () {
-        const selectedValue = JSON.parse($(this).val().replace(/'/g, '"'))
-        console.log(selectedValue.data)
-        callDrawPlot(selectedValue.data);
-        return;
-    });
-
-    function plotAcf(data, type) {
-        var trace = {
-            x: Array.from({ length: 10 }, (x, i) => i),
-            y: data,
-            type: 'bar',
-            width: 0.05
-
-        };
-        var data = [trace];
-        var layout = {
-            title: type,
-        };
-        Plotly.newPlot('my' + type, data, layout);
-    }
-
-    function checkStationary(pValue) {
-        if (pValue < 0.05) {
-            $("#pValue").text(`P value is ${pValue}`)
-            $("#pValueDesc").text(`Data is stationary`);
-            return
-        }
-        $("#pValue").text(`P value is ${pValue}`)
-        $("#pValueDesc").text(`Data is None stationary`);
-    }
-
-
-    function callDrawPlot(selectedValue) {
-        d3.csv(selectedValue, function (err, rows) {
-
-            function unpack(rows, key) {
-                return rows.map(function (row) {
-                    if (key === 'date') {
-                        return new Date(row[key]);
-                    } else {
-                        return parseFloat(row[key]);
-                    }
-                }
-                );
-            }
-
-
-            Object.keys(rows[0]).forEach(function (row) {
-                var data = new Array();
-                if (row === 'date') return;
-                var trace = {
-                    type: "scatter",
-                    mode: "lines",
-                    name: row,
-                    x: unpack(rows, 'date'),
-                    y: unpack(rows, row),
-                    line: { color: '#17BECF' }
-                }
-
-                console.log(trace)
-                const nodeName = "myDiv" + row;
-                const node = document.createElement("div");
-                node.id = nodeName;
-                // Append the "li" node to the list:
-                document.getElementById("myDiv").appendChild(node);
-
-                var layout = {
-                    title: 'Biểu đồ giá ' + row,
-                };
-
-                Plotly.newPlot(nodeName, [trace], layout);
-
-            });
-        })
-
-    }
-
-
-    function plotStationaryData(data) {
-
-        data.forEach((value, index) => {
-            console.log(value.x)
-            xDim = new Array()
-            for (i in value.x)
-                xDim.push(new Date(value.x[i]))
-            yDim = value.y
-            mode = value.mode
-
-            trace = { x: xDim, y: yDim, type: "scatter", mode: "lines" }
-            console.log(trace)
-            const nodeName = "myDivStationary" + index;
-            const node = document.createElement("div");
-            node.id = nodeName;
-            console.log(node)
-            document.getElementById("myDivStationary").appendChild(node);
-
-            var layout = {
-                title: 'Biểu đồ dự đoán giá ' + value.name
-            };
-            Plotly.newPlot(nodeName, [trace], layout);
-        })
-    }
-
-
-    function loadData(state) {
-        if (state) {
-            $('#loadStationary').removeClass('d-none').addClass('d-flex');
-            $('#plotStationaryData').addClass('d-none');
-            $('#stationary').addClass('d-none');
-        } else {
-            $('#loadStationary').addClass('d-none').removeClass('d-flex');
-            $('#plotStationaryData').removeClass('d-none');
-            $('#stationary').removeClass('d-none');
-        }
-    }
-
-    async function applyDiffSeasonal(value) {
-        await loadData(true);
-        var seasonal = parseInt($('#applyLog').find(":selected").text()) || 1;
-
-        const url = 'http://localhost:5000/stationary-train-model';
-        const modelName = 'ARIMA';
-        const isStationary = 'True';
-        const diffType = value;
-        const lag = seasonal;
-        const modelData = 'https://raw.githubusercontent.com/thuongh2/FinalProject/main/data/var_data.csv';
-
-        const params = {
-            model_name: modelName,
-            is_stationary: isStationary,
-            diff_type: diffType,
-            lag: lag,
-            model_data: modelData
-        };
-
-        const queryString = $.param(params);
-        const fullUrl = url + '?' + queryString;
-
-        await $.ajax({
-            url: fullUrl,
-            type: 'GET',
-            contentType: 'application/json',
-            success: function (response) {
-
-                checkStationary(response.p_values)
-
-                plotAcf(response.acf, 'ACF');
-                plotAcf(response.df_pacf, 'PACF');
-                loadData(false)
-                plotStationaryData(response.plot_data)
-            },
-            error: function (xhr, status, error) {
-                // Handle the error here
-                console.log(error);
-            }
-        });
-    }
-
-
-    $(document).ready(function () {
-        $('input[type=radio][name=flexRadioDefault]').change(function () {
-            var selectedValue = $(this).val();
-            if (selectedValue === 'diff') {
-                $('#applyLog').removeClass('d-none');
-            } else {
-                $('#applyLog').addClass('d-none');
-            }
-            applyDiffSeasonal(selectedValue);
-        });
-
-        $('#applyLog').on('change', function () {
-            var selectedValue = $('input[type=radio][name=flexRadioDefault]:checked').val();
-            applyDiffSeasonal(selectedValue);
-        });
-
-        var el = document.getElementById('curr');
-        var r = document.getElementById('myRange');
-        el.innerText = r.valueAsNumber + '%';
-        r.addEventListener('change', () => {
-            el.innerText = r.valueAsNumber + '%';
-        })
-    });
-
+    
 </script>
 
 {% endblock %}

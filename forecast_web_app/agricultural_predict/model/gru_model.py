@@ -75,7 +75,7 @@ class GRUModel():
         return predicted_values
 
     def forecast_accuracy(self, test_data, predicted_values):
-        test_values = test_data['price'].values
+        test_values = test_data
         mape = np.mean(np.abs((test_values - predicted_values) / test_values)) * 100
         mse = mean_squared_error(test_values, predicted_values)
         rmse = np.sqrt(mse)

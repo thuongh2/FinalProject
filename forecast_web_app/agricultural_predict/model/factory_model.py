@@ -19,7 +19,7 @@ class FactoryModel:
             "SARIMA": ARIMAModel,
             "ARIMAX": ARIMAXModel,
             "VAR": VARModel,
-            "VARMAX": VARMAModel,
+            "VARMA": VARMAModel,
             "LSTM": LSTMModel,
             "GRU": GRUModel,
             "BiLSTM": BiLSTMModel,

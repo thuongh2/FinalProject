@@ -13,7 +13,7 @@ import hashlib
 from flask import current_app
 from minio import Minio
 import numpy as np
-import os
+import ast
 import pandas as pd
 from werkzeug.utils import secure_filename
 import json
@@ -44,12 +44,17 @@ def train_model_page():
     if (model_name):
         model_data_find = model.find_one({'name': model_name})
         data = model_data_find.get('attrs')
+        default_param = model_data_find.get('default_param')
+        if(default_param):
+            params_render = default_param.get('param')
+        current_app.logger.info(params_render)
 
-        return render_template('admin/train-model.html', model_names=model_names, data=data, model_name=model_name
-                               )
+        return render_template('admin/train-model.html',
+                                model_names=model_names, data=data,
+                                model_name=model_name, params_render = params_render)
 
     return render_template('admin/train-model.html',
-                           model_names=model_names, data=None, model_name="")
+                           model_names=model_names, data=None, model_name="", params_render=None)
 
 
 @train_model_router.route('/search-train-model', methods=['GET'])
@@ -203,6 +208,7 @@ def train_model_data():
     except Exception as e:
         print(e)
         data_model['status'] = 'FAIL'
+        data_model['error'] = str(e)
 
     # train_model.insert_one(data_model)
     if os.path.exists(file_dir):
@@ -212,3 +218,13 @@ def train_model_data():
 
     return json_util.dumps(data_model)
 
+
+@train_model_router.route('/submit-train-model-data', methods=['POST'])
+@cross_origin()
+def submit_train_model_data():
+    data =request.get_json()
+    data = eval(data.replace("'", "\"").replace('false', 'False'))
+    del data['plot_data']
+
+    train_model.insert_one(data)
+    return json_util.dumps(data.get('_id'))

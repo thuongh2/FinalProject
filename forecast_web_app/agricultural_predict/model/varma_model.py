@@ -85,7 +85,7 @@ class VARMAModel(BaseModel):
 
         logging.info('Start train VAR MODEL')
 
-        model_training = VARMAX(df_differenced[['price', 'RON 95-III']],
+        model_training = VARMAX(df_differenced,
                                 order=(argument.get('p', 1), argument.get('q', 1)),trends = 'n').fit(disp=False)
 
         self.model = model_training

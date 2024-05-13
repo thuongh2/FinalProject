@@ -98,6 +98,7 @@ class VARModel(BaseModel):
             print('FPE : ', result.fpe)
             print('HQIC: ', result.hqic, '\n')
             aic_core[i] = result.aic
+
         P = min(aic_core, key=aic_core.get)
         print('P : ', P)
 
@@ -110,7 +111,7 @@ class VARModel(BaseModel):
                                           columns=self.test_data.columns)
 
         print(self.forecast_data.info())
-        self.forecast_data = self.invert_transformation(self.train_data, self.forecast_data, second_diff=True)
+        self.forecast_data = self.invert_transformation(self.train_data, self.forecast_data)
         self.forecast_data['price'] = self.forecast_data['price_forecast']
         self.accuracy = self.forecast_accuracy(self.forecast_data.price_forecast.values, self.test_data.price.values)
         return self.forecast_data, self.accuracy, self.model
@@ -134,15 +135,11 @@ class VARModel(BaseModel):
 
     def invert_transformation(self, df_train, df_forecast, second_diff=False):
         """Revert back the differencing to get the forecast to original scale."""
-        df_fc = df_forecast.copy()
+        df_res = df_forecast.copy()
         columns = df_train.columns
         for col in columns:
-            # Roll back 2nd Diff
-            if second_diff:
-                df_fc[str(col)+'_1d'] = (df_train[col].iloc[-1]-df_train[col].iloc[-2]) + df_fc[str(col)].cumsum()
-            # Roll back 1st Diff
-            df_fc[str(col)+'_forecast'] = df_train[col].iloc[-1] + df_fc[str(col)+'_1d'].cumsum()
-        return df_fc
+            df_res[str(col) + '_forecast'] = df_train[col].iloc[-1] + df_res[str(col)].cumsum()
+        return df_res
 
 
     def ml_flow_register(self):

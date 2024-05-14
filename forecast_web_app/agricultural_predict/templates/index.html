@@ -24,7 +24,7 @@
 <div id="container-fluid" class="container-fluid mt-2" style="padding: 0">
   <div class="row shadow" style="padding: 0">
     <!-- Card 1 -->
-    <!-- <a id="coffee" href="#coffee" class="col-xl-4 price-agricutural active">
+    <a id="coffee" href="?agricultural_type=CAFE" class="col-xl-4 price-agricutural">
       <div class="card-price h-100 py-2">
         <div class="card-body">
           <div class="row no-gutters align-items-center">
@@ -37,40 +37,15 @@
               </div>
             </div>
             <div class="col-auto">
-              <i
-                class="fas fa-arrow-trend-up text-success"
-                style="font-size: 1.5em"
-              ></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </a> -->
-    {% for item in data.algricutural %}
-    <a id="{{ item }}" href="?model_data={{ item }}" {% if item==model_data %} active {%
-      endif %} class="col-xl-4 price-agricutural active">
-      <div class="card-price h-100 py-2">
-        <div class="card-body">
-          <div class="row no-gutters align-items-center">
-            <div class="col mr-2">
-              <div class="h5 font-weight-bold text-primary text-uppercase mb-1">
-                Giá cà phê
-              </div>
-              <div class="h5 mb-0 font-weight-bold text-primary text-gray-800">
-                Hôm nay: {{ item.price }}đ
-              </div>
-            </div>
-            <div class="col-auto">
               <i class="fas fa-arrow-trend-up text-success" style="font-size: 1.5em"></i>
             </div>
           </div>
         </div>
       </div>
     </a>
-    {% endfor %}
 
     <!-- Card 2 -->
-    <a id="rice" href="#rice" class="col-xl-4 price-agricutural">
+    <a id="rice" href="?agricultural_type=LUA" class="col-xl-4 price-agricutural">
       <div class="card-price h-100 py-2">
         <div class="card-body">
           <div class="row no-gutters align-items-center">
@@ -93,7 +68,7 @@
       </div>
     </a>
     <!-- Card 3 -->
-    <a id="watermelon" href="#watermelon" class="col-xl-4 price-agricutural">
+    <a id="watermelon" href="?agricultural_type=DAUHAU" class="col-xl-4 price-agricutural">
       <div class="card-price h-100 py-2">
         <div class="card-body">
           <div class="row no-gutters align-items-center">
@@ -171,11 +146,11 @@
         <!-- Chọn dữ liệu -->
         <div class="mt-4">
           <select id="data_name" name="data_name" class="form-control form-select col-xl-12" style="color: black">
-            {% for item in data.data %}
+            {% for item in data %}
                 {% if item['type'] == 'CAFE' %}
-                <option value="{{ item['data'] }}" selected>{{ item['name'] }}</option>
+                <option value="{{ item.data }}" selected>{{ item.name }}</option>
                 {% else %}
-                <option value="{{ item['data'] }}">{{ item['name'] }}</option>
+                <option value="{{ item.data }}">{{ item.name }}</option>
                 {% endif %}
             {% endfor %}
           </select>        
@@ -412,7 +387,8 @@
 
           if (
             (activeId === "coffee" && agriculturalName === "CAFE") ||
-            (activeId === "rice" && agriculturalName === "LUA")
+            (activeId === "rice" && agriculturalName === "LUA") ||
+            (activeId === "watermelon" && agriculturalName === "DAUHAU")
           ) {
             row.style.display = "";
           } else {
@@ -554,7 +530,6 @@
       const url = "http://localhost:5000/load-chart";
       const modelName = $("#model_name").val();
       const modelData = $("#data_name").val();
-      // const modelData = "https://raw.githubusercontent.com/thuongh2/FinalProject/main/data/coffee_daklak.csv";
       const modelTime = $("#model_time").val();
 
       const params = {

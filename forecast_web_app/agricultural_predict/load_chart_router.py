@@ -51,7 +51,7 @@ def load_chart():
 
     predict_data['date'] = pd.to_datetime(predict_data['date'])
     predict_data.set_index(['date'], inplace=True)
-    test_data = test_data.loc['2024-01-01':]
+    test_data = test_data.iloc[-90:]
     first_predict_data_row = predict_data.iloc[[0]]
     first_predict_data_row.index = pd.to_datetime(first_predict_data_row.index)
     test_data = pd.concat([test_data, first_predict_data_row])

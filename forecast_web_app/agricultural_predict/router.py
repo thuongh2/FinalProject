@@ -34,7 +34,23 @@ def index():
                         'algricutural_name': record_data.get('algricutural_name')
                     })
                 seen_algricutural_names.add(record_data.get('algricutural_name'))
-    return render_template('index.html', models=records, records_data=records_data, price_data=price_data)
+                
+    model_name = request.args.get('model_name')
+    model_data = model.find()
+
+    model_names = [m.get('name') for m in model_data]
+    current_app.logger.info(model_names)
+    
+    data_type = request.args.get('model_data')
+   
+    if(model_name):
+        model_data_find = model.find_one({'name': model_name})
+        data = model_data_find.get('attrs')
+    
+        return render_template('index.html', data_type=data_type, model_names=model_names, data=data, model_name=model_name, models=records, records_data=records_data, price_data=price_data)
+
+    return render_template('index.html', data_type=data_type, models=records, records_data=records_data, price_data=price_data, model_names=model_names, data=None, model_name="")
+
 
 @main_router.route('/search-all-models', methods=['GET'])
 def get_all_models():

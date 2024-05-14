@@ -1,5 +1,5 @@
-{% extends "layout.html" %} {% block title %}Dự đoán giá nông sản{% endblock %} {% block
-header %}{% endblock %} {% block content %}
+{% extends "layout.html" %} {% block title %}Dự đoán giá nông sản{% endblock %}
+{% block header %}{% endblock %} {% block content %}
 
 <!-- Begin Page Content -->
 <!-- Slide image -->
@@ -19,7 +19,9 @@ header %}{% endblock %} {% block content %}
   </div>
 </div>
 
-<div id="container-fluid" class="container-fluid mt-2" style='padding: 0'>
+<!-- <iframe src="/streamlit" width="100%" height="800"></iframe> -->
+
+<div id="container-fluid" class="container-fluid mt-2" style="padding: 0">
   <div class="row shadow" style="padding: 0">
     <!-- Card 1 -->
     <a id="coffee" href="#coffee" class="col-xl-4 price-agricutural active">
@@ -35,7 +37,10 @@ header %}{% endblock %} {% block content %}
               </div>
             </div>
             <div class="col-auto">
-              <i class="fas fa-arrow-trend-up text-success" style="font-size: 1.5em"></i>
+              <i
+                class="fas fa-arrow-trend-up text-success"
+                style="font-size: 1.5em"
+              ></i>
             </div>
           </div>
         </div>
@@ -55,7 +60,10 @@ header %}{% endblock %} {% block content %}
               </div>
             </div>
             <div class="col-auto">
-              <i class="fas fa-arrow-trend-up text-success" style="font-size: 1.5em"></i>
+              <i
+                class="fas fa-arrow-trend-up text-success"
+                style="font-size: 1.5em"
+              ></i>
             </div>
           </div>
         </div>
@@ -75,81 +83,91 @@ header %}{% endblock %} {% block content %}
               </div>
             </div>
             <div class="col-auto">
-              <i class="fas fa-arrow-trend-down text-danger" style="font-size: 1.5em"></i>
+              <i
+                class="fas fa-arrow-trend-down text-danger"
+                style="font-size: 1.5em"
+              ></i>
             </div>
           </div>
         </div>
       </div>
-    </a>    
+    </a>
   </div>
-  
 </div>
-  <!-- Content Row -->
+<!-- Content Row -->
 
-  <div class="row">
-    <!-- Area Chart -->
-    <div class="col-xl-9 mt-4">
-      <div class="card shadow mb-4">
-        <!-- Card Header - Dropdown -->
-        <div
-          class="card-header py-3 d-flex flex-row align-items-center justify-content-between"
-        >
-          <h5 class="m-0 font-weight-bold text-primary">
-            Biểu đồ dự đoán giá nông sản
-          </h5>
+<div class="row">
+  <!-- Area Chart -->
+  <div class="col-xl-9 mt-4">
+    <div class="card shadow mb-4">
+      <!-- Card Header - Dropdown -->
+      <div
+        class="card-header py-3 d-flex flex-row align-items-center justify-content-between"
+      >
+        <h5 class="m-0 font-weight-bold text-primary">
+          Biểu đồ dự đoán giá nông sản
+        </h5>
+      </div>
+      <!-- Card Body -->
+      <div class="card-body">
+        <div id="charts-container" style="height: 100%;">
+          <div id="myDiv" style="height: 100%"></div>
         </div>
-        <!-- Card Body -->
-        <div class="card-body">
-          <div id="charts-container" style="height: 100%;">
-            <div id="LSTM-30days-univariate-coffee" class="chart-area" style="height: auto; position: relative; opacity: 1;">
-              {% include './chart/lstm-30days-univariate-coffee.html' %}
-            </div>
-            {% for model in models %}
-              {% for time in ["30days", "60days"] %}
-                {% set chart_type = "rice" %}
-                  <div id="{{ model.name }}-{{ time }}-univariate-coffee" class="chart-area" style="height: auto; position: absolute; opacity: 0;">
-                    {% set chart_filename = model.name + '-' + time + '-univariate-' + chart_type + '.html' %}
-                    {% include url_for('static', filename='chart/' + chart_filename) %}
-                  </div>
-              {% endfor %}
-            {% endfor %}
-          </div>  
-        </div>   
       </div>
     </div>
+  </div>
     <!-- Select area -->
-    <div class="col-xl-3 card shadow mt-4" style="height: 547px;">
+    <div class="col-xl-3 card shadow mt-4" style="height: 547px">
       <div class="col-xl-12 mt-4">
         <div
-              class="h4 font-weight-bold text-uppercase text-gray-800 mb-1" style="text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);"
-            >
-              Giá cà phê 5/5/2024: <strong>100.000đ</strong>
-            </div>
-            <div
-              class="h4 mb-0 font-weight-bold text-warning" style="text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);"
-            >
-              Giá dự đoán: 100.000đ
+          class="h4 font-weight-bold text-uppercase text-gray-800 mb-1"
+          style="text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1)"
+        >
+          Giá cà phê 5/5/2024: <strong>100.000đ</strong>
+        </div>
+        <div
+          class="h4 mt-2 mb-0 font-weight-bold text-warning"
+          style="text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1)"
+        >
+          Giá dự đoán: 100.000đ
         </div>
         <div class="pt-4"></div>
         <!-- Chọn mô hình -->
         <div class="mt-4">
-          <select id="model-select" class="form-control form-select col-xl-12" style="color: black">
+          <select id="model_name" class="form-control form-select col-xl-12" style="color: black">
+            {% for model in models %}
+              {% if model.name == 'GRU' %}
+                <option value="{{model.name}}" selected>{{model.name}}</option> 
+              {% else %}
+                <option value="{{model.name}}">{{model.name}}</option>
+              {% endif %}
+            {% endfor %}
           </select>        
         </div>
+        
         <!-- Chọn dữ liệu -->
         <div class="mt-4">
-          <select id="data-select" class="form-control form-select col-xl-12" style="color: black">
-          </select>
+          <select id="data_name" name="data_name" class="form-control form-select col-xl-12" style="color: black">
+            <option></option>
+            {% for item in data.data %}
+            <option value="{{ item }}">{{ item['name'] }}</option>
+            {% endfor %}
+          </select>        
         </div>
+
         <!-- Chọn thời gian -->
         <div class="mt-4">
-          <select id="time-select" class="form-control form-select col-xl-12" style="color: black">
+          <select
+            id="time-select"
+            class="form-control form-select col-xl-12"
+            style="color: black"
+          >
             <option value="30days" selected>30 ngày</option>
             <option value="60days">60 ngày</option>
           </select>
-        </div>      
+        </div>
       </div>
-    </div>
+    </div>  
   </div>
 
   <!-- Content Row -->
@@ -161,25 +179,68 @@ header %}{% endblock %} {% block content %}
           <h5 class="m-0 font-weight-bold text-primary">Bảng giá nông sản</h5>
         </div>
         <div class="card-body">
-          <div class="custom-scroll" style="height: 400px; overflow-y: scroll;">
-            <table class="table table-bordered dataTable" id="priceDataTable" width="100%" cellspacing="0" role="grid" aria-describedby="dataTable_info">
-              <thead style="background-color: rgb(247, 246, 246); position: sticky; top: -2px; z-index: 1;">
+          <div class="custom-scroll" style="height: 400px; overflow-y: scroll">
+            <table
+              class="table table-bordered dataTable"
+              id="priceDataTable"
+              width="100%"
+              cellspacing="0"
+              role="grid"
+              aria-describedby="dataTable_info"
+            >
+              <thead
+                style="
+                  background-color: rgb(247, 246, 246);
+                  position: sticky;
+                  top: -2px;
+                  z-index: 1;
+                "
+              >
                 <tr role="row">
-                  <th class="sorting sorting_asc" tabindex="0" aria-controls="dataTable" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Name: activate to sort column descending" style="width: 160px; background-color: rgb(247, 246, 246);">
+                  <th
+                    class="sorting sorting_asc"
+                    tabindex="0"
+                    aria-controls="dataTable"
+                    rowspan="1"
+                    colspan="1"
+                    aria-sort="ascending"
+                    aria-label="Name: activate to sort column descending"
+                    style="width: 160px; background-color: rgb(247, 246, 246)"
+                  >
                     <strong>Ngày</strong>
                   </th>
-                  <th class="sorting" tabindex="0" aria-controls="dataTable" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 246px; background-color: rgb(247, 246, 246);">
+                  <th
+                    class="sorting"
+                    tabindex="0"
+                    aria-controls="dataTable"
+                    rowspan="1"
+                    colspan="1"
+                    aria-label="Position: activate to sort column ascending"
+                    style="width: 246px; background-color: rgb(247, 246, 246)"
+                  >
                     <strong>Giá</strong>
                   </th>
-                  <th class="sorting" tabindex="0" aria-controls="dataTable" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 246px; background-color: rgb(247, 246, 246);">
+                  <th
+                    class="sorting"
+                    tabindex="0"
+                    aria-controls="dataTable"
+                    rowspan="1"
+                    colspan="1"
+                    aria-label="Position: activate to sort column ascending"
+                    style="width: 246px; background-color: rgb(247, 246, 246)"
+                  >
                     <strong>Loại Nông sản</strong>
                   </th>
                 </tr>
               </thead>
-              
+
               <tbody>
                 {% for data in price_data %}
-                <tr style="font-weight: normal;" onmouseover="this.style.fontWeight='bold';" onmouseout="this.style.fontWeight='normal';">
+                <tr
+                  style="font-weight: normal"
+                  onmouseover="this.style.fontWeight='bold';"
+                  onmouseout="this.style.fontWeight='normal';"
+                >
                   <td>{{ data.date }}</td>
                   <td>{{ data.price }}</td>
                   <td>{{ data.algricutural_name }}</td>
@@ -191,8 +252,7 @@ header %}{% endblock %} {% block content %}
         </div>
       </div>
     </div>
-    
-    
+
     <div class="col-lg-6 mb-4 mt-4">
       <div class="card shadow mb-4">
         <!-- Card Header - Dropdown -->
@@ -206,50 +266,50 @@ header %}{% endblock %} {% block content %}
         <!-- Card Body -->
         <div class="card-body">
           <table
-          class="table table-bordered dataTable"
-          id="dataTable"
-          width="100%"
-          cellspacing="0"
-          role="grid"
-          aria-describedby="dataTable_info"
-          style="width: 100%"
-        >
-          <thead>
-            <tr role="row">
-              <th
-                class="sorting sorting_asc"
-                tabindex="0"
-                aria-controls="dataTable"
-                rowspan="1"
-                colspan="1"
-                aria-sort="ascending"
-                aria-label="Name: activate to sort column descending"
-                style="width: 160px"
-              >
-                Tên
-              </th>
-              <th
-                class="sorting"
-                tabindex="0"
-                aria-controls="dataTable"
-                rowspan="1"
-                colspan="1"
-                aria-label="Position: activate to sort column ascending"
-                style="width: 246px"
-              >
-                Đánh giá
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="odd">
-              <td class="sorting_1">hoaithuong.data@gmail.com</td>
-              <td>RMSE: 500</td>
-            </tr>
-        
-            <tr class="even"></tr>
-          </tbody>
-        </table>
+            class="table table-bordered dataTable"
+            id="dataTable"
+            width="100%"
+            cellspacing="0"
+            role="grid"
+            aria-describedby="dataTable_info"
+            style="width: 100%"
+          >
+            <thead>
+              <tr role="row">
+                <th
+                  class="sorting sorting_asc"
+                  tabindex="0"
+                  aria-controls="dataTable"
+                  rowspan="1"
+                  colspan="1"
+                  aria-sort="ascending"
+                  aria-label="Name: activate to sort column descending"
+                  style="width: 160px"
+                >
+                  Tên
+                </th>
+                <th
+                  class="sorting"
+                  tabindex="0"
+                  aria-controls="dataTable"
+                  rowspan="1"
+                  colspan="1"
+                  aria-label="Position: activate to sort column ascending"
+                  style="width: 246px"
+                >
+                  Đánh giá
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="odd">
+                <td class="sorting_1">hoaithuong.data@gmail.com</td>
+                <td>RMSE: 500</td>
+              </tr>
+
+              <tr class="even"></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -258,6 +318,8 @@ header %}{% endblock %} {% block content %}
 
   <!-- Javascript -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
   <script>
     document
       .getElementById("model-select")
@@ -363,109 +425,162 @@ header %}{% endblock %} {% block content %}
   <!-- Load model và tập dữ liệu -->
   <script>
     $(document).ready(function () {
-      var activeId = "coffee";
+      loadDataForInitialModel();
 
-      showDataByType(activeId);
+      $("#model_name").change(loadDataForInitialModel);
 
-      $.ajax({
-        url: "/search-all-models",
-        method: "GET",
-        success: function (response) {
-          var options = "";
-          $.each(response, function (index, model) {
-            options +=
-              '<option value="' +
-              model.name +
-              '">' +
-              model.name +
-              "</option>";
-          });
-          $("#model-select").html(options);
-
-          var activeId = document.querySelector(
-            ".price-agricutural .card-price.active"
-          ).parentElement.id;
-
-          showDataByType(activeId);
-
-          $("#model-select").val("LSTM").change();
-        },
-        error: function (xhr, status, error) {
-          console.error("Lỗi:", error);
-        },
-      });
-
-      $("#model-select").change(function () {
-        var selectedModel = $(this).val();
+      function loadDataForInitialModel() {
+        var selectedModel = $("#model_name").val();
 
         $.ajax({
           url: "/search-one-model",
           method: "GET",
-          data: {
-            model_name: selectedModel,
-          },
+          data: { model_name: selectedModel },
           success: function (response) {
-            var options = "";
-            $.each(response.data, function (index, dataItem) {
-              options +=
-                '<option value="' +
-                dataItem.type +
-                '">' +
-                dataItem.name +
-                "</option>";
-            });
-            $("#data-select").html(options);
+            var options = response.data
+              .map(function (dataItem) {
+                return (
+                  '<option value="' +
+                  dataItem.type +
+                  '">' +
+                  dataItem.name +
+                  "</option>"
+                );
+              })
+              .join("");
+            $("#data_name").html(options);
 
-            var activeId = document.querySelector(
-              ".price-agricutural .card-price.active"
-            ).parentElement.id;
-
-            showDataByType(activeId);
+            var activeId = $(".price-agricutural .card-price.active")
+              .parent()
+              .attr("id");
           },
           error: function (xhr, status, error) {
             console.error("Lỗi:", error);
           },
         });
-      });
-
-      document.querySelectorAll(".price-agricutural").forEach((item) => {
-        item.addEventListener("click", (event) => {
-          var activeId = event.currentTarget.id;
-
-          document
-            .querySelectorAll(".price-agricutural .card-price")
-            .forEach((card) => {
-              card.classList.remove("active");
-            });
-
-          event.currentTarget
-            .querySelector(".card-price")
-            .classList.add("active");
-
-          showDataByType(activeId);
-        });
-      });
-
-      function showDataByType(activeId) {
-        const selectedType = activeId === "rice" ? "LUA" : "CAFE";
-        const dataSelect = document.getElementById("data-select");
-        const options = dataSelect.querySelectorAll("option");
-
-        options.forEach((option) => {
-          if (option.value === selectedType) {
-            option.style.display = "block";
-          } else {
-            option.style.display = "none";
-          }
-        });
-
-        const firstVisibleOption = dataSelect.querySelector(
-          "option[style='display: block;']"
-        );
-        if (firstVisibleOption) {
-          firstVisibleOption.selected = true;
-        }
       }
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      $("#model_name").val("LSTM");
+      $("#model_name").change();
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const selectedValue = $("#data_name").val();
+      callPlotChart(selectedValue);
+    });
+
+    function plotChart(data) {
+      $("#myDiv").empty();
+
+      var traces = [];
+      var minY = Infinity;
+      var maxY = -Infinity;
+
+      data.forEach((value, index) => {
+        xDim = new Array();
+        for (i in value.x) xDim.push(new Date(value.x[i]));
+        yDim = value.y;
+        mode = value.mode;
+        name = value.name;
+        var lineColor, fillColor, fillOpacity;
+
+        if (index === 0) {
+          lineColor = 'rgba(0, 110, 255, 0.7)'; 
+          fillColor = 'rgba(173, 216, 230, 0.7)'; 
+          fillOpacity = 1; 
+        } else if (index === 1) {
+          lineColor = 'rgba(250,128,114,0.8)';
+          fillColor = 'rgba(240,230,140,0.4)'; 
+          fillOpacity = 1; 
+        }
+
+        minY = Math.min(minY, Math.min(...yDim));
+        maxY = Math.max(maxY, Math.max(...yDim));
+
+        var trace = { 
+          x: xDim, 
+          y: yDim, 
+          type: "scatter", 
+          mode: mode, 
+          name: name,
+          line: {color: lineColor}, 
+          fill: 'tozeroy', 
+          fillcolor: fillColor, 
+          visible: true, 
+          opacity: fillOpacity,
+        };
+        traces.push(trace);
+      });
+
+      var layout = {
+        title:{
+          'text': "BIỂU ĐỒ DỰ ĐOÁN",
+          'font': {
+                'family': 'Arial',
+                'size': 20,
+                'weight': 'bold'}, 
+        },
+        xaxis: {                    
+          type: 'date',
+          title:'Ngày',
+          showgrid: false
+        },
+        yaxis: {
+          title: "Giá (đồng)",
+          showgrid: false,
+          range: [minY * 0.98, maxY * 1.02]
+        },
+      };
+
+      Plotly.newPlot("myDiv", traces, layout);
+    }
+
+    function loadData(state) {
+      if (state) {
+        $("#plotChart").addClass("d-none");
+      } else {
+        $("#plotChart").removeClass("d-none");
+      }
+    }
+
+    async function callPlotChart(data) {
+      await loadData(true);
+      // const seasonal =
+      //   parseInt($("#callPlotChart").find(":selected").text()) || 1;
+
+      const url = "http://localhost:5000/load-chart";
+      const modelName = "LSTM";
+      const modelData =
+        "https://raw.githubusercontent.com/thuongh2/FinalProject/main/data/coffee_daklak.csv";
+
+      const params = {
+        model_name: modelName,
+        model_data: modelData,
+      };
+
+      const queryString = $.param(params);
+      const fullUrl = url + "?" + queryString;
+
+      await $.ajax({
+        url: fullUrl,
+        type: "GET",
+        contentType: "application/json",
+        success: function (response) {
+          plotChart(response.plot_data);
+        },
+        error: function (xhr, status, error) {
+          console.log(error);
+        },
+      });
+    }
+
+    $(document).ready(function () {
+      $("#callPlotChart").change(function () {
+        var selectedValue = $(this).val();
+        callPlotChart(selectedValue);
+      });
     });
   </script>
   {% endblock %}

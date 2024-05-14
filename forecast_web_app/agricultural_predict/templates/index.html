@@ -24,7 +24,7 @@
 <div id="container-fluid" class="container-fluid mt-2" style="padding: 0">
   <div class="row shadow" style="padding: 0">
     <!-- Card 1 -->
-    <a id="coffee" href="#coffee" class="col-xl-4 price-agricutural active">
+    <!-- <a id="coffee" href="#coffee" class="col-xl-4 price-agricutural active">
       <div class="card-price h-100 py-2">
         <div class="card-body">
           <div class="row no-gutters align-items-center">
@@ -45,7 +45,30 @@
           </div>
         </div>
       </div>
+    </a> -->
+    {% for item in data.algricutural %}
+    <a id="{{ item }}" href="?model_data={{ item }}" {% if item==model_data %} active {%
+      endif %} class="col-xl-4 price-agricutural active">
+      <div class="card-price h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="h5 font-weight-bold text-primary text-uppercase mb-1">
+                Giá cà phê
+              </div>
+              <div class="h5 mb-0 font-weight-bold text-primary text-gray-800">
+                Hôm nay: {{ item.price }}đ
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-arrow-trend-up text-success" style="font-size: 1.5em"></i>
+            </div>
+          </div>
+        </div>
+      </div>
     </a>
+    {% endfor %}
+
     <!-- Card 2 -->
     <a id="rice" href="#rice" class="col-xl-4 price-agricutural">
       <div class="card-price h-100 py-2">
@@ -148,9 +171,12 @@
         <!-- Chọn dữ liệu -->
         <div class="mt-4">
           <select id="data_name" name="data_name" class="form-control form-select col-xl-12" style="color: black">
-            <option></option>
             {% for item in data.data %}
-            <option value="{{ item }}">{{ item['name'] }}</option>
+                {% if item['type'] == 'CAFE' %}
+                <option value="{{ item['data'] }}" selected>{{ item['name'] }}</option>
+                {% else %}
+                <option value="{{ item['data'] }}">{{ item['name'] }}</option>
+                {% endif %}
             {% endfor %}
           </select>        
         </div>
@@ -158,12 +184,12 @@
         <!-- Chọn thời gian -->
         <div class="mt-4">
           <select
-            id="time-select"
+            id="model_time"
             class="form-control form-select col-xl-12"
             style="color: black"
           >
-            <option value="30days" selected>30 ngày</option>
-            <option value="60days">60 ngày</option>
+            <option value="30" selected>30 ngày</option>
+            <option value="60">60 ngày</option>
           </select>
         </div>
       </div>
@@ -325,12 +351,12 @@
       .getElementById("model-select")
       .addEventListener("change", updateCharts);
     document
-      .getElementById("time-select")
+      .getElementById("model_time")
       .addEventListener("change", updateCharts);
 
     function updateCharts() {
       var selectedModel = document.getElementById("model-select").value;
-      var selectedTime = document.getElementById("time-select").value;
+      var selectedTime = document.getElementById("model_time").value;
 
       if (selectedTime === "") {
         selectedModel = "LSTM";
@@ -425,50 +451,27 @@
   <!-- Load model và tập dữ liệu -->
   <script>
     $(document).ready(function () {
-      loadDataForInitialModel();
+      var selectedValue = $("#data_name").val();
+      callPlotChart(selectedValue);    
 
-      $("#model_name").change(loadDataForInitialModel);
+      // Lắng nghe thay đổi của các opions
+      $("#model_name").change(function () {
+        modelName = $(this).val();
+        callPlotChart();
+      });
+      $("#data_name").change(function () {
+        callPlotChart(); 
+      });
+      $('#model_time').change(function () {
+        callPlotChart();
+      });
 
-      function loadDataForInitialModel() {
-        var selectedModel = $("#model_name").val();
 
-        $.ajax({
-          url: "/search-one-model",
-          method: "GET",
-          data: { model_name: selectedModel },
-          success: function (response) {
-            var options = response.data
-              .map(function (dataItem) {
-                return (
-                  '<option value="' +
-                  dataItem.type +
-                  '">' +
-                  dataItem.name +
-                  "</option>"
-                );
-              })
-              .join("");
-            $("#data_name").html(options);
-
-            var activeId = $(".price-agricutural .card-price.active")
-              .parent()
-              .attr("id");
-          },
-          error: function (xhr, status, error) {
-            console.error("Lỗi:", error);
-          },
-        });
-      }
     });
 
     document.addEventListener("DOMContentLoaded", function () {
       $("#model_name").val("LSTM");
       $("#model_name").change();
-    });
-
-    document.addEventListener("DOMContentLoaded", function () {
-      const selectedValue = $("#data_name").val();
-      callPlotChart(selectedValue);
     });
 
     function plotChart(data) {
@@ -547,17 +550,17 @@
 
     async function callPlotChart(data) {
       await loadData(true);
-      // const seasonal =
-      //   parseInt($("#callPlotChart").find(":selected").text()) || 1;
 
       const url = "http://localhost:5000/load-chart";
-      const modelName = "LSTM";
-      const modelData =
-        "https://raw.githubusercontent.com/thuongh2/FinalProject/main/data/coffee_daklak.csv";
+      const modelName = $("#model_name").val();
+      const modelData = $("#data_name").val();
+      // const modelData = "https://raw.githubusercontent.com/thuongh2/FinalProject/main/data/coffee_daklak.csv";
+      const modelTime = $("#model_time").val();
 
       const params = {
         model_name: modelName,
         model_data: modelData,
+        model_time: modelTime,
       };
 
       const queryString = $.param(params);
@@ -568,6 +571,7 @@
         type: "GET",
         contentType: "application/json",
         success: function (response) {
+          Plotly.purge("myDiv");
           plotChart(response.plot_data);
         },
         error: function (xhr, status, error) {

@@ -10,37 +10,6 @@ from model.base_model import BaseModel
 class GRUModel(BaseModel):
     def __init__(self):
         super().__init__()
-        
-    # def prepare_data(self, train_url, test_url):
-    #     if train_url:
-    #         self.train_data = pd.read_csv(train_url)
-    #     if test_url:
-    #         self.test_data = pd.read_csv(test_url)
-            
-    #     return self.set_index_date(self.train_data, self.test_data)
-    
-    
-    # def prepare_data(self, data_url):
-    #     self.data = pd.read_csv(data_url)
-    #     self.data['date'] = pd.to_datetime(self.data['date'])
-    #     self.data.set_index('date', inplace=True)
-    #     size = int(len(self.data) * 0.8)
-    #     self.train_data = self.data[:size]
-    #     self.test_data = self.data[size:]
-            
-    #     return self.train_data, self.test_data
-
-
-    # def set_index_date(self, train_data, test_data):
-    #     if 'date' in train_data.columns:
-    #         train_data['date'] = pd.to_datetime(train_data['date'])
-    #         train_data.set_index('date', inplace=True)
-            
-    #     if 'date' in test_data.columns:
-    #         test_data['date'] = pd.to_datetime(test_data['date'])
-    #         test_data.set_index('date', inplace=True)
-            
-    #     return train_data, test_data 
     
     def predict(self, data, n_steps):
         model = load_model(self.model_url)
@@ -82,30 +51,26 @@ class GRUModel(BaseModel):
 
         self.accuracy = self.forecast_accuracy(self.test_data.price.values, self.forecast_data.price.values)
         return self.forecast_data, self.accuracy
-    
-    def predict_ensemble(self, forecast_num, data, n_steps, time):
-        model = load_model(self.model_url)
+       
+    def forecast_future(self, forecast_num, data, n_steps):
+        self.model = load_model(self.model_url)
         scaler = MinMaxScaler(feature_range=(0, 1))
         prices = data['price'].values
         dataset = scaler.fit_transform(prices.reshape(-1, 1))
-        last_data = dataset[-time:]
-        last_data = last_data.reshape(1, -1)[:, -(time-1):]
-    
+        last_data = dataset[-(n_steps+1):]
+        last_data = last_data.reshape(1, -1)[:, -((n_steps+1) - 1):]
+
         predicted_prices = []
         for day in range(forecast_num):
-            next_prediction = model.predict(last_data)
+            next_prediction = self.model.predict(last_data)
             last_data = np.append(last_data, next_prediction).reshape(1, -1)[:, 1:]
             predicted_price = scaler.inverse_transform(next_prediction.reshape(-1, 1))
             predicted_prices.append(predicted_price[0, 0])
-    
-        return predicted_prices
-       
-    def forecast_future(self, forecast_num, data, n_steps):
-        predicted = self.predict_ensemble(forecast_num, data, n_steps, n_steps+1)
-        last_date = data.index[-1]
+
+        last_date = self.data.index[-1]
         next_dates = pd.date_range(start=last_date, periods=forecast_num + 1)[1:]
-        predicted_df = pd.DataFrame({'date': next_dates, 'price': predicted})
-        
+        predicted_df = pd.DataFrame({'date': next_dates, 'price': predicted_prices})
+
         return predicted_df
     
     def concat_dataframes(self, original_df, predicted_df):

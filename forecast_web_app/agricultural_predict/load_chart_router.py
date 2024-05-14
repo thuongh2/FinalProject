@@ -2,33 +2,20 @@ import http
 
 from flask import Blueprint
 from flask import render_template, request, redirect, url_for, flash, jsonify
-from flask import render_template
-from flask import send_from_directory
 from flask import current_app
 from flask_cors import cross_origin
 from pymongo import MongoClient
-from config.db import db, model, user, train_model
+from config.db import model
 from flask import session
-import hashlib
+
 from flask import current_app
 from minio import Minio
-import numpy as np
-import os
+
 import pandas as pd
 from werkzeug.utils import secure_filename
-import json
-from pprint import pprint
-from datetime import datetime, timedelta
 from statsmodels.tsa.stattools import acf, pacf
-from model.lstm_model import LSTMModel
 
 from model.factory_model import FactoryModel
-from model.arima_model import ARIMAModel
-from bson.objectid import ObjectId
-import matplotlib.pyplot as plt
-import plotly.graph_objs as go
-import plotly.io as pio
-import ast
 from statsmodels.tsa.stattools import adfuller
 import io
 from sklearn.preprocessing import MinMaxScaler
@@ -49,10 +36,9 @@ def adf_test(series):
 def load_chart():
     model_name = request.args.get('model_name')
     model_data = request.args.get('model_data')
-    # date = request.args.get('date')
+    model_time = request.args.get('model_time')
+    model_time = int(model_time)
     n_steps = 10
-    forecast_num = 30
-    time = 11
 
     dict_model_file = {'ARIMA':'ARIMA.joblib', 'LSTM':'LSTM_univariate_coffee.h5', 'GRU':'GRU_univariate_coffee.h5', 'BiLSTM':'BiLSTM_univariate_coffee.h5'}
     model_url = './file/' + dict_model_file.get(model_name)
@@ -61,7 +47,7 @@ def load_chart():
     model.data_uri = model_data
     model.model_url = model_url
     _, test_data = model.prepare_data_for_self_train()
-    predict_data = model.forecast_future(forecast_num, test_data, n_steps)
+    predict_data = model.forecast_future(model_time, test_data, n_steps)
 
     predict_data['date'] = pd.to_datetime(predict_data['date'])
     predict_data.set_index(['date'], inplace=True)
@@ -91,12 +77,21 @@ def load_chart():
     return jsonify(response_data)
 
 
-@load_chart_router.route('/search-one-model', methods=['GET'])
-def get_data_train_model():
+@load_chart_router.route('/', methods=['GET'])
+def select_option():
+    current_app.logger.info("VO")
     model_name = request.args.get('model_name')
+    model_data = model.find()
 
-    data_name = request.args.get('data_name')
-    model_data_find = model.find_one({'name': model_name})
-    data = model_data_find.get('attrs')
+    model_names = [m.get('name') for m in model_data]
+    current_app.logger.info(model_names)
 
-    return jsonify(data)
+    if (model_name):
+        model_data_find = model.find_one({'name': model_name})
+        data = model_data_find.get('attrs')
+
+        return render_template('index.html', model_names=model_names, data=data, model_name=model_name
+                               )
+
+    return render_template('index.html',
+                           model_names=model_names, data=None, model_name="")

@@ -37,23 +37,6 @@ class LSTMModel(BaseModel):
 
         return {'mape': round(mape, 2), 'rmse': round(rmse, 2)}
 
-    def predict_ensemble(self, forecast_num, data, n_steps, time):
-        self.model = load_model(self.model_url)
-        scaler = MinMaxScaler(feature_range=(0, 1))
-        prices = data['price'].values
-        dataset = scaler.fit_transform(prices.reshape(-1, 1))
-        last_data = dataset[-time:]
-        last_data = last_data.reshape(1, -1)[:, -(time - 1):]
-
-        predicted_prices = []
-        for day in range(forecast_num):
-            next_prediction = self.predict(last_data)
-            last_data = np.append(last_data, next_prediction).reshape(1, -1)[:, 1:]
-            predicted_price = scaler.inverse_transform(next_prediction.reshape(-1, 1))
-            predicted_prices.append(predicted_price[0, 0])
-
-        return predicted_prices
-
     def forecast_future(self, forecast_num, data, n_steps):
         self.model = load_model(self.model_url)
         scaler = MinMaxScaler(feature_range=(0, 1))

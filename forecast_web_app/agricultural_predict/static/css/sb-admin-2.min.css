@@ -10472,7 +10472,7 @@ a.price-agricutural:hover {
   color: inherit;
 }
 
-.card-price.active {
+.active-card {
   box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
   background-color: #f8f9fc;
   border-color: #d1d3e2;

@@ -19,12 +19,10 @@
   </div>
 </div>
 
-<!-- <iframe src="/streamlit" width="100%" height="800"></iframe> -->
-
 <div id="container-fluid" class="container-fluid mt-2" style="padding: 0">
   <div class="row shadow" style="padding: 0">
     <!-- Card 1 -->
-    <a id="coffee" href="?agricultural_type=CAFE" class="col-xl-4 price-agricutural">
+    <a id="coffee" href="?agricultural_type=CAFE" class="col-xl-4 price-agricutural active-card">
       <div class="card-price h-100 py-2">
         <div class="card-body">
           <div class="row no-gutters align-items-center">
@@ -174,7 +172,7 @@
   <!-- Content Row -->
   <div class="row">
     <!-- Content Column -->
-    <div class="col-lg-6 mb-4 mt-4">
+    <div class="col-lg-12 mb-4">
       <div class="card shadow mb-4">
         <div class="card-header py-3">
           <h5 class="m-0 font-weight-bold text-primary">Bảng giá nông sản</h5>
@@ -253,67 +251,6 @@
         </div>
       </div>
     </div>
-
-    <div class="col-lg-6 mb-4 mt-4">
-      <div class="card shadow mb-4">
-        <!-- Card Header - Dropdown -->
-        <div
-          class="card-header py-3 d-flex flex-row align-items-center justify-content-between"
-        >
-          <h5 class="m-0 font-weight-bold text-primary">
-            Top mô hình có độ chính xác cao
-          </h5>
-        </div>
-        <!-- Card Body -->
-        <div class="card-body">
-          <table
-            class="table table-bordered dataTable"
-            id="dataTable"
-            width="100%"
-            cellspacing="0"
-            role="grid"
-            aria-describedby="dataTable_info"
-            style="width: 100%"
-          >
-            <thead>
-              <tr role="row">
-                <th
-                  class="sorting sorting_asc"
-                  tabindex="0"
-                  aria-controls="dataTable"
-                  rowspan="1"
-                  colspan="1"
-                  aria-sort="ascending"
-                  aria-label="Name: activate to sort column descending"
-                  style="width: 160px"
-                >
-                  Tên
-                </th>
-                <th
-                  class="sorting"
-                  tabindex="0"
-                  aria-controls="dataTable"
-                  rowspan="1"
-                  colspan="1"
-                  aria-label="Position: activate to sort column ascending"
-                  style="width: 246px"
-                >
-                  Đánh giá
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="odd">
-                <td class="sorting_1">hoaithuong.data@gmail.com</td>
-                <td>RMSE: 500</td>
-              </tr>
-
-              <tr class="even"></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
   </div>
   <!-- /.container-fluid -->
 
@@ -353,53 +290,7 @@
     }
   </script>
 
-  <!-- Active card, hiển thị dữ liệu tương úng-->
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      let activeId = "coffee";
-
-      document.querySelector("#coffee .card-price").classList.add("active");
-
-      document.querySelectorAll(".price-agricutural").forEach((item) => {
-        item.addEventListener("click", (event) => {
-          activeId = event.currentTarget.id;
-
-          document
-            .querySelectorAll(".price-agricutural .card-price")
-            .forEach((card) => {
-              card.classList.remove("active");
-            });
-
-          event.currentTarget
-            .querySelector(".card-price")
-            .classList.add("active");
-
-          showPriceData(activeId);
-        });
-      });
-
-      function showPriceData(activeId) {
-        const rows = document.querySelectorAll("#priceDataTable tbody tr");
-
-        rows.forEach((row) => {
-          const agriculturalName =
-            row.querySelector("td:nth-child(3)").textContent;
-
-          if (
-            (activeId === "coffee" && agriculturalName === "CAFE") ||
-            (activeId === "rice" && agriculturalName === "LUA") ||
-            (activeId === "watermelon" && agriculturalName === "DAUHAU")
-          ) {
-            row.style.display = "";
-          } else {
-            row.style.display = "none";
-          }
-        });
-      }
-
-      showPriceData(activeId);
-    });
-  </script>
+  <!-- Active card -->
 
   <!-- Croll dữ liệu -->
   <script>
@@ -429,8 +320,7 @@
     $(document).ready(function () {
       var selectedValue = $("#data_name").val();
       callPlotChart(selectedValue);    
-
-      // Lắng nghe thay đổi của các opions
+      
       $("#model_name").change(function () {
         modelName = $(this).val();
         callPlotChart();
@@ -561,6 +451,22 @@
         callPlotChart(selectedValue);
       });
     });
+
+    // Active card
+    $(".price-agricutural").click(function () {
+        var id = $(this).attr("id");
+        localStorage.setItem("activeTab", id);
+    });
+
+    $(document).ready(function() {
+        var activeTabId = localStorage.getItem("activeTab");
+        if (activeTabId) {
+            $(".price-agricutural").removeClass("active-card");
+            $("#" + activeTabId).addClass("active-card");
+        }
+    });
+
+
   </script>
   {% endblock %}
 </div>

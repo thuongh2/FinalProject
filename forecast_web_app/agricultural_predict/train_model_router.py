@@ -27,6 +27,7 @@ from statsmodels.tsa.stattools import adfuller
 import joblib
 import uuid
 import os
+import utils.minio_utils as minio_utils
 
 train_model_router = Blueprint('train_model_router', __name__, static_folder='static',
                                template_folder='templates')
@@ -34,7 +35,6 @@ train_model_router = Blueprint('train_model_router', __name__, static_folder='st
 
 @train_model_router.route('/train-model', methods=['GET'])
 def train_model_page():
-    current_app.logger.info("VO")
     model_name = request.args.get('model_name')
     model_data = model.find()
 
@@ -137,27 +137,6 @@ def make_stationary_data_train_model():
     return jsonify(respose_data)
 
 
-BUCKET_NAME = 'test'
-MINIO_URL = '20.2.210.176:9000'
-MINIO_ACCESS_KEY = 'minio'
-MINIO_SECRET = 'minio123'
-
-
-def upload_object(filename, data, length= None):
-    client = Minio(MINIO_URL, MINIO_ACCESS_KEY, MINIO_SECRET, secure=False)
-
-    # Make bucket if not exist.
-    found = client.bucket_exists(BUCKET_NAME)
-    if not found:
-        client.make_bucket(BUCKET_NAME)
-    else:
-        print(f"Bucket {BUCKET_NAME} already exists")
-
-    file = client.fput_object(BUCKET_NAME, filename, data)
-    print(f"{filename} is successfully uploaded to bucket {BUCKET_NAME}.")
-    return file
-
-
 @train_model_router.route('/train-model-data', methods=['POST'])
 @cross_origin()
 def train_model_data():
@@ -184,7 +163,7 @@ def train_model_data():
 
         joblib.dump(model, file_dir)
 
-        file_after_upload = upload_object(file_name,  file_dir)
+        file_after_upload = minio_utils.fupload_object(file_name,  file_dir)
         data_model["file_name"] = file_after_upload.object_name
         data_model["file_etag"] = file_after_upload.etag
         data_model['score'] = accuracy
@@ -222,8 +201,9 @@ def train_model_data():
 @train_model_router.route('/submit-train-model-data', methods=['POST'])
 @cross_origin()
 def submit_train_model_data():
-    data =request.get_json()
+    data = request.get_json()
     data = eval(data.replace("'", "\"").replace('false', 'False'))
+    
     del data['plot_data']
 
     train_model.insert_one(data)

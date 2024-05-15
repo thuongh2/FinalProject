@@ -1,0 +1,15 @@
+# define constants value
+LUA = 'LUA'
+CAFE = 'CAFE'
+
+# type train model
+UPLOAD_MODEL = 'UPLOAD_MODEL'
+PREDICT_MODEL = 'PREDICT_MODEL'
+SELF_TRAIN_MODEL = 'SELF_TRAIN_MODEL'
+AUTO_TRAIN_MODEL = 'AUTO_TRAIN_MODEL'
+
+# status model
+ERROR = 'ERROR'
+SUCCESS = 'SUCCESS'
+
+

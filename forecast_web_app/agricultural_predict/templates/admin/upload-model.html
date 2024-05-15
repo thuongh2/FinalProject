@@ -2,192 +2,140 @@
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 
-<!-- Begin Page Content -->
-<div class="container-fluid">
-    <!-- Content Row -->
+    <!-- Begin Page Content -->
+    <div class="container-fluid">
+        <!-- Content Row -->
 
-    <div class="row">
+        <div class="row">
+            <!-- Earnings (Monthly) Card Example -->
+            <a href="upload-model">
+                <div class="col-xl-3 col-md-6 mb-4 ">
+                    <div class="card border-primary border  border-5 shadow h-100 py-2">
+                        <div class="card-body ">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-md font-weight-bold text-primary text-uppercase mb-1">
+                                        Upload mô hình
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-upload fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </a>
+        </div>
+
         <!-- Earnings (Monthly) Card Example -->
-        <a href="upload-model">
-            <div class="col-xl-3 col-md-6 mb-4 ">
-                <div class="card border-primary border  border-5 shadow h-100 py-2">
-                    <div class="card-body ">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <a href="train-model">
+                <div class="card shadow h-100 py-2">
+                    <div class="card-body">
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
-                                <div class="text-md font-weight-bold text-primary text-uppercase mb-1">
-                                    Upload mô hình
+                                <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
+                                    Train trên web
                                 </div>
                             </div>
                             <div class="col-auto">
-                                <i class="fas fa-upload fa-2x text-gray-300"></i>
+                                <i class="fas fa-tasks fa-2x text-gray-300"></i>
                             </div>
                         </div>
                     </div>
                 </div>
-        </a>
-    </div>
+            </a>
+        </div>
 
-    <!-- Earnings (Monthly) Card Example -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <a href="train-model">
-            <div class="card shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
-                                Train trên web
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-tasks fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </a>
-    </div>
-
-    <!-- Earnings (Monthly) Card Example -->
-
-</div>
-
-
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Train model {{ model_name }}</h1>
-</div>
-
-<!-- Begin Page Content -->
-<div class="container-fluid  p-0 mb-3">
-    <!-- Content Row -->
-    <div class="">
         <!-- Earnings (Monthly) Card Example -->
-        <form action="{{ 'upload-model?model_name=' ~ model_name }}" enctype='multipart/form-data' method="POST">
-            <div class="col-12 d-flex p-0 mb-3">
-                
-                <div class=" mt-2 col-4">
-                    <select name="model_name"  onchange="this.options[this.selectedIndex].value 
-                    && (window.location = this.options[this.selectedIndex].value);" id="select"
-                        class="form-control form-select">
-                        <option value="upload-model" selected>Mô hình</option>
-                        {% for item in model_names %}
-                        <option value="{{ 'upload-model?model_name=' ~ item }}" 
-                        {% if item == model_name %} selected {% endif %}>{{ item }}</option>
-
-                        {% endfor %}
-                    </select>
-                </div>
-
-    
-                {% if data %}
-
-                <div class=" mt-2 col-4 mb-3">
-                    <input name="name_train" type="text" class="form-control" placeholder="Tên" aria-describedby="basic-addon1">
-                </div>
-
-             <div class=" mt-2  col-4">
-                    <select  name="data_name"  class="form-control form-select">
-                        <option>Tập dữ liệu</option>
-                        {% for item in data.data %}
-                            <option value="{{item}}">{{ item['name'] }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                {% endif %}
-
-            </div>
-
-            <div class="col-12">
-
-                <div class="card">
-                    <div class="card-body">
-
-
-                        <div id="drop-area" class="border rounded d-flex justify-content-center align-items-center"
-                            style="height: 200px; cursor: pointer;">
-
-                            <input type=file name=file>
-                        </div>
-
-                        <input class="btn btn-facebook btn-block mt-4" class="mt-3" type=submit value='Cập nhật'>
-
-                    </div>
-                </div>
-
-            </div>
-        </form>
 
     </div>
 
-</div>
+
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Upload model {{ model_name }}</h1>
+    </div>
+
+    <!-- Begin Page Content -->
+    <div class="container-fluid  p-0 mb-3">
+        <!-- Content Row -->
+        <div class="col-12 d-flex p-x-2 mb-3">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="">
+
+            <!-- Earnings (Monthly) Card Example -->
+            <form action="{{ 'upload-model?model_name=' ~ model_name }}" enctype='multipart/form-data' method="POST">
+                <div class="col-12 d-flex p-0 mb-3">
+                    <div class=" mt-2 col-4">
+                        <select name="model_name" onchange="this.options[this.selectedIndex].value
+                    && (window.location = this.options[this.selectedIndex].value);" id="select"
+                                class="form-control form-select">
+                            <option value="upload-model" selected>Mô hình</option>
+                            {% for item in model_names %}
+                                <option value="{{ 'upload-model?model_name=' ~ item }}"
+                                        {% if item == model_name %} selected {% endif %}>{{ item }}</option>
+
+                            {% endfor %}
+                        </select>
+                    </div>
 
 
+                    {% if data %}
+
+                        <div class=" mt-2 col-4 mb-3">
+                            <input name="name_train" type="text" class="form-control" placeholder="Tên"
+                                   aria-describedby="basic-addon1">
+                        </div>
+
+                        <div class=" mt-2  col-4">
+                            <select name="data_name" class="form-control form-select">
+                                <option>Tập dữ liệu</option>
+                                {% for item in data.data %}
+                                    <option value="{{ item }}">{{ item['name'] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    {% endif %}
+
+                </div>
+
+                <div class="col-12">
+
+                    <div class="card">
+                        <div class="card-body">
 
 
-</div>
-<!-- /.container-fluid -->
+                            <div id="drop-area" class="border rounded d-flex justify-content-center align-items-center"
+                                 style="height: 200px; cursor: pointer;">
 
-<script>
-    let dropArea = document.getElementById("drop-area");
+                                <input type=file name=file>
+                            </div>
 
-    ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
-        dropArea.addEventListener(eventName, preventDefaults, false);
-        document.body.addEventListener(eventName, preventDefaults, false);
-    });
+                            <input class="btn btn-facebook btn-block mt-4" class="mt-3" type=submit value='Cập nhật'>
 
-    ["dragenter", "dragover"].forEach((eventName) => {
-        dropArea.addEventListener(eventName, highlight, false);
-    });
+                        </div>
+                    </div>
 
-    ["dragleave", "drop"].forEach((eventName) => {
-        dropArea.addEventListener(eventName, unhighlight, false);
-    });
+                </div>
+            </form>
 
-    dropArea.addEventListener("drop", handleDrop, false);
+        </div>
 
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
+    </div>
 
-    function highlight(e) {
-        dropArea.classList.add("highlight");
-    }
-
-    function unhighlight(e) {
-        dropArea.classList.remove("highlight");
-    }
-
-    function handleDrop(e) {
-        let dt = e.dataTransfer;
-        let files = dt.files;
-        handleFiles(files);
-    }
-
-    function handleFiles(files) {
-        [...files].forEach(uploadFile);
-    }
-
-    function uploadFile(file) {
-        // thêm code update ơ day
-        console.log("Uploading", file.name);
-    }
-
-    dropArea.addEventListener("click", () => {
-        fileElem.click();
-    });
-
-    let fileElem = document.getElementById("fileElem");
-    fileElem.addEventListener("change", function (e) {
-        handleFiles(this.files);
-    });
-
-    $("#select").change(function () {
-        var option = $(this).find('option:selected');
-        window.location.href = option.data("url");
-    });
-
-</script>
+    </div>
 
 {% endblock %}

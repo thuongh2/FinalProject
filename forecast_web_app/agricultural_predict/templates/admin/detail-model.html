@@ -1,67 +1,105 @@
 {% extends "layout.html" %} {% block title %}Dashboard{% endblock %} {% block content %}
 
-<style>
-  .modebar {
-display: none !important;
-}
-  </style>
+    <style>
+        .modebar {
+            display: none !important;
+        }
+    </style>
 
-<!-- Begin Page Content -->
-<div class="container-fluid">
-  <a class="btn btn-primary" href="/admin" role="button"><i class="fa-solid fa-arrow-left mr-2"></i>Trở lại</a>
-  <!-- Page Heading -->
-  <div class="d-flex align-items-center justify-content-center mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Chi tiết mô hình</h1>
-  </div>
+    <!-- Begin Page Content -->
+    <div class="container-fluid">
+        
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="/admin"><i class="bi bi-house-door"></i> Home</a></li>
+              <li class="breadcrumb-item active"><a>Model</a></li>
+            </ol>
+          </nav>
 
-  <!-- Content Row -->
-
-  <div class="row">
-    <!-- Pie Chart -->
-    <div class="col-xl-4 col-lg-5">
-      <div class="card shadow mb-4">
-        <!-- Card Header - Dropdown -->
-        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-          <h5 class="m-0 font-weight-bold text-primary">Thông tin mô hình {{ model_data.model_id }}</h5>
+        <!-- Page Heading -->
+        <div class="d-flex align-items-center justify-content-center mb-4">
+            <h1 class="h3 mb-0 text-800 text-dark font-weight-normal">CHI TIẾT MÔ HÌNH</h1>
         </div>
-        <!-- Card Body -->
-        <div class="card-body">
-          <div class="chart-pie d-flex flex-column align-items-start">
-            <h6 class="mb-4" style="display: block; text-align: left">
-              Tên mô hình: {{model_data.name}}
-            </h6>
-            <h6 class="mb-4" style="display: block; text-align: left">
-              Dữ liệu: {{model_data.data_name}}
-            </h6>
-            <h6 class="mb-4" style="display: block; text-align: left">
-              Đánh giá:
-            </h6>
-            <p class="mb-4 ml-2" style="display: block; text-align: left">   MAPE: {{ model_data.score['mape'] }}</p>
-            <p class="mb-4 ml-2" style="display: block; text-align: left">   RMSE: {{ model_data.score['rmse']  }}</p>
-          </div>
+
+        <!-- Content Row -->
+
+        <div class="row">
+            <!-- Pie Chart -->
+            <div class="col-xl-4 col-lg-5">
+                <div class="card shadow mb-4">
+                    <!-- Card Header - Dropdown -->
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h5 class="m-0 font-weight-bold text-primary">Thông tin mô hình {{ model_data.model_id }}</h5>
+                    </div>
+                    <!-- Card Body -->
+                    <div class="card-body">
+                        <div class="chart-pie d-flex flex-column align-items-start">
+                            <h6 class="mb-4" style="display: block; text-align: left">
+                                <strong>Tên mô hình:</strong> {{ model_data.name }}
+                            </h6>
+                            <h6 class="mb-4" style="display: block; text-align: left">
+                                <strong>Dữ liệu:</strong> {{ model_data.data_name }}
+                            </h6>
+                            <h6 class="mb-4" style="display: block; text-align: left">
+                                <strong>Đánh giá:</strong>
+                            </h6>
+                            <p class="mb-4 ml-2" style="display: block; text-align: left">
+                                MAPE: {{ model_data.evaluate['mape'] }}</p>
+                            <p class="mb-4 ml-2" style="display: block; text-align: left">
+                                RMSE: {{ model_data.evaluate['rmse'] }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Area Chart -->
+            <div class="col-xl-8 col-lg-7">
+                <div class="card shadow mb-4">
+                    <!-- Card Header - Dropdown -->
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h5 class="m-0 font-weight-bold text-primary">Biểu đồ của mô hình</h5>
+                    </div>
+                    <!-- Card Body -->
+                    <div class="card-body">
+                        <div id="chart_body" class="col-12"></div>
+                        <script src='https://cdn.plot.ly/plotly-2.32.0.min.js'></script>
+                        <script>
+                            var chartData = {{ plot_data | tojson }}
+
+                            plot_data = new Array();
+
+                            chartData.forEach((value, index) => {
+                                xDim = new Array();
+
+                                for (time in value.x)
+                                    xDim.push(new Date(value.x[time]));
+                                yDim = value.y;
+                                mode = value.mode;
+
+                                trace = {
+                                    x: xDim,
+                                    y: yDim,
+                                    type: "scatter",
+                                    mode: "lines",
+                                    name: value.name
+                                };
+
+                                plot_data.push(trace)
+                            });
+
+                            var layout = {
+                                title: "Biểu đồ giá dự đoán"
+                            };
+
+                            Plotly.newPlot('chart_body', plot_data, layout);
+                        </script>
+
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-
-  
-
-    <!-- Area Chart -->
-    <div class="col-xl-8 col-lg-7">
-      <div class="card shadow mb-4">
-        <!-- Card Header - Dropdown -->
-        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-          <h5 class="m-0 font-weight-bold text-primary">Biểu đồ của mô hình</h5>
-        </div>
-        <!-- Card Body -->
-        <div class="card-body">
-  
-            {% include url_for('static', filename='chart/' + chart_name + '.html') %}
-      
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- /.container-fluid -->
+    <!-- /.container-fluid -->
 
 {% endblock %}

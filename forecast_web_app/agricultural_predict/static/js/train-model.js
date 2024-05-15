@@ -1,3 +1,5 @@
+const URL_SERVER = "http://localhost:5000"
+
 $("#data_name").change(function () {
     const selectedValue = JSON.parse($(this).val().replace(/'/g, '"'));
     console.log(selectedValue);
@@ -76,8 +78,8 @@ function callDrawPlot(selectedValue) {
     });
 }
 
-function plotStationaryData1(data) {
-    plot_data = new Array();
+function plotChartData(data) {
+    var plot_data = new Array();
 
     data.forEach((value, index) => {
         xDim = new Array();
@@ -141,7 +143,7 @@ async function applyDiffSeasonal(value) {
     await loadData(true);
     var seasonal = parseInt($("#applyLog").find(":selected").text()) || 1;
 
-    const url = "http://localhost:5000/stationary-train-model";
+    const url = URL_SERVER + "/stationary-train-model";
     const modelName = sessionStorage.getItem("model_name");
     const isStationary = "True";
     const diffType = value;
@@ -173,8 +175,7 @@ async function applyDiffSeasonal(value) {
             plotStationaryData(response.plot_data);
         },
         error: function (xhr, status, error) {
-            // Handle the error here
-            console.log(error);
+           alertify.error("Lỗi!");
         },
     });
 }
@@ -204,7 +205,7 @@ async function trainModel() {
         var value = pair[1];
 
         if (value === undefined || value === "") {
-            alertify.error("Vui lòng điền " + name);
+            await alertify.error("Vui lòng điền " + name);
             return;
         }
         value = parseInt(value)
@@ -220,11 +221,10 @@ async function trainModel() {
         agricutural_name: agricutural_name,
         argument: argument,
     };
-    console.log(data);
 
-    $('#modelTrainingInProcess').modal('show')
+    await $('#modelTrainingInProcess').modal('show')
     await $.ajax({
-        url: "http://localhost:5000/train-model-data",
+        url: URL_SERVER + "/train-model-data",
         method: "POST", // First change type to method here
         contentType: "application/json; charset=utf-8",
         data: JSON.stringify(data),
@@ -235,13 +235,14 @@ async function trainModel() {
 
             handelStoreSession("model_submit_detail", JSON.stringify(data));
 
-            if (data.status == 'DONE') {
+            if (data.status === 'SUCCESS') {
+
                 $("#model_detail_name").text(data.model_name);
                 $("#model_detail_mape").text(data.score['mape'] | 0);
                 $("#model_detail_rmse").text(data.score['rmse'] | 0);
 
                 // show chart data như trang detail
-                plotStationaryData1(data.plot_data);
+                plotChartData(data.plot_data);
                 $('#detail-tab').tab('show')
             } else {
                 alertify.error(data.error);
@@ -253,43 +254,41 @@ async function trainModel() {
             alertify.error(error);
         },
     });
-    $('#modelTrainingInProcess').modal('hide')
+    await $('#modelTrainingInProcess').modal('hide')
 
 
 }
 
 async function submitModel() {
 
-  data = sessionStorage.getItem("model_submit_detail")
-  if(!data){ 
-    alertify.error("Vui lòng train model trước khi submit")
-    return
-  }
+    data = sessionStorage.getItem("model_submit_detail")
+    if (!data) {
+        alertify.error("Vui lòng train model trước khi submit")
+        return
+    }
 
-  await $.ajax({
-      url: "http://localhost:5000/submit-train-model-data",
-      method: "POST", // First change type to method here
-      contentType: "application/json; charset=utf-8",
-      data: JSON.stringify(data),
-      success: function (response) {
-          const data = JSON.parse(response)
-          console.log(data)
+    await $.ajax({
+        url: URL_SERVER + "/submit-train-model-data",
+        method: "POST", // First change type to method here
+        contentType: "application/json; charset=utf-8",
+        data: JSON.stringify(data),
+        success: function (response) {
+            const data = JSON.parse(response)
+            console.log(data)
 
-          if(data.$oid){
-            window.location.href = '/detail-model?model_id=' + data.$oid;
-            return
-          }
-          alertify.error("Submit model không thành công");
-      },
-      error: function (error) {
-          alert("error" + error);
+            if (data.$oid) {
+                window.location.href = '/detail-model?model_id=' + data.$oid;
+                return
+            }
+            alertify.error("Submit model không thành công");
+        },
+        error: function (error) {
+            alert("error" + error);
 
-          alertify.error("Submit model không thành công");
-      },
-  });
-  $('#modelTrainingInProcess').modal('hide')
-
-
+            alertify.error("Submit model không thành công");
+        },
+    });
+    $('#modelTrainingInProcess').modal('hide')
 }
 
 
@@ -320,10 +319,10 @@ $(document).ready(function () {
 
 
     $("#submitModel").on("click", function (event) {
-      event.preventDefault();
-      console.log("submit model");
-      submitModel();
-  });
+        event.preventDefault();
+        console.log("submit model");
+        submitModel();
+    });
 
     var el = document.getElementById("curr");
     var r = document.getElementById("myRange");

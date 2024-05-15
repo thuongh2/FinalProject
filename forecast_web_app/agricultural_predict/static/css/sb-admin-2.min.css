@@ -10477,3 +10477,15 @@ a.price-agricutural:hover {
   background-color: #f8f9fc;
   border-color: #d1d3e2;
 }
+
+/* hover vào dòng giá nông sản */
+#priceDataTable tbody tr:hover {
+  background-color: rgba(247, 246, 246, 0.7);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
+}
+
+#priceDataTable tbody tr:hover td {
+  color: black;
+  font-size: 18px;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
+}

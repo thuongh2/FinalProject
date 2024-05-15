@@ -76,22 +76,3 @@ def load_chart():
     response_data = {'plot_data': plot_data}
     return jsonify(response_data)
 
-
-@load_chart_router.route('/', methods=['GET'])
-def select_option():
-    current_app.logger.info("VO")
-    model_name = request.args.get('model_name')
-    model_data = model.find()
-
-    model_names = [m.get('name') for m in model_data]
-    current_app.logger.info(model_names)
-
-    if (model_name):
-        model_data_find = model.find_one({'name': model_name})
-        data = model_data_find.get('attrs')
-
-        return render_template('index.html', model_names=model_names, data=data, model_name=model_name
-                               )
-
-    return render_template('index.html',
-                           model_names=model_names, data=None, model_name="")

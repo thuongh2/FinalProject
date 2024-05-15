@@ -178,7 +178,7 @@
           <h5 class="m-0 font-weight-bold text-primary">Bảng giá nông sản</h5>
         </div>
         <div class="card-body">
-          <div class="custom-scroll" style="height: 400px; overflow-y: scroll">
+          <div class="custom-scroll" style="height: 350px; overflow-y: scroll">
             <table
               class="table table-bordered dataTable"
               id="priceDataTable"
@@ -204,7 +204,7 @@
                     colspan="1"
                     aria-sort="ascending"
                     aria-label="Name: activate to sort column descending"
-                    style="width: 160px; background-color: rgb(247, 246, 246)"
+                    style="width: 160px; background-color: rgba(247, 246, 246, 1); color: black"
                   >
                     <strong>Ngày</strong>
                   </th>
@@ -215,37 +215,13 @@
                     rowspan="1"
                     colspan="1"
                     aria-label="Position: activate to sort column ascending"
-                    style="width: 246px; background-color: rgb(247, 246, 246)"
+                    style="width: 246px; background-color: rgba(247, 246, 246, 1); color: black"
                   >
                     <strong>Giá</strong>
                   </th>
-                  <th
-                    class="sorting"
-                    tabindex="0"
-                    aria-controls="dataTable"
-                    rowspan="1"
-                    colspan="1"
-                    aria-label="Position: activate to sort column ascending"
-                    style="width: 246px; background-color: rgb(247, 246, 246)"
-                  >
-                    <strong>Loại Nông sản</strong>
-                  </th>
                 </tr>
               </thead>
-
-              <tbody>
-                {% for data in price_data %}
-                <tr
-                  style="font-weight: normal"
-                  onmouseover="this.style.fontWeight='bold';"
-                  onmouseout="this.style.fontWeight='normal';"
-                >
-                  <td>{{ data.date }}</td>
-                  <td>{{ data.price }}</td>
-                  <td>{{ data.algricutural_name }}</td>
-                </tr>
-                {% endfor %}
-              </tbody>
+              <tbody></tbody>
             </table>
           </div>
         </div>
@@ -466,6 +442,28 @@
         }
     });
 
+    // Display price
+    function updateTableFromCSV(csvFilePath) {
+        d3.csv(csvFilePath, function(data) {
+          data.reverse();
+          var data = data.slice(0, 30);
+          d3.select("#priceDataTable tbody").selectAll("*").remove();
+          var rows = d3.select("#priceDataTable tbody")
+            .selectAll("tr")
+            .data(data)
+            .enter()
+            .append("tr");
+          rows.each(function(d) {
+            d3.select(this).append("td").text(d.date);
+            d3.select(this).append("td").text(d.price);
+          });
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        var csvFilePath = $("#data_name").val();
+        updateTableFromCSV(csvFilePath);
+      });
 
   </script>
   {% endblock %}

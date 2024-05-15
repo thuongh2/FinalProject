@@ -108,6 +108,9 @@
       <div class="card-body">
         <div id="charts-container" style="height: 100%;">
           <div id="myDiv" style="height: 100%"></div>
+          <div id="loadingIndicator" style="display: none;">
+            <i class="fas fa-circle-notch fa-spin"></i> Đang tải...
+          </div>
         </div>
       </div>
     </div>
@@ -231,44 +234,12 @@
   <!-- /.container-fluid -->
 
   <!-- Javascript -->
+
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
-  <script>
-    document
-      .getElementById("model-select")
-      .addEventListener("change", updateCharts);
-    document
-      .getElementById("model_time")
-      .addEventListener("change", updateCharts);
 
-    function updateCharts() {
-      var selectedModel = document.getElementById("model-select").value;
-      var selectedTime = document.getElementById("model_time").value;
-
-      if (selectedTime === "") {
-        selectedModel = "LSTM";
-      }
-
-      var charts = document.querySelectorAll(".chart-area");
-      charts.forEach(function (chart) {
-        chart.style.opacity = "0";
-        chart.style.position = "absolute";
-      });
-
-      var selectedChart = document.getElementById(
-        selectedModel + "-" + selectedTime + "-univariate-coffee"
-      );
-      if (selectedChart) {
-        selectedChart.style.opacity = "1";
-        selectedChart.style.position = "relative";
-      }
-    }
-  </script>
-
-  <!-- Active card -->
-
-  <!-- Croll dữ liệu -->
+  <!-- Roll price list -->
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const table = document.getElementById("priceDataTable");
@@ -291,7 +262,7 @@
     });
   </script>
 
-  <!-- Load model và tập dữ liệu -->
+  <!-- Predictive processing -->
   <script>
     $(document).ready(function () {
       var selectedValue = $("#data_name").val();
@@ -299,16 +270,20 @@
       
       $("#model_name").change(function () {
         modelName = $(this).val();
+        showLoading();
+        clearChart();
         callPlotChart();
       });
       $("#data_name").change(function () {
+        showLoading();
+        clearChart();
         callPlotChart(); 
       });
       $('#model_time').change(function () {
+        showLoading();
+        clearChart();
         callPlotChart();
       });
-
-
     });
 
     document.addEventListener("DOMContentLoaded", function () {
@@ -382,12 +357,25 @@
       Plotly.newPlot("myDiv", traces, layout);
     }
 
+    // Xử lý loading
     function loadData(state) {
       if (state) {
-        $("#plotChart").addClass("d-none");
+        $("#loadingIndicator").show();
       } else {
-        $("#plotChart").removeClass("d-none");
+        $("#loadingIndicator").hide();
       }
+    }
+
+    function showLoading() {
+      $("#loadingIndicator").show(); 
+    }
+
+    function hideLoading() {
+      $("#loadingIndicator").hide();
+    }
+
+    function clearChart() {
+      $("#myDiv").empty();
     }
 
     async function callPlotChart(data) {
@@ -412,11 +400,13 @@
         type: "GET",
         contentType: "application/json",
         success: function (response) {
+          hideLoading();
           Plotly.purge("myDiv");
           plotChart(response.plot_data);
         },
         error: function (xhr, status, error) {
           console.log(error);
+          hideLoading();
         },
       });
     }

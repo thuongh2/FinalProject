@@ -1,3 +1,5 @@
+const URL_SERVER = "http://localhost:5000"
+
 // Roll price list
 document.addEventListener("DOMContentLoaded", function () {
       const table = document.getElementById("priceDataTable");
@@ -138,7 +140,7 @@ function clearChart() {
 async function callPlotChart(data) {
   await loadData(true);
 
-  const url = "http://localhost:5000/load-chart";
+  const url = URL_SERVER + "/load-chart";
   const modelName = $("#model_name").val();
   const modelData = $("#data_name").val();
   const modelTime = $("#model_time").val();

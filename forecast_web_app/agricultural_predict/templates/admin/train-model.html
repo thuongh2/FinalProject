@@ -97,7 +97,7 @@
                                     class="form-control form-select">
                                 <option value="upload-model">Mô hình</option>
                                 {% for item in model_names %}
-                                    {% if item == "LSTM" %}
+                                    {% if item == "LSTM" or item == "GRU" or item == "BiLSTM" %}
                                         <option value="{{ 'train-model-rnn?model_name=' ~ item }}" {% if item==model_name %}
                                             selected {% endif %}>{{ item }}</option>
                                     {% else %}

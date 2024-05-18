@@ -1,15 +1,5 @@
 const URL_SERVER = "http://localhost:5000";
 
-// document.getElementById('model_name').addEventListener('change', function() {
-//     const selectedModel = this.value.split('=')[1];
-//     const rnnModels = ['LSTM', 'GRU', 'BiLSTM'];
-//     if (rnnModels.includes(selectedModel)) {
-//         window.location.href = 'train-model-rnn?model_name=' + selectedModel;
-//     } else {
-//         window.location.href = this.value;
-//     }
-// });
-
 $("#data_name").change(function () {
   const selectedValue = JSON.parse($(this).val().replace(/'/g, '"'));
   console.log(selectedValue);
@@ -22,30 +12,6 @@ $("#data_name").change(function () {
 
 function handelStoreSession(key, value) {
   sessionStorage.setItem(key, value);
-}
-
-function plotAcf(data, type) {
-  var trace = {
-    x: Array.from({ length: 10 }, (x, i) => i),
-    y: data,
-    type: "bar",
-    width: 0.05,
-  };
-  var data = [trace];
-  var layout = {
-    title: type,
-  };
-  Plotly.newPlot("my" + type, data, layout);
-}
-
-function checkStationary(pValue) {
-  if (pValue < 0.05) {
-    $("#pValue").text(`P value is ${pValue}`);
-    $("#pValueDesc").text(`Data is stationary`);
-    return;
-  }
-  $("#pValue").text(`P value is ${pValue}`);
-  $("#pValueDesc").text(`Data is None stationary`);
 }
 
 function callDrawPlot(selectedValue) {
@@ -116,29 +82,6 @@ function plotChartData(data) {
   Plotly.newPlot("myChartTrainModel", plot_data, layout);
 }
 
-function plotStationaryData(data) {
-  data.forEach((value, index) => {
-    console.log(value.x);
-    xDim = new Array();
-    for (i in value.x) xDim.push(new Date(value.x[i]));
-    yDim = value.y;
-    mode = value.mode;
-
-    trace = { x: xDim, y: yDim, type: "scatter", mode: "lines" };
-    console.log(trace);
-    const nodeName = "myDivStationary" + index;
-    const node = document.createElement("div");
-    node.id = nodeName;
-    console.log(node);
-    document.getElementById("myDivStationary").appendChild(node);
-
-    var layout = {
-      title: "Biểu đồ giá " + value.name,
-    };
-    Plotly.newPlot(nodeName, [trace], layout);
-  });
-}
-
 function loadData(state) {
   if (state) {
     $("#loadStationary").removeClass("d-none").addClass("d-flex");
@@ -157,16 +100,10 @@ async function applyDiffSeasonal(value) {
 
   const url = URL_SERVER + "/stationary-train-model";
   const modelName = sessionStorage.getItem("model_name");
-  const isStationary = "True";
-  const diffType = value;
-  const lag = seasonal;
   const modelData = sessionStorage.getItem("data_url");
 
   const params = {
     model_name: modelName,
-    is_stationary: isStationary,
-    diff_type: diffType,
-    lag: lag,
     model_data: modelData,
   };
   handelStoreSession("stationary_data", JSON.stringify(params));
@@ -179,10 +116,6 @@ async function applyDiffSeasonal(value) {
     type: "GET",
     contentType: "application/json",
     success: function (response) {
-      checkStationary(response.p_values);
-
-      plotAcf(response.acf, "ACF");
-      plotAcf(response.df_pacf, "PACF");
       loadData(false);
       plotStationaryData(response.plot_data);
     },
@@ -234,7 +167,7 @@ async function trainModel() {
 
   await $("#modelTrainingInProcess").modal("show");
   await $.ajax({
-    url: URL_SERVER + "/train-model-data",
+    url: URL_SERVER + "/train-model-rnn-data",
     method: "POST", // First change type to method here
     contentType: "application/json; charset=utf-8",
     data: JSON.stringify(data),
@@ -333,4 +266,54 @@ $(document).ready(function () {
   r.addEventListener("change", () => {
     el.innerText = r.valueAsNumber + "%";
   });
+});
+
+// Thêm/bớt số lớp
+document.addEventListener("DOMContentLoaded", function () {
+  const addButton = document.getElementById("add-input");
+  const removeButton = document.getElementById("remove-input");
+  const inputContainer = document.getElementById("input-container");
+  let inputCount = 1;
+
+  function addInput() {
+    inputCount++;
+    const newInputDiv = document.createElement("div");
+    newInputDiv.classList.add("form-check", "mt-3");
+    newInputDiv.innerHTML = `
+      <div>
+        <label for="flexInputDefault${inputCount}"><strong>LAYER${inputCount}</strong></label>
+        <div class="d-flex align-items-center">
+            <span>Unit:</span>
+            <input class="form-control ml-2" type="text" id="flexInputDefault${inputCount}" name="flexInputDefault${inputCount}">
+        </div>
+      </div>
+      `;
+    inputContainer.appendChild(newInputDiv);
+  }
+  function addInput() {
+    inputCount++;
+    const newInputDiv = document.createElement("div");
+    newInputDiv.classList.add("form-check", "mt-3");
+    newInputDiv.innerHTML = `
+      <div>
+        <label for="flexInputDefault${inputCount}"><strong>LAYER ${inputCount}</strong></label>
+        <div class="d-flex align-items-center">
+            <span>Unit:</span>
+            <input class="form-control ml-2" type="text" id="flexInputDefault${inputCount}" name="flexInputDefault${inputCount}">
+        </div>
+      </div>
+      `;
+    inputContainer.appendChild(newInputDiv);
+  }
+
+  function removeInput() {
+    if (inputContainer.childElementCount > 1) {
+      inputContainer.removeChild(inputContainer.lastElementChild);
+      inputCount--;
+      updateLabels();
+    }
+  }
+
+  addButton.addEventListener("click", addInput);
+  removeButton.addEventListener("click", removeInput);
 });

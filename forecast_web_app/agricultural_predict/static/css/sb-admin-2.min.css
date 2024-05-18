@@ -10488,3 +10488,9 @@ a.price-agricutural:hover {
   font-size: 18px;
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
 }
+
+#add-input,
+#remove-input {
+  width: 36px;
+  height: 36px;
+}

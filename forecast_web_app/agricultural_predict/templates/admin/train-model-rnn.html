@@ -123,60 +123,30 @@
 
                 </div>
                 <div class="tab-pane fade text-dark" id="v-pills-profile" role="tabpanel"
-                     aria-labelledby="v-pills-profile-tab">
-                   <h5 class="text-uppercase text-dark font-bold">Transform dataset to make it Stationary</h5>
+                    aria-labelledby="v-pills-profile-tab">
+                    <h5 class="text-uppercase text-dark font-bold">Chọn số Layer</h5>
                     <div class="row mt-3">
-                        <div class="col-12 col-xl-3">
-                            <div class="form-check">
+                        <div class="col-12">
+                            <button type="button" id="add-input" class="btn btn-primary" style="margin: 0 32px 0 8px;">+</button>
+                            <button type="button" id="remove-input" class="btn btn-danger">-</button>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12 col-xl-3" id="input-container">
+                            <!-- Ô input ban đầu -->
+                            <div class="form-check mt-3">
                                 <div>
-                                    <input class="form-check-input" value="log" type="radio" name="flexRadioDefault"
-                                           id="flexRadioDefault1">
-                                    <label class="form-check-label" for="flexRadioDefault1">
-                                        Apply Log
-                                    </label>
-                                </div>
-
-                                <div class="mt-2">
-                                    <input class="form-check-input mr-4" value="diff" type="radio"
-                                           name="flexRadioDefault"
-                                           id="flexRadioDefault1">
-                                    <label class="form-check-label" for="flexRadioDefault1">
-                                        Apply Differencing
-                                    </label>
-
-                                    <div id="applyLog" class="d-none mt-2">
-                                        <label>Chọn Lag: </label>
-                                        <select class="form-control" id="applyDiffSeasonal">
-                                            {% for n in range(1, 30) %}
-                                                <option>{{ n }}</option>
-                                            {% endfor %}
-                                        </select>
+                                    <label for="flexInputDefault1"><STRONG>LAYER 1</STRONG></label>
+                                    <div class="d-flex align-items-center">
+                                        <span>Unit:</span>
+                                        <input class="form-control ml-2" type="text" id="flexInputDefault1" name="flexInputDefault1">
                                     </div>
                                 </div>
                             </div>
-
-                            <div id="stationary" class="d-none card mt-3 font-weight-bold">
-                                <div class="card-body p-2">
-                                    <p id="pValue" class="mt-3 text-primary"></p>
-                                    <p id="pValueDesc" class="text-primary"></p>
-                                    </p>
-                                </div>
-                            </div>
-
-                        </div>
-                        <div id="loadStationary" class="col-12 col-xl-9 d-none justify-content-center">
-                            <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
-                                <span class="sr-only">Loading...</span>
-                            </div>
-                        </div>
-                        <div id="plotStationaryData" class="col-12 col-xl-9">
-
-                            <div id='myDivStationary' class="col-12"></div>
-                            <div id='myACF' class="col-12"></div>
-                            <div id='myPACF' class="col-12"></div>
                         </div>
                     </div>
                 </div>
+
                 <div class="tab-pane fade text-dark" id="v-pills-messages" role="tabpanel"
                      aria-labelledby="v-pills-messages-tab">
 
@@ -291,7 +261,7 @@
     <script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'></script>
 
 
-    <script src="js/train-model.js">
+    <script src="js/train-model-rnn.js">
 
 
     </script>

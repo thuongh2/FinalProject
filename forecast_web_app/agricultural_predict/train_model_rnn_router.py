@@ -34,7 +34,7 @@ train_model_rnn_router = Blueprint('train_model_rnn_router', __name__, static_fo
 
 
 @train_model_rnn_router.route('/train-model-rnn', methods=['GET'])
-def train_model_page():
+def train_model_rnn_page():
     model_name = request.args.get('model_name')
     model_data = model.find()
 
@@ -49,16 +49,16 @@ def train_model_page():
             params_render = default_param.get('param')
         current_app.logger.info(params_render)
 
-        return render_template('admin/train-model.html',
+        return render_template('admin/train-model-rnn.html',
                                 model_names=model_names, data=data,
                                 model_name=model_name, params_render = params_render)
 
-    return render_template('admin/train-model.html',
+    return render_template('admin/train-model-rnn.html',
                            model_names=model_names, data=None, model_name="", params_render=None)
 
 
-@train_model_rnn_router.route('/search-train-model', methods=['GET'])
-def get_data_train_model():
+@train_model_rnn_router.route('/search-train-model-rnn', methods=['GET'])
+def get_data_train_model_rnn():
     model_data = request.args.get('model_data')
 
     data = pd.read_csv(model_data)
@@ -79,67 +79,9 @@ def get_data_train_model():
 
     return plot_data
 
-
-def adf_test(series):
-    result = adfuller(series.dropna())
-    labels = ['ADF test statistic', 'p-value', '# lags used', '# observations']
-    out = pd.Series(result[0:4], index=labels)
-    current_app.logger.info(out)
-    return result[1]
-
-
-@train_model_rnn_router.route('/stationary-train-model', methods=['GET'])
+@train_model_rnn_router.route('/train-model-rnn-data', methods=['POST'])
 @cross_origin()
-def make_stationary_data_train_model():
-    model_name = request.args.get('model_name')
-    model_data = request.args.get('model_data')
-    is_stationary = request.args.get('is_stationary')
-    diff_type = request.args.get('diff_type')
-    lag = request.args.get('lag', 1)
-
-    # diff
-    data = pd.read_csv(model_data)
-    data['date'] = pd.to_datetime(data['date'])
-    data.set_index(['date'], inplace=True)
-    if data.empty:
-        return jsonify({'error': 'Data is empty'})
-
-    df1 = data.copy()
-    if (is_stationary == 'True'):
-        if (diff_type == 'log'):
-            df1 = np.log(df1)
-        else:
-            df1 = df1 - df1.shift(int(lag))
-        df1 = df1.dropna()
-
-    # p value
-    p_values = adf_test(df1.price)
-    current_app.logger.info(p_values)
-
-    # return acf pacf transformed data
-    df_acf = acf(df1.price, nlags=10).tolist()
-
-    df_pacf = pacf(df1.price, nlags=10).tolist()
-
-    plot_data = []
-    current_app.logger.info(df1.columns)
-    for columns in df1.columns:
-        df1[columns] = df1[columns].astype(float)
-        trace = dict(
-            x=df1.index.tolist(),
-            y=df1[columns].values.tolist(),
-            mode='lines',
-            name=columns
-        )
-        plot_data.append(trace)
-
-    respose_data = {'p_values': p_values, 'acf': df_acf, 'df_pacf': df_pacf, 'plot_data': plot_data}
-    return jsonify(respose_data)
-
-
-@train_model_rnn_router.route('/train-model-data', methods=['POST'])
-@cross_origin()
-def train_model_data():
+def train_model_rnn_data():
     data = request.get_json()
 
     model_name = data.get('model_name')
@@ -198,9 +140,9 @@ def train_model_data():
     return json_util.dumps(data_model)
 
 
-@train_model_rnn_router.route('/submit-train-model-data', methods=['POST'])
+@train_model_rnn_router.route('/submit-train-model-rnn-data', methods=['POST'])
 @cross_origin()
-def submit_train_model_data():
+def submit_train_model_rnn_data():
     data = request.get_json()
     data = eval(data.replace("'", "\"").replace('false', 'False'))
     

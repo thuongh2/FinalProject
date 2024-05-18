@@ -8,6 +8,7 @@ from router import main_router
 from upload_model_router import upload_model_router
 from load_chart_router import load_chart_router
 from train_model_router import train_model_router
+from train_model_rnn_router import train_model_rnn_router
 from flask_cors import CORS, cross_origin
 
 app = Flask(__name__,
@@ -26,6 +27,7 @@ app.register_blueprint(main_router)
 app.register_blueprint(upload_model_router)
 app.register_blueprint(load_chart_router)
 app.register_blueprint(train_model_router)
+app.register_blueprint(train_model_rnn_router)
 
 
 if __name__ == '__main__':

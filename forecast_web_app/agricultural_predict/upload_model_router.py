@@ -139,29 +139,6 @@ def admin_train_model():
         flash("Thất bại: " + str(e))
         return redirect("/upload-model")
 
-
-def create_chart_mode(data_actual, data_predicted, model_name):
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=data_actual.index, y=data_actual['price'], mode='lines', name='Giá thực tế',
-                             line=dict(color='rgba(0, 0, 255, 0.5)'), fillcolor='rgba(173, 216, 230, 0.2)',
-                             visible=True))
-    fig.add_trace(go.Scatter(x=data_predicted.index, y=data_predicted['price'], mode='lines',
-                             name='Giá dự đoán', line=dict(color='rgba(255, 165, 0, 0.5)'),
-                             fillcolor='rgba(255, 165, 0, 0.2)', visible=True))
-    fig.update_layout(
-        xaxis_title='Ngày',
-        yaxis_title='Giá',
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        xaxis=dict(
-            tickmode='array',
-            dtick='7D',
-            tickformat='%d-%m-%Y'
-        ))
-    current_app.logger.info("CREATE CHART " + model_name)
-    pio.write_html(fig, './templates/chart/' + model_name + '.html')
-
-
 @upload_model_router.route('/detail-model')
 def admin_detail_model():
     global plot_data

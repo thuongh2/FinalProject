@@ -19,12 +19,9 @@ from werkzeug.utils import secure_filename
 import json
 from pprint import pprint
 from datetime import datetime, timedelta
-from statsmodels.tsa.stattools import acf, pacf
 
 from model.factory_model import FactoryModel
 from bson import json_util
-from statsmodels.tsa.stattools import adfuller
-import joblib
 import uuid
 import os
 import utils.minio_utils as minio_utils
@@ -83,7 +80,6 @@ def get_data_train_model_rnn():
 @cross_origin()
 def train_model_rnn_data():
     data = request.get_json()
-
     model_name = data.get('model_name')
     model_data = data.get('model_data')
     argument = data.get('argument')
@@ -96,40 +92,45 @@ def train_model_rnn_data():
                   "create_time": datetime.now(),
                   "isUsed": False}
 
-    file_name = str(uuid.uuid4()) + '.joblib'
+    file_name = str(uuid.uuid4()) + '.h5'
     file_dir = "./temp/" + file_name
-    try:
-        factory_model = FactoryModel(model_name).factory()
-        factory_model.data_uri = model_data
-        forecast_data, accuracy, model = factory_model.train_model(argument)
-
-        joblib.dump(model, file_dir)
-
-        file_after_upload = minio_utils.fupload_object(file_name,  file_dir)
-        data_model["file_name"] = file_after_upload.object_name
-        data_model["file_etag"] = file_after_upload.etag
-        data_model['score'] = accuracy
-        data_model['status'] = 'DONE'
-
-        
-        trace_predict = dict(
-            x=forecast_data.index.tolist(),
-            y=forecast_data.price.values.tolist(),
-            mode='lines',
-            name='Dự đoán'
-        )
-        trace_actual = dict(
-            x=factory_model.test_data.index.tolist(),
-            y=factory_model.test_data.price.values.tolist(),
-            mode='lines',
-            name='thực tế'
-        )
-        plot_data = [trace_predict, trace_actual]
-        data_model['plot_data'] = plot_data
-    except Exception as e:
-        print(e)
-        data_model['status'] = 'FAIL'
-        data_model['error'] = str(e)
+    factory_model = FactoryModel(model_name).factory()
+    factory_model.data_uri = model_data
+    accuracy, model = factory_model.train_model(argument)
+    print(accuracy)
+    model.summary()
+    # try:
+    #     factory_model = FactoryModel(model_name).factory()
+    #     factory_model.data_uri = model_data
+    #     model = factory_model.train_model(argument)
+    #
+    #     # joblib.dump(model, file_dir)
+    #     #
+    #     # file_after_upload = minio_utils.fupload_object(file_name,  file_dir)
+    #     # data_model["file_name"] = file_after_upload.object_name
+    #     # data_model["file_etag"] = file_after_upload.etag
+    #     # data_model['score'] = accuracy
+    #     # data_model['status'] = 'DONE'
+    #
+    #
+    #     trace_predict = dict(
+    #         x=forecast_data.index.tolist(),
+    #         y=forecast_data.price.values.tolist(),
+    #         mode='lines',
+    #         name='Dự đoán'
+    #     )
+    #     trace_actual = dict(
+    #         x=factory_model.test_data.index.tolist(),
+    #         y=factory_model.test_data.price.values.tolist(),
+    #         mode='lines',
+    #         name='thực tế'
+    #     )
+    #     plot_data = [trace_predict, trace_actual]
+    #     data_model['plot_data'] = plot_data
+    # except Exception as e:
+    #     print(e)
+    #     data_model['status'] = 'FAIL'
+    #     data_model['error'] = str(e)
 
     # train_model.insert_one(data_model)
     if os.path.exists(file_dir):

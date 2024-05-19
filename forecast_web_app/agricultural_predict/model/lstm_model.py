@@ -6,6 +6,10 @@ from sklearn.preprocessing import MinMaxScaler
 from keras.models import load_model
 from sklearn.metrics import mean_squared_error
 from model.base_model import BaseModel
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense, Dropout
+from tensorflow.keras.optimizers import Adam
+import logging
 
 class LSTMModel(BaseModel):
     def __init__(self):
@@ -29,13 +33,13 @@ class LSTMModel(BaseModel):
         
         return predicted_values
 
-    def forecast_accuracy(self, test_data, predicted_values):
-        test_values = self.test_data['price'].values
-        mape = np.mean(np.abs((test_values - predicted_values) / test_values)) * 100
-        mse = mean_squared_error(test_values, predicted_values)
-        rmse = np.sqrt(mse)
-
-        return {'mape': round(mape, 2), 'rmse': round(rmse, 2)}
+    # def forecast_accuracy(self, test_data, predicted_values):
+    #     test_values = self.test_data['price'].values
+    #     mape = np.mean(np.abs((test_values - predicted_values) / test_values)) * 100
+    #     mse = mean_squared_error(test_values, predicted_values)
+    #     rmse = np.sqrt(mse)
+    #
+    #     return {'mape': round(mape, 2), 'rmse': round(rmse, 2)}
 
     def forecast_future(self, forecast_num, data, n_steps):
         self.model = load_model(self.model_url)
@@ -80,6 +84,82 @@ class LSTMModel(BaseModel):
         data_predicted = pd.concat([original_df, predicted_df], ignore_index=True)
 
         return data_predicted
+
+    def train_model(self, argument):
+        """
+        Train model in web
+        params argument
+            size: size split data
+            layer: list of layer configurations
+            epoch: number of epochs
+            batch_size: size of the batch
+        return LSTM MODEL
+        """
+        def create_sequences(data, time_step):
+            X, y = [], []
+            for i in range(len(data) - time_step):
+                X.append(data[i:(i + time_step)])
+                y.append(data[i + time_step])
+            return np.array(X), np.array(y)
+
+        # Prepare data
+        if argument.get('size', 0.8) is None:
+            raise Exception("Size is required")
+
+        self.data = pd.read_csv(self.data_uri)
+        self.data['date'] = pd.to_datetime(self.data['date'])
+        self.data.set_index('date', inplace=True)
+
+        scaler = MinMaxScaler(feature_range=(0, 1))
+        scaled_price = scaler.fit_transform(self.data[self.PRICE_COLUMN].values.reshape(-1, 1))
+
+        time_step = 10
+        self.X, self.y = create_sequences(scaled_price, time_step)
+
+        train_size = int(len(self.data) * argument['size'])
+        self.X_train, self.X_test = self.X[:train_size], self.X[train_size:]
+        self.y_train, self.y_test = self.y[:train_size], self.y[train_size:]
+
+        logging.info('Start train LSTM MODEL')
+
+        model = Sequential()
+        layers_data = argument.get('layers_data', [{'id': 0, 'units': 64}])
+
+        if len(layers_data) == 1:
+            units = layers_data[0]['units']
+            model.add(LSTM(units, return_sequences=False, input_shape=(time_step, 1)))
+            model.add(Dropout(0.2))
+        else:
+            for i, layer in enumerate(layers_data):
+                units = layer['units']
+                if i == 0:
+                    model.add(LSTM(units, return_sequences=True, input_shape=(time_step, 1)))
+                    model.add(Dropout(0.2))
+                elif i == len(layers_data) - 1:
+                    model.add(LSTM(units, return_sequences=False))
+                    model.add(Dropout(0.2))
+                else:
+                    model.add(LSTM(units, return_sequences=True))
+                    model.add(Dropout(0.2))
+        model.add(Dense(1))
+
+        optimizer = Adam()
+        model.compile(optimizer=optimizer, loss='mean_squared_error')
+
+        epochs = argument['epochs']
+        batchsize = argument.get('batchsize', 64)
+        model.fit(self.X_train, self.y_train, epochs=epochs, batch_size=batchsize)
+        
+        self.model = model
+
+        X_test_predict = model.predict(self.X_test)
+        X_test_predict = scaler.inverse_transform(X_test_predict)
+
+        y_test_predict = scaler.inverse_transform(self.y_test)
+
+        self.accuracy = self.forecast_accuracy(X_test_predict, y_test_predict)
+
+        return self.accuracy, self.model
 
 
 if __name__ == '__main__':

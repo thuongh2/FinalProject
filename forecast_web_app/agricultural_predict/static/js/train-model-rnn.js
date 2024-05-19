@@ -94,37 +94,6 @@ function loadData(state) {
   }
 }
 
-async function applyDiffSeasonal(value) {
-  await loadData(true);
-  var seasonal = parseInt($("#applyLog").find(":selected").text()) || 1;
-
-  const url = URL_SERVER + "/stationary-train-model";
-  const modelName = sessionStorage.getItem("model_name");
-  const modelData = sessionStorage.getItem("data_url");
-
-  const params = {
-    model_name: modelName,
-    model_data: modelData,
-  };
-  handelStoreSession("stationary_data", JSON.stringify(params));
-
-  const queryString = $.param(params);
-  const fullUrl = url + "?" + queryString;
-
-  await $.ajax({
-    url: fullUrl,
-    type: "GET",
-    contentType: "application/json",
-    success: function (response) {
-      loadData(false);
-      plotStationaryData(response.plot_data);
-    },
-    error: function (xhr, status, error) {
-      alertify.error("Lỗi!");
-    },
-  });
-}
-
 async function trainModel() {
   const model_name = sessionStorage.getItem("model_name");
   if (!model_name) {
@@ -137,13 +106,25 @@ async function trainModel() {
   const username = $("#username").text();
   const agricutural_name = sessionStorage.getItem("agricutural_name");
 
+  const layers_data = sessionStorage.getItem("layers_data");
+  if (!layers_data) {
+    alertify.error("Vui lòng thêm layers dữ liệu");
+  }
+
+  const epochs = sessionStorage.getItem("epochs");
+  if (!epochs) {
+    alertify.error("Vui lòng điền số lượng epoch");
+  }
+
+  const batchsize = sessionStorage.getItem("batchsize");
+  if (!batchsize) {
+    alertify.error("Vui lòng điền batch size");
+  }
+
   var formEl = document.getElementById("trainModelForm");
-
   var formData = new FormData(formEl);
-
   var argument = {};
 
-  // Loop through each form element
   for (var pair of formData.entries()) {
     var name = pair[0];
     var value = pair[1];
@@ -162,13 +143,14 @@ async function trainModel() {
     model_data: model_data,
     username: username,
     agricutural_name: agricutural_name,
+    layers_data: JSON.parse(layers_data),
     argument: argument,
   };
 
   await $("#modelTrainingInProcess").modal("show");
   await $.ajax({
     url: URL_SERVER + "/train-model-rnn-data",
-    method: "POST", // First change type to method here
+    method: "POST",
     contentType: "application/json; charset=utf-8",
     data: JSON.stringify(data),
     success: function (response) {
@@ -319,7 +301,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const storedLayersJson = sessionStorage.getItem("layers_data");
     if (storedLayersJson) {
       const storedLayers = JSON.parse(storedLayersJson);
-      inputContainer.innerHTML = ""; // Clear current inputs
+      inputContainer.innerHTML = "";
       storedLayers.forEach((layer, index) => {
         const newInputDiv = document.createElement("div");
         newInputDiv.classList.add("form-check", "mt-3");
@@ -357,23 +339,28 @@ document.addEventListener("DOMContentLoaded", function () {
     .addEventListener("input", saveLayersToSession);
 });
 
-// Lưu epoch, batch_size vào session
-function saveToSession(key, value) {
+// Lưu epoch, batchsize vào session
+function saveEpochsToSession(key, value) {
   sessionStorage.setItem(key, value);
 }
 
-function loadFromSession() {
-  const epochInput = document.getElementById("inputEpoch");
-  const batchsizeInput = document.getElementById("inputBatchsize");
+function saveBatchsizeToSession(key, value) {
+  sessionStorage.setItem(key, value);
+}
 
-  const epochValue = sessionStorage.getItem("epoch");
+
+function loadFromSession() {
+  const epochs = document.getElementById("epochs");
+  const batchsize = document.getElementById("batchsize");
+
+  const epochValue = sessionStorage.getItem("epochs");
   if (epochValue) {
-      epochInput.value = epochValue;
+    epochs.value = epochValue;
   }
 
   const batchSizeValue = sessionStorage.getItem("batchsize");
   if (batchSizeValue) {
-      batchsizeInput.value = batchSizeValue;
+    batchsize.value = batchSizeValue;
   }
 }
 document.addEventListener("DOMContentLoaded", function () {

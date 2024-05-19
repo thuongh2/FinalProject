@@ -229,15 +229,16 @@ async function trainModel() {
       return;
     }
     if (name == "exogenous") {
-        debugger
-       $(".exogenous-checkbox").is(":checked").val();
+        var names = [];
+        $('#checkboxContainer input:checked').each(function() {
+            names.push(this.value);
+        });
+        argument[name] = names;
     } else {
       value = parseInt(value);
       if (name == "size") value = value / 100;
       argument[name] = value;
     }
-
-    
   }
 
   data = {
@@ -247,6 +248,7 @@ async function trainModel() {
     agricutural_name: agricutural_name,
     argument: argument,
   };
+  console.log(data);
 
   await $("#modelTrainingInProcess").modal("show");
   await $.ajax({

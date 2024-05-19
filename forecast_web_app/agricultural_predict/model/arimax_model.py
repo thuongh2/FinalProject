@@ -77,7 +77,7 @@ class ARIMAXModel(BaseModel):
         if argument.get('size', 0.8) is None:
             raise Exception("Size is required")
 
-        self.__prepare_data_for_self_train(argument['size'])
+        self.prepare_data_for_self_train(argument['size'])
 
         logging.info('Start train ARIMA MODEL')
 

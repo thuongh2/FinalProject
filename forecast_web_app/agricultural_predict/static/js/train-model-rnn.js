@@ -268,52 +268,114 @@ $(document).ready(function () {
   });
 });
 
-// Thêm/bớt số lớp
+// Thêm/bớt số layer + lưu vào session
 document.addEventListener("DOMContentLoaded", function () {
   const addButton = document.getElementById("add-input");
   const removeButton = document.getElementById("remove-input");
   const inputContainer = document.getElementById("input-container");
   let inputCount = 1;
 
-  function addInput() {
-    inputCount++;
-    const newInputDiv = document.createElement("div");
-    newInputDiv.classList.add("form-check", "mt-3");
-    newInputDiv.innerHTML = `
-      <div>
-        <label for="flexInputDefault${inputCount}"><strong>LAYER${inputCount}</strong></label>
-        <div class="d-flex align-items-center">
-            <span>Unit:</span>
-            <input class="form-control ml-2" type="text" id="flexInputDefault${inputCount}" name="flexInputDefault${inputCount}">
-        </div>
-      </div>
-      `;
-    inputContainer.appendChild(newInputDiv);
+  function saveLayersToSession() {
+    const layers = [];
+    const inputs = inputContainer.querySelectorAll("input");
+    inputs.forEach((input, index) => {
+      layers.push({
+        id: `LAYER ${index + 1}`,
+        units: input.value,
+      });
+    });
+    sessionStorage.setItem("layers_data", JSON.stringify(layers));
   }
+
   function addInput() {
     inputCount++;
     const newInputDiv = document.createElement("div");
     newInputDiv.classList.add("form-check", "mt-3");
     newInputDiv.innerHTML = `
-      <div>
-        <label for="flexInputDefault${inputCount}"><strong>LAYER ${inputCount}</strong></label>
-        <div class="d-flex align-items-center">
-            <span>Unit:</span>
-            <input class="form-control ml-2" type="text" id="flexInputDefault${inputCount}" name="flexInputDefault${inputCount}">
-        </div>
-      </div>
-      `;
+                    <div>
+                        <label for="flexInputDefault${inputCount}"><strong>LAYER ${inputCount}</strong></label>
+                        <div class="d-flex align-items-center">
+                            <span>Unit:</span>
+                            <input class="form-control ml-2" type="text" id="flexInputDefault${inputCount}" name="flexInputDefault${inputCount}">
+                        </div>
+                    </div>
+                `;
     inputContainer.appendChild(newInputDiv);
+    newInputDiv
+      .querySelector("input")
+      .addEventListener("input", saveLayersToSession);
+    saveLayersToSession();
   }
 
   function removeInput() {
     if (inputContainer.childElementCount > 1) {
       inputContainer.removeChild(inputContainer.lastElementChild);
       inputCount--;
-      updateLabels();
+      saveLayersToSession();
+    }
+  }
+
+  function loadLayersFromSession() {
+    const storedLayersJson = sessionStorage.getItem("layers_data");
+    if (storedLayersJson) {
+      const storedLayers = JSON.parse(storedLayersJson);
+      inputContainer.innerHTML = ""; // Clear current inputs
+      storedLayers.forEach((layer, index) => {
+        const newInputDiv = document.createElement("div");
+        newInputDiv.classList.add("form-check", "mt-3");
+        newInputDiv.innerHTML = `
+                            <div>
+                                <label for="flexInputDefault${
+                                  index + 1
+                                }"><strong>${layer.id}</strong></label>
+                                <div class="d-flex align-items-center">
+                                    <span>Unit:</span>
+                                    <input class="form-control ml-2" type="text" id="flexInputDefault${
+                                      index + 1
+                                    }" name="flexInputDefault${
+          index + 1
+        }" value="${layer.units}">
+                                </div>
+                            </div>
+                        `;
+        inputContainer.appendChild(newInputDiv);
+        newInputDiv
+          .querySelector("input")
+          .addEventListener("input", saveLayersToSession);
+      });
+      inputCount = storedLayers.length;
     }
   }
 
   addButton.addEventListener("click", addInput);
   removeButton.addEventListener("click", removeInput);
+
+  loadLayersFromSession();
+
+  inputContainer
+    .querySelector("input")
+    .addEventListener("input", saveLayersToSession);
+});
+
+// Lưu epoch, batch_size vào session
+function saveToSession(key, value) {
+  sessionStorage.setItem(key, value);
+}
+
+function loadFromSession() {
+  const epochInput = document.getElementById("inputEpoch");
+  const batchsizeInput = document.getElementById("inputBatchsize");
+
+  const epochValue = sessionStorage.getItem("epoch");
+  if (epochValue) {
+      epochInput.value = epochValue;
+  }
+
+  const batchSizeValue = sessionStorage.getItem("batchsize");
+  if (batchSizeValue) {
+      batchsizeInput.value = batchSizeValue;
+  }
+}
+document.addEventListener("DOMContentLoaded", function () {
+  loadFromSession();
 });

@@ -114,16 +114,12 @@
                                 </select>
                             </div>
                         </div>
-
-
-
                         <div id='myChart' class="col-12 mt-3"></div>
                     </form>
-
-
                 </div>
-                <div class="tab-pane fade text-dark" id="v-pills-profile" role="tabpanel"
-                    aria-labelledby="v-pills-profile-tab">
+
+                <!-- Bước 2 -->
+               <div class="tab-pane fade text-dark" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
                     <h5 class="text-uppercase text-dark font-bold">Chọn số Layer</h5>
                     <div class="row mt-3">
                         <div class="col-12">
@@ -133,13 +129,12 @@
                     </div>
                     <div class="row mt-3">
                         <div class="col-12 col-xl-3" id="input-container">
-                            <!-- Ô input ban đầu -->
                             <div class="form-check mt-3">
                                 <div>
-                                    <label for="flexInputDefault1"><STRONG>LAYER 1</STRONG></label>
+                                    <label for="flexInputDefault1"><strong>LAYER 1</strong></label>
                                     <div class="d-flex align-items-center">
                                         <span>Unit:</span>
-                                        <input class="form-control ml-2" type="text" id="flexInputDefault1" name="flexInputDefault1">
+                                        <input class="form-control ml-2" type="text" id="flexInputDefault1" name="flexInputDefault1" oninput="saveLayersToSession()">
                                     </div>
                                 </div>
                             </div>
@@ -147,6 +142,7 @@
                     </div>
                 </div>
 
+                <!-- Bước 3 -->
                 <div class="tab-pane fade text-dark" id="v-pills-messages" role="tabpanel"
                      aria-labelledby="v-pills-messages-tab">
 
@@ -164,23 +160,23 @@
                         </div>
 
                         <h5 class="text-uppercase text-dark font-bold mt-4">Chọn tham số</h5>
-                        <div id="param" class="col-12 col-xl-6">
-                            {% if params_render %}
-                                {% for value in params_render %}
-
-                                    {% for k, v in  value.items() %}
-                                        <div class="input-group mt-3">
-                                            <span class="input-group-text  rounded-start"> {{ k }}</span>
-                                            {% for i in  v %}
-                                                <input type="text" id='{{ i }}' name='{{ i }}' placeholder='{{ i }}'
-                                                       aria-label="First name"
-                                                       class="form-control">
-                                            {% endfor %}
+                        <div id="input-container">
+                            <div class="form-check mt-3">
+                                <div>
+                                    <label for="flexInputDefault2"><strong>optimizer='adam'</strong></label><br>
+                                    <label for="flexInputDefault2"><strong>loss='mean_squared_error'</strong></label>
+                                    <div class="row">
+                                        <div class="col-xl-6 d-flex align-items-center">
+                                            <span>epoch:</span>
+                                            <input class="form-control ml-2" type="text" id="inputEpoch" name="inputEpoch" oninput="saveToSession('epoch', this.value)">
                                         </div>
-                                    {% endfor %}
-                                {% endfor %}
-                            {% endif %}
-
+                                        <div class="col-xl-6 d-flex align-items-center">
+                                            <span>batch size:</span>
+                                            <input class="form-control ml-2" type="text" id="inputBatchsize" name="inputBatchsize" oninput="saveToSession('batchsize', this.value)">
+                                        </div>                                        
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div id="param" class="col-12 col-xl-12 mt-4">
                             <button type="submit" class="w-100 btn btn-primary">Train mô hình</button>
@@ -253,7 +249,7 @@
     </div>
 
     </div>
-    <!-- /.container-fluid -->\
+    <!-- /.container-fluid -->
     <script src="https://code.jquery.com/jquery-3.7.1.js"
             integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
             crossorigin="anonymous"></script>

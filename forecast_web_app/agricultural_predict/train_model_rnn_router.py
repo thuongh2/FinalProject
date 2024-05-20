@@ -85,6 +85,7 @@ def train_model_rnn_data():
     argument = data.get('argument')
 
     data_model = {"user_id": data.get('username'),
+                  "name": "Dự đoán giá " +  data.get('agricutural_name') + " mô hình " + model_name,
                   "model_name": model_name,
                   "agricutural_name": data.get('agricutural_name'),
                   "data_name": model_data,
@@ -107,7 +108,7 @@ def train_model_rnn_data():
         # data_model['score'] = accuracy
         # data_model['status'] = 'DONE'
         data_model["file_name"] = file_name
-        data_model['score'] = accuracy
+        data_model['evaluate'] = accuracy
         data_model['status'] = 'SUCCESS'
 
         trace_predict = dict(

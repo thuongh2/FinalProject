@@ -144,8 +144,8 @@ async function trainModel() {
 
       if (data.status === "SUCCESS") {
         $("#model_detail_name").text(data.model_name);
-        $("#model_detail_mape").text(data.score["mape"].toFixed(2) || 0);
-        $("#model_detail_rmse").text(data.score["rmse"].toFixed(2) || 0);
+        $("#model_detail_mape").text(data.evaluate["mape"].toFixed(2) || 0);
+        $("#model_detail_rmse").text(data.evaluate["rmse"].toFixed(2) || 0);
         alertify.success("Train model thành công!");
         plotChartData(data.plot_data);
         $("#detail-tab").tab("show");

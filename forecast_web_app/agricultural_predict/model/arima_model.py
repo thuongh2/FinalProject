@@ -97,6 +97,8 @@ class ARIMAModel(BaseModel):
         if self.forecast_data is None:
             raise Exception("Data predict not found")
 
+        print(self.forecast_data)
+
         self.accuracy = self.forecast_accuracy(self.forecast_data[self.PRICE_COLUMN].values, self.test_data[self.PRICE_COLUMN].values)
         return self.forecast_data, self.accuracy, self.model
 

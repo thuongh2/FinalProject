@@ -107,21 +107,23 @@ class LSTMModel(BaseModel):
             raise Exception("Size is required")
 
         self.data = pd.read_csv(self.data_uri)
-        self.data['date'] = pd.to_datetime(self.data['date'])
-        self.data.set_index('date', inplace=True)
+        self._clean_data()
 
         scaler = MinMaxScaler(feature_range=(0, 1))
         scaled_price = scaler.fit_transform(self.data[self.PRICE_COLUMN].values.reshape(-1, 1))
 
         time_step = 10
         self.X, self.y = create_sequences(scaled_price, time_step)
-
         train_size = int(len(self.data) * argument['size'])
         self.X_train, self.X_test = self.X[:train_size], self.X[train_size:]
         self.y_train, self.y_test = self.y[:train_size], self.y[train_size:]
 
+        self.dates = self.data.index[time_step:]
+        self.train_dates, self.test_dates = self.dates[:train_size], self.dates[train_size:]
+
         logging.info('Start train LSTM MODEL')
 
+        # Create model
         model = Sequential()
         layers_data = argument.get('layers_data', [{'id': 0, 'units': 64}])
 
@@ -149,17 +151,34 @@ class LSTMModel(BaseModel):
         epochs = argument['epochs']
         batchsize = argument.get('batchsize', 64)
         model.fit(self.X_train, self.y_train, epochs=epochs, batch_size=batchsize)
+
+        print("Model Summary:")
+        model.summary()
+        print(f"Training Parameters:\n Epochs: {epochs}\n Batch size: {batchsize}\n Time step: {time_step}")
         
         self.model = model
 
+        # Predict
         X_test_predict = model.predict(self.X_test)
+
         X_test_predict = scaler.inverse_transform(X_test_predict)
+        y_test_actual = scaler.inverse_transform(self.y_test)
 
-        y_test_predict = scaler.inverse_transform(self.y_test)
+        self.y_test_actual = y_test_actual
 
-        self.accuracy = self.forecast_accuracy(X_test_predict, y_test_predict)
+        self.actual_data = pd.DataFrame({
+            'date': self.test_dates,
+            'price': y_test_actual.flatten()
+        }).set_index('date')
 
-        return self.accuracy, self.model
+        self.forecast_data = pd.DataFrame({
+            'date': self.test_dates,
+            'price': X_test_predict.flatten()
+        }).set_index('date')
+
+        self.accuracy = self.forecast_accuracy(X_test_predict, y_test_actual)
+
+        return self.forecast_data, self.accuracy, self.model
 
 
 if __name__ == '__main__':

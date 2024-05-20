@@ -1,5 +1,10 @@
 const URL_SERVER = "http://localhost:5000";
 
+$("#model_name").change(function () {
+  sessionStorage.clear();
+});
+
+
 $("#data_name").change(function () {
   const selectedValue = JSON.parse($(this).val().replace(/'/g, '"'));
   console.log(selectedValue);
@@ -82,18 +87,6 @@ function plotChartData(data) {
   Plotly.newPlot("myChartTrainModel", plot_data, layout);
 }
 
-function loadData(state) {
-  if (state) {
-    $("#loadStationary").removeClass("d-none").addClass("d-flex");
-    $("#plotStationaryData").addClass("d-none");
-    $("#stationary").addClass("d-none");
-  } else {
-    $("#loadStationary").addClass("d-none").removeClass("d-flex");
-    $("#plotStationaryData").removeClass("d-none");
-    $("#stationary").removeClass("d-none");
-  }
-}
-
 async function trainModel() {
   const model_name = sessionStorage.getItem("model_name");
   if (!model_name) {
@@ -109,16 +102,6 @@ async function trainModel() {
   const layers_data = sessionStorage.getItem("layers_data");
   if (!layers_data) {
     alertify.error("Vui lòng thêm layers dữ liệu");
-  }
-
-  const epochs = sessionStorage.getItem("epochs");
-  if (!epochs) {
-    alertify.error("Vui lòng điền số lượng epoch");
-  }
-
-  const batchsize = sessionStorage.getItem("batchsize");
-  if (!batchsize) {
-    alertify.error("Vui lòng điền batch size");
   }
 
   var formEl = document.getElementById("trainModelForm");
@@ -161,14 +144,15 @@ async function trainModel() {
 
       if (data.status === "SUCCESS") {
         $("#model_detail_name").text(data.model_name);
-        $("#model_detail_mape").text(data.score["mape"] | 0);
-        $("#model_detail_rmse").text(data.score["rmse"] | 0);
-
-        // show chart data như trang detail
+        $("#model_detail_mape").text(data.score["mape"].toFixed(2) || 0);
+        $("#model_detail_rmse").text(data.score["rmse"].toFixed(2) || 0);
+        alertify.success("Train model thành công!");
         plotChartData(data.plot_data);
         $("#detail-tab").tab("show");
+
       } else {
         alertify.error(data.error);
+        alertify.error("Train model thất bại!");
       }
     },
     error: function (error) {
@@ -189,7 +173,7 @@ async function submitModel() {
 
   await $.ajax({
     url: URL_SERVER + "/submit-train-model-data",
-    method: "POST", // First change type to method here
+    method: "POST", 
     contentType: "application/json; charset=utf-8",
     data: JSON.stringify(data),
     success: function (response) {
@@ -212,23 +196,6 @@ async function submitModel() {
 }
 
 $(document).ready(function () {
-  $("input[type=radio][name=flexRadioDefault]").change(function () {
-    var selectedValue = $(this).val();
-    if (selectedValue === "diff") {
-      $("#applyLog").removeClass("d-none");
-    } else {
-      $("#applyLog").addClass("d-none");
-    }
-    applyDiffSeasonal(selectedValue);
-  });
-
-  $("#applyLog").on("change", function () {
-    var selectedValue = $(
-      "input[type=radio][name=flexRadioDefault]:checked"
-    ).val();
-    applyDiffSeasonal(selectedValue);
-  });
-
   $("#trainModelForm").submit(function (event) {
     event.preventDefault();
     alertify.set("notifier", "position", "top-right");
@@ -347,7 +314,6 @@ function saveEpochsToSession(key, value) {
 function saveBatchsizeToSession(key, value) {
   sessionStorage.setItem(key, value);
 }
-
 
 function loadFromSession() {
   const epochs = document.getElementById("epochs");

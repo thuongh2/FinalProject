@@ -112,7 +112,7 @@ class LSTMModel(BaseModel):
         scaler = MinMaxScaler(feature_range=(0, 1))
         scaled_price = scaler.fit_transform(self.data[self.PRICE_COLUMN].values.reshape(-1, 1))
 
-        time_step = 10
+        time_step = argument.get('timestep', 10)
         self.X, self.y = create_sequences(scaled_price, time_step)
         train_size = int(len(self.data) * argument['size'])
         self.X_train, self.X_test = self.X[:train_size], self.X[train_size:]
@@ -126,6 +126,7 @@ class LSTMModel(BaseModel):
         # Create model
         model = Sequential()
         layers_data = argument.get('layers_data', [{'id': 0, 'units': 64}])
+        layers_data = [{'id': layer['id'], 'units': int(layer['units'])} for layer in layers_data]
 
         if len(layers_data) == 1:
             units = layers_data[0]['units']
@@ -150,11 +151,12 @@ class LSTMModel(BaseModel):
 
         epochs = argument['epochs']
         batchsize = argument.get('batchsize', 64)
+        print(f"Training Parameters:\n Epochs: {epochs}\n Batch size: {batchsize}\n Time step: {time_step}\n Size: {argument['size']}\n")
+        
         model.fit(self.X_train, self.y_train, epochs=epochs, batch_size=batchsize)
 
         print("Model Summary:")
         model.summary()
-        print(f"Training Parameters:\n Epochs: {epochs}\n Batch size: {batchsize}\n Time step: {time_step}")
         
         self.model = model
 

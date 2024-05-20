@@ -89,6 +89,7 @@ def train_model_rnn_data():
                   "model_name": model_name,
                   "agricutural_name": data.get('agricutural_name'),
                   "data_name": model_data,
+                  "argument": argument,
                   "type": "TRAIN_MODEL",
                   "create_time": datetime.now(),
                   "isUsed": False}

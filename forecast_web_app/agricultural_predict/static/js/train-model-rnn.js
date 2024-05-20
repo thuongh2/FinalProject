@@ -121,12 +121,14 @@ async function trainModel() {
     argument[name] = value;
   }
 
+  const layersDataParsed = JSON.parse(layers_data);
+  argument["layers_data"] = layersDataParsed;
+
   data = {
     model_name: model_name,
     model_data: model_data,
     username: username,
     agricutural_name: agricutural_name,
-    layers_data: JSON.parse(layers_data),
     argument: argument,
   };
 
@@ -306,7 +308,11 @@ document.addEventListener("DOMContentLoaded", function () {
     .addEventListener("input", saveLayersToSession);
 });
 
-// Lưu epoch, batchsize vào session
+// Lưu timestep, epoch, batchsize vào session
+function saveTimestepToSession(key, value) {
+  sessionStorage.setItem(key, value);
+}
+
 function saveEpochsToSession(key, value) {
   sessionStorage.setItem(key, value);
 }
@@ -317,11 +323,17 @@ function saveBatchsizeToSession(key, value) {
 
 function loadFromSession() {
   const epochs = document.getElementById("epochs");
+  const timestep = document.getElementById("timestep");
   const batchsize = document.getElementById("batchsize");
 
   const epochValue = sessionStorage.getItem("epochs");
   if (epochValue) {
     epochs.value = epochValue;
+  }
+
+  const timestepValue = sessionStorage.getItem("timestep");
+  if (timestepValue) {
+    timestep.value = epochValue;
   }
 
   const batchSizeValue = sessionStorage.getItem("batchsize");

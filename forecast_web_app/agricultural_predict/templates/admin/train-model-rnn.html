@@ -170,11 +170,15 @@
                                     <label for="flexInputDefault2"><strong>optimizer='adam'</strong></label><br>
                                     <label for="flexInputDefault2"><strong>loss='mean_squared_error'</strong></label>
                                     <div class="row">
-                                        <div class="col-xl-6 d-flex align-items-center">
+                                        <div class="col-xl-4 d-flex align-items-center">
+                                            <span>time step:</span>
+                                            <input class="form-control ml-2" type="text" id="timestep" name="timestep" oninput="saveTimestepToSession('timestep', this.value)">
+                                        </div>
+                                        <div class="col-xl-4 d-flex align-items-center">
                                             <span>epoch:</span>
                                             <input class="form-control ml-2" type="text" id="epochs" name="epochs" oninput="saveEpochsToSession('epochs', this.value)">
                                         </div>
-                                        <div class="col-xl-6 d-flex align-items-center">
+                                        <div class="col-xl-4 d-flex align-items-center">
                                             <span>batch size:</span>
                                             <input class="form-control ml-2" type="text" id="batchsize" name="batchsize" oninput="saveBatchsizeToSession('batchsize', this.value)">
                                         </div>                                        

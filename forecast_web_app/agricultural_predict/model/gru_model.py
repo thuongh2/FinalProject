@@ -6,6 +6,10 @@ from sklearn.preprocessing import MinMaxScaler
 from keras.models import load_model
 from sklearn.metrics import mean_squared_error
 from model.base_model import BaseModel
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense, Dropout
+from tensorflow.keras.optimizers import Adam
+import logging
 
 class GRUModel(BaseModel):
     def __init__(self):
@@ -81,6 +85,39 @@ class GRUModel(BaseModel):
         data_predicted = pd.concat([original_df, predicted_df], ignore_index=True)
         
         return data_predicted
+
+    def create_sequences(self, data, seq_length):
+        X, y = [], []
+        for i in range(len(data) - seq_length):
+            X.append(data[i:(i + seq_length), :])
+            y.append(data[i + seq_length, 0])
+        return np.array(X), np.array(y)
+
+    def create_model(self, argument, input_shape):
+        self.model = Sequential()
+        layers_data = argument.get('layers_data', [{'id': 0, 'units': 64}])
+        layers_data = [{'id': layer['id'], 'units': int(layer['units'])} for layer in layers_data]
+
+        if len(layers_data) == 1:
+            units = layers_data[0]['units']
+            self.model.add(LSTM(units, return_sequences=False, input_shape=input_shape))
+            self.model.add(Dropout(0.2))
+        else:
+            for i, layer in enumerate(layers_data):
+                units = layer['units']
+                if i == 0:
+                    self.model.add(LSTM(units, return_sequences=True, input_shape=input_shape))
+                    self.model.add(Dropout(0.2))
+                elif i == len(layers_data) - 1:
+                    self.model.add(LSTM(units, return_sequences=False))
+                    self.model.add(Dropout(0.2))
+                else:
+                    self.model.add(LSTM(units, return_sequences=True))
+                    self.model.add(Dropout(0.2))
+        self.model.add(Dense(1))
+
+        optimizer = Adam()
+        self.model.compile(optimizer=optimizer, loss='mean_squared_error')
     
     def train_model(self, argument):
         """
@@ -92,13 +129,6 @@ class GRUModel(BaseModel):
             batch_size: size of the batch
         return LSTM MODEL
         """
-        def create_sequences(data, time_step):
-            X, y = [], []
-            for i in range(len(data) - time_step):
-                X.append(data[i:(i + time_step)])
-                y.append(data[i + time_step])
-            return np.array(X), np.array(y)
-
         # Prepare data
         if argument.get('size', 0.8) is None:
             raise Exception("Size is required")
@@ -106,15 +136,16 @@ class GRUModel(BaseModel):
         self.data = pd.read_csv(self.data_uri)
         self._clean_data()
 
-        if self.data.shape[1] == 2:  # Only index and price column
+        time_step = argument.get('timestep', 10)
+
+        # Check data column
+        if len(self.data.columns) == 1 and self.PRICE_COLUMN in self.data.columns:
             scaler_price = MinMaxScaler(feature_range=(0, 1))
             scaled_price = scaler_price.fit_transform(self.data[self.PRICE_COLUMN].values.reshape(-1, 1))
 
-            time_step = argument.get('timestep', 10)
-            self.X, self.y = create_sequences(scaled_price, time_step)
+            self.X, self.y = self.create_sequences(scaled_price, time_step)
             input_shape = (time_step, 1)
         else:
-            # Scale each column separately
             scaler_price = MinMaxScaler(feature_range=(0, 1))
             scaled_price = scaler_price.fit_transform(self.data[self.PRICE_COLUMN].values.reshape(-1, 1))
 
@@ -127,8 +158,7 @@ class GRUModel(BaseModel):
 
             scaled_data = np.concatenate((scaled_price, scaled_other), axis=1)
 
-            time_step = argument.get('timestep', 10)
-            self.X, self.y = create_sequences(scaled_data, time_step)
+            self.X, self.y = self.create_sequences(scaled_data, time_step)
             input_shape = (time_step, scaled_data.shape[1])
             
         train_size = int(len(self.data) * argument['size'])
@@ -138,68 +168,37 @@ class GRUModel(BaseModel):
         self.dates = self.data.index[time_step:]
         self.train_dates, self.test_dates = self.dates[:train_size], self.dates[train_size:]
 
+        # Start train model
         logging.info('Start train LSTM MODEL')
-
-        # Create model
-        model = Sequential()
-        layers_data = argument.get('layers_data', [{'id': 0, 'units': 64}])
-        layers_data = [{'id': layer['id'], 'units': int(layer['units'])} for layer in layers_data]
-
-        if len(layers_data) == 1:
-            units = layers_data[0]['units']
-            model.add(LSTM(units, return_sequences=False, input_shape=input_shape))
-            model.add(Dropout(0.2))
-        else:
-            for i, layer in enumerate(layers_data):
-                units = layer['units']
-                if i == 0:
-                    model.add(LSTM(units, return_sequences=True, input_shape=(time_step, 1)))
-                    model.add(Dropout(0.2))
-                elif i == len(layers_data) - 1:
-                    model.add(LSTM(units, return_sequences=False))
-                    model.add(Dropout(0.2))
-                else:
-                    model.add(LSTM(units, return_sequences=True))
-                    model.add(Dropout(0.2))
-        model.add(Dense(1))
-
-        optimizer = Adam()
-        model.compile(optimizer=optimizer, loss='mean_squared_error')
-
+        self.create_model(argument, input_shape)
         epochs = argument['epochs']
         batchsize = argument.get('batchsize', 64)
         print(f"Training Parameters:\n Epochs: {epochs}\n Batch size: {batchsize}\n Time step: {time_step}\n Size: {argument['size']}\n")
-        
-        model.fit(self.X_train, self.y_train, epochs=epochs, batch_size=batchsize)
+        self.model.fit(self.X_train, self.y_train, epochs=epochs, batch_size=batchsize)
 
         print("Model Summary:")
-        model.summary()
-        
-        self.model = model
+        self.model.summary()
 
         # Predict
-        X_test_predict = model.predict(self.X_test)
+        X_test_predict = self.model.predict(self.X_test)
+        self.X_test_predict = scaler_price.inverse_transform(X_test_predict)
+        self.y_test_actual = scaler_price.inverse_transform(self.y_test.reshape(-1, 1))
 
-        X_test_predict = scaler_price.inverse_transform(X_test_predict)
-        y_test_actual = scaler_price.inverse_transform(self.y_test)
-
-        self.y_test_actual = y_test_actual
-
+        # DataFrame
         self.actual_data = pd.DataFrame({
             'date': self.test_dates,
-            'price': y_test_actual.flatten()
+            'price': self.y_test_actual.flatten()
         }).set_index('date')
 
         self.forecast_data = pd.DataFrame({
             'date': self.test_dates,
-            'price': X_test_predict.flatten()
+            'price': self.X_test_predict.flatten()
         }).set_index('date')
 
-        self.accuracy = self.forecast_accuracy(X_test_predict, y_test_actual)
+        # forecast_accuracy
+        self.accuracy = self.forecast_accuracy(self.X_test_predict, self.y_test_actual)
 
         return self.forecast_data, self.accuracy, self.model
-
-
     
 if __name__ == '__main__':
     model_url = "../test_data/GRU_univariate_coffee.h5"

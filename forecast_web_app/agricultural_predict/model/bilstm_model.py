@@ -7,44 +7,13 @@ from keras.models import load_model
 from sklearn.metrics import mean_squared_error
 from model.base_model import BaseModel
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Dropout
+from tensorflow.keras.layers import LSTM, Dense, Dropout, Bidirectional
 from tensorflow.keras.optimizers import Adam
 import logging
 
 class BiLSTMModel(BaseModel):
     def __init__(self):
         super().__init__()
-        
-    # def prepare_data(self, train_url, test_url):
-    #     if train_url:
-    #         self.train_data = pd.read_csv(train_url)
-    #     if test_url:
-    #         self.test_data = pd.read_csv(test_url)
-            
-    #     return self.set_index_date(self.train_data, self.test_data)
-    
-    
-    # def prepare_data(self, data_url):
-    #     self.data = pd.read_csv(data_url)
-    #     self.data['date'] = pd.to_datetime(self.data['date'])
-    #     self.data.set_index('date', inplace=True)
-    #     size = int(len(self.data) * 0.8)
-    #     self.train_data = self.data[:size]
-    #     self.test_data = self.data[size:]
-            
-    #     return self.train_data, self.test_data
-
-
-    # def set_index_date(self, train_data, test_data):
-    #     if 'date' in train_data.columns:
-    #         train_data['date'] = pd.to_datetime(train_data['date'])
-    #         train_data.set_index('date', inplace=True)
-            
-    #     if 'date' in test_data.columns:
-    #         test_data['date'] = pd.to_datetime(test_data['date'])
-    #         test_data.set_index('date', inplace=True)
-            
-    #     return train_data, test_data 
     
     def predict(self, data, n_steps):
         model = load_model(self.model_url)
@@ -64,14 +33,6 @@ class BiLSTMModel(BaseModel):
         
         return predicted_values
 
-    def forecast_accuracy(self, test_data, predicted_values):
-        test_values = test_data['price'].values
-        mape = np.mean(np.abs((test_values - predicted_values) / test_values)) * 100
-        mse = mean_squared_error(test_values, predicted_values)
-        rmse = np.sqrt(mse)
-
-        return {'mape': round(mape, 2), 'rmse': round(rmse, 2)}
-
     
     def predict_ensemble(self, forecast_num, data, n_steps, time):
         model = load_model(self.model_url)
@@ -89,37 +50,6 @@ class BiLSTMModel(BaseModel):
             predicted_prices.append(predicted_price[0, 0])
     
         return predicted_prices
-    
-    # def plot_predictions(self, data, data_predicted, target_date):
-    #     last_date = data['date'].iloc[-1]
-    #     list_predicted = data_predicted[pd.to_datetime(data_predicted['date']) >= last_date]
-    #     data_actual = data[pd.to_datetime(data['date']) >= target_date] 
-
-    
-    #     fig = go.Figure()
-    #     fig.add_trace(go.Scatter(x=data_actual['date'], y=data_actual['price'], mode='lines', name='Giá thực tế', line=dict(color='rgba(0, 0, 255, 0.5)'), fill='tozeroy', fillcolor='rgba(173, 216, 230, 0.7)', visible=True))
-    #     fig.add_trace(go.Scatter(x=list_predicted['date'], y=list_predicted['price'], mode='lines', name='Giá dự đoán', line=dict(color='rgba(255, 165, 0, 0.5)'), fill='tozeroy', fillcolor='rgba(255, 165, 0, 0.2)', visible=True))
-    #     fig.update_layout(
-    #                     title={
-    #                         'text': "BIỂU ĐỒ DỰ ĐOÁN GIÁ CÀ PHÊ (BiLSTM)",
-    #                         'font': {
-    #                             'family': 'Arial',
-    #                             'size': 20,
-    #                         }
-    #                     },
-    #                     title_x=0.5,
-    #                     xaxis_title='Ngày',
-    #                     yaxis_title='Giá',                       
-    #                     yaxis=dict(range=[52000, max(data_predicted['price'])]),
-    #                     plot_bgcolor='rgba(0,0,0,0)', 
-    #                     paper_bgcolor='rgba(0,0,0,0)',
-    #                     xaxis=dict(  
-    #                         tickformat='%d/%m/%Y',                     
-    #                         tickvals=data_predicted['date'][::14],                                 
-    #                 ))
-        
-    #     pio.write_html(fig, '../templates/chart/BiLSTM-30days-univariate-coffee.html')
-
 
     def train_for_upload_mode(self, n_periods, test_data):
         n_steps = 10
@@ -166,25 +96,25 @@ class BiLSTMModel(BaseModel):
 
         if len(layers_data) == 1:
             units = layers_data[0]['units']
-            self.model.add(LSTM(units, return_sequences=False, input_shape=input_shape))
+            self.model.add(Bidirectional(LSTM(units, return_sequences=False), input_shape=input_shape))
             self.model.add(Dropout(0.2))
         else:
             for i, layer in enumerate(layers_data):
                 units = layer['units']
                 if i == 0:
-                    self.model.add(LSTM(units, return_sequences=True, input_shape=input_shape))
+                    self.model.add(Bidirectional(LSTM(units, return_sequences=True), input_shape=input_shape))
                     self.model.add(Dropout(0.2))
                 elif i == len(layers_data) - 1:
-                    self.model.add(LSTM(units, return_sequences=False))
+                    self.model.add(Bidirectional(LSTM(units, return_sequences=False)))
                     self.model.add(Dropout(0.2))
                 else:
-                    self.model.add(LSTM(units, return_sequences=True))
+                    self.model.add(Bidirectional(LSTM(units, return_sequences=True)))
                     self.model.add(Dropout(0.2))
         self.model.add(Dense(1))
 
         optimizer = Adam()
         self.model.compile(optimizer=optimizer, loss='mean_squared_error')
-    
+
     def train_model(self, argument):
         """
         Train model in web
@@ -193,7 +123,7 @@ class BiLSTMModel(BaseModel):
             layer: list of layer configurations
             epoch: number of epochs
             batch_size: size of the batch
-        return LSTM MODEL
+        return BiLSTM MODEL
         """
         # Prepare data
         if argument.get('size', 0.8) is None:
@@ -220,13 +150,14 @@ class BiLSTMModel(BaseModel):
             scaled_other = np.zeros(other_columns.shape)
             for i, col in enumerate(other_columns.columns):
                 scalers_other[col] = MinMaxScaler(feature_range=(0, 1))
-                scaled_other[:, i] = scalers_other[col].fit_transform(other_columns[col].values.reshape(-1, 1)).flatten()
+                scaled_other[:, i] = scalers_other[col].fit_transform(
+                    other_columns[col].values.reshape(-1, 1)).flatten()
 
             scaled_data = np.concatenate((scaled_price, scaled_other), axis=1)
 
             self.X, self.y = self.create_sequences(scaled_data, time_step)
             input_shape = (time_step, scaled_data.shape[1])
-            
+
         train_size = int(len(self.data) * argument['size'])
         self.X_train, self.X_test = self.X[:train_size], self.X[train_size:]
         self.y_train, self.y_test = self.y[:train_size], self.y[train_size:]
@@ -239,10 +170,11 @@ class BiLSTMModel(BaseModel):
         self.create_model(argument, input_shape)
         epochs = argument['epochs']
         batchsize = argument.get('batchsize', 64)
-        print(f"Training Parameters:\n Epochs: {epochs}\n Batch size: {batchsize}\n Time step: {time_step}\n Size: {argument['size']}\n")
+        print(
+            f"Training Parameters:\n Epochs: {epochs}\n Batch size: {batchsize}\n Time step: {time_step}\n Size: {argument['size']}\n")
         self.model.fit(self.X_train, self.y_train, epochs=epochs, batch_size=batchsize)
 
-        print("Model Summary:")
+        print("BiLSTM model Summary:")
         self.model.summary()
 
         # Predict
@@ -262,11 +194,9 @@ class BiLSTMModel(BaseModel):
         }).set_index('date')
 
         # forecast_accuracy
-        self.accuracy = self.forecast_accuracy(self.X_test_predict, self.y_test_actual)
+        self.accuracy = self.forecast_accuracy(self.y_test_actual, self.X_test_predict)
 
         return self.forecast_data, self.accuracy, self.model
-
-
     
 if __name__ == '__main__':
     model_url = "../test_data/BiLSTM_univariate_coffee.h5"

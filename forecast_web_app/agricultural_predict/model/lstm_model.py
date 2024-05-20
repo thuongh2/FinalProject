@@ -177,7 +177,7 @@ class LSTMModel(BaseModel):
             f"Training Parameters:\n Epochs: {epochs}\n Batch size: {batchsize}\n Time step: {time_step}\n Size: {argument['size']}\n")
         self.model.fit(self.X_train, self.y_train, epochs=epochs, batch_size=batchsize)
 
-        print("Model Summary:")
+        print("LSTM model Summary:")
         self.model.summary()
 
         # Predict
@@ -197,7 +197,7 @@ class LSTMModel(BaseModel):
         }).set_index('date')
 
         # forecast_accuracy
-        self.accuracy = self.forecast_accuracy(self.X_test_predict, self.y_test_actual)
+        self.accuracy = self.forecast_accuracy(self.y_test_actual, self.X_test_predict)
 
         return self.forecast_data, self.accuracy, self.model
 

@@ -7,7 +7,7 @@ from keras.models import load_model
 from sklearn.metrics import mean_squared_error
 from model.base_model import BaseModel
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Dropout
+from tensorflow.keras.layers import GRU, Dense, Dropout
 from tensorflow.keras.optimizers import Adam
 import logging
 
@@ -100,19 +100,19 @@ class GRUModel(BaseModel):
 
         if len(layers_data) == 1:
             units = layers_data[0]['units']
-            self.model.add(LSTM(units, return_sequences=False, input_shape=input_shape))
+            self.model.add(GRU(units, return_sequences=False, input_shape=input_shape))
             self.model.add(Dropout(0.2))
         else:
             for i, layer in enumerate(layers_data):
                 units = layer['units']
                 if i == 0:
-                    self.model.add(LSTM(units, return_sequences=True, input_shape=input_shape))
+                    self.model.add(GRU(units, return_sequences=True, input_shape=input_shape))
                     self.model.add(Dropout(0.2))
                 elif i == len(layers_data) - 1:
-                    self.model.add(LSTM(units, return_sequences=False))
+                    self.model.add(GRU(units, return_sequences=False))
                     self.model.add(Dropout(0.2))
                 else:
-                    self.model.add(LSTM(units, return_sequences=True))
+                    self.model.add(GRU(units, return_sequences=True))
                     self.model.add(Dropout(0.2))
         self.model.add(Dense(1))
 
@@ -127,7 +127,7 @@ class GRUModel(BaseModel):
             layer: list of layer configurations
             epoch: number of epochs
             batch_size: size of the batch
-        return LSTM MODEL
+        return GRU MODEL
         """
         # Prepare data
         if argument.get('size', 0.8) is None:
@@ -176,7 +176,7 @@ class GRUModel(BaseModel):
         print(f"Training Parameters:\n Epochs: {epochs}\n Batch size: {batchsize}\n Time step: {time_step}\n Size: {argument['size']}\n")
         self.model.fit(self.X_train, self.y_train, epochs=epochs, batch_size=batchsize)
 
-        print("Model Summary:")
+        print("GRU model Summary:")
         self.model.summary()
 
         # Predict
@@ -196,7 +196,7 @@ class GRUModel(BaseModel):
         }).set_index('date')
 
         # forecast_accuracy
-        self.accuracy = self.forecast_accuracy(self.X_test_predict, self.y_test_actual)
+        self.accuracy = self.forecast_accuracy(self.y_test_actual, self.X_test_predict)
 
         return self.forecast_data, self.accuracy, self.model
     

@@ -210,7 +210,7 @@ $(document).ready(function () {
   });
 
   var el = document.getElementById("curr");
-  var r = document.getElementById("myRange");
+  var r = document.getElementById("size");
   el.innerText = r.valueAsNumber + "%";
   r.addEventListener("change", () => {
     el.innerText = r.valueAsNumber + "%";

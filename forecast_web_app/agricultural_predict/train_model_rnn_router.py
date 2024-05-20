@@ -85,7 +85,7 @@ def train_model_rnn_data():
     argument = data.get('argument')
 
     data_model = {"user_id": data.get('username'),
-                  "name": "Dự đoán giá " +  data.get('agricutural_name') + " mô hình " + model_name,
+                  "name": "Dự đoán giá" + " " +  data.get('agricutural_name') + " " + "mô hình" + " " + model_name,
                   "model_name": model_name,
                   "agricutural_name": data.get('agricutural_name'),
                   "data_name": model_data,

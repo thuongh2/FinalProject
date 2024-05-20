@@ -45,16 +45,20 @@ def train_model_page():
         model_data_find = model.find_one({'name': model_name})
         data = model_data_find.get('attrs')
         default_param = model_data_find.get('default_param')
+
         if(default_param):
             params_render = default_param.get('param')
+            stationary_option = default_param.get('stationary_option')
         current_app.logger.info(params_render)
 
         return render_template('admin/train-model.html',
                                 model_names=model_names, data=data,
-                                model_name=model_name, params_render = params_render)
+                                model_name=model_name, params_render = params_render,
+                                stationary_option=stationary_option)
 
     return render_template('admin/train-model.html',
-                           model_names=model_names, data=None, model_name="", params_render=None)
+                           model_names=model_names, data=None, model_name="",
+                            params_render=None, stationary_option=None)
 
 
 @train_model_router.route('/search-train-model', methods=['GET'])

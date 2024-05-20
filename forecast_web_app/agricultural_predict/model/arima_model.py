@@ -102,13 +102,32 @@ class ARIMAModel(BaseModel):
         self.accuracy = self.forecast_accuracy(self.forecast_data[self.PRICE_COLUMN].values, self.test_data[self.PRICE_COLUMN].values)
         return self.forecast_data, self.accuracy, self.model
 
+    def difference_dataset(self, type, lag=1):
+        """
+            Dif data set
+            LOG: Log Differencing
+            DIFF: Difference Data
+                LAG: number lag 
+            AUTO: Automatic Differencing
+        """
+        df_diff = self.data.copy()
+       
+        if (type == 'LOG'):
+            df_diff = np.log(df_diff)
+        elif (type == 'AUTO'):
+            df_diff = df_diff.diff()
+        else:
+            df_diff = df_diff - df_diff.shift(int(lag))
+        df_diff = df_diff.dropna()
+        return df_diff
+
+
     def seasonal_diff(self, dataset, interval=1):
         diff = list()
         for i in range(interval, len(dataset)):
             value = dataset[i] - dataset[i - interval]
             diff.append(value)
         return diff
-
 
     def inverse_difference(self, last_ob, value):
         """ invert differenced forecast """

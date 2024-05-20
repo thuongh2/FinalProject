@@ -1,21 +1,20 @@
-import joblib
 import numpy as np
+import joblib
 import pandas as pd
+from statsmodels.tsa.stattools import acf
 import mlflow
 from mlflow.models import infer_signature
+from sklearn.metrics import mean_absolute_error as mae
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 import pmdarima as pm
 import logging
 from model.base_model import BaseModel
 
-class ARIMAXModel(BaseModel):
+class ARIMAModel(BaseModel):
 
     def __init__(self):
         super().__init__()
-
-        self.exogenous = []
-
 
     def predict(self, n_periods=30):
         if self.model:
@@ -23,7 +22,6 @@ class ARIMAXModel(BaseModel):
             return predict, confint
         else:
             raise Exception("Không tìm thấy model")
-
 
     def forecast_future(self, forecast_num, data=None, n_steps=None):
         self._load_model()
@@ -40,11 +38,9 @@ class ARIMAXModel(BaseModel):
         predicted_df = pd.DataFrame({'date': next_dates, 'price': predicted})
 
         return predicted_df
-
-
+    
     def _load_model(self):
         self.model = joblib.load(self.model_url)
-
 
     def train_for_upload_mode(self, n_periods, data=None):
         self._load_model()
@@ -61,17 +57,16 @@ class ARIMAXModel(BaseModel):
 
 
     def train_model(self, argument):
-        """
+        """ 
         Train model in web
-        params argument
+        params argument 
             size: size split data
             start_p: start p
             start_q: start q
             max_p: max p
             max_q: max q
-            set exogenous list
         return ARIMA MODEL
-
+        
         """
 
         if argument.get('size', 0.8) is None:
@@ -81,13 +76,10 @@ class ARIMAXModel(BaseModel):
 
         logging.info('Start train ARIMA MODEL')
 
-        self.model = pm.auto_arima(self.train_data.price.values,
-                                   exogenous=self.train_data[self.exogenous],
-                                   start_p=argument.get('start_p', 0),
+        self.model = pm.auto_arima(self.train_data.values, start_p=argument.get('start_p', 0),
                                    start_q=argument.get('start_q', 0),
                                    test='adf',  # use adftest to find optimal 'd'
-                                   max_p=argument.get('max_p', 0),
-                                   max_q=argument.get('max_q', 0),  # maximum p and q
+                                   max_p=argument.get('max_p', 0), max_q=argument.get('max_q', 0),  # maximum p and q
                                    m=1,  # frequency of series
                                    d=argument.get('d', None),  # let model determine 'd'
                                    seasonal=False,
@@ -127,6 +119,7 @@ class ARIMAXModel(BaseModel):
         df_diff = df_diff.dropna()
         return df_diff
 
+
     def seasonal_diff(self, dataset, interval=1):
         diff = list()
         for i in range(interval, len(dataset)):
@@ -134,15 +127,15 @@ class ARIMAXModel(BaseModel):
             diff.append(value)
         return diff
 
-    # invert differenced forecast
     def inverse_difference(self, last_ob, value):
+        """ invert differenced forecast """
         return value + last_ob
 
-    def ml_flow_register(self):
+    def ml_flow_register(self, experient_name="DEFAUT_MODEL"):
         ARTIFACT_PATH = "model"
 
         mlflow.set_tracking_uri(uri="http://20.2.210.176:5000/")
-        mlflow.set_experiment("ARIMA_MODEL")
+        mlflow.set_experiment(experient_name)
 
         # Create an instance of a PandasDataset
         dataset = mlflow.data.from_pandas(
@@ -156,6 +149,7 @@ class ARIMAXModel(BaseModel):
             mlflow.log_input(dataset, context="training")
 
             mlflow.log_params({"order": self.model.order})
+            mlflow.log_params({"model": self.model.summary()})
 
             for k, v in self.accuracy.items():
                 mlflow.log_metric(k, round(v, 4))
@@ -169,26 +163,30 @@ class ARIMAXModel(BaseModel):
 
 
 if __name__ == '__main__':
-    test_data_url = "../test_data/test_data_arima.csv"
-    test_data = pd.read_csv("../test_data/test_data_arima.csv")
+    # test_data_url = "../test_data/test_data_arima.csv"
+    # test_data = pd.read_csv("../test_data/test_data_arima.csv")
     data_url = "../test_data/arima_data.csv"
     model_url = "../test_data/arima.joblib"
     model = ARIMAModel()
-    model.test_data = "../test_data/test_data_arima.csv"
+    # model.test_data = "../test_data/test_data_arima.csv"
     model.model_url = model_url
     model.data_uri = data_url
-    # tạo data
-    _, test_data = model.prepare_data(data_url)
-    # xử lí dữ liệu (cho trai trên web)
-    print(test_data.head())
-    print(test_data.iloc[0].values)
-    # dự đoná mô hình
-    data, ac = model.train_for_upload_mode(599, test_data)
-    # register in ml flow
-    model_mflow = model.ml_flow_register()
-    print(model_mflow.model_uri)
+    # # tạo data
+    # _ , test_data = model.prepare_data(data_url)
+    # # xử lí dữ liệu (cho trai trên web)
+    # print(test_data.head())
+    # print(test_data.iloc[0].values)
+    # # dự đoná mô hình
+    model.prepare_data_for_self_train()
+    data , ac = model.train_for_upload_mode(599, None)
+    # # register in ml flow
+    # model_mflow = model.ml_flow_register()
+    # print(model_mflow.model_uri)
     print(ac)
     print(data)
 
-
-
+    dt = model.forecast_future(10)
+    print(dt)
+    # model.data_uri = data_url
+    model.train_model({'start_p': 1, 'start_q': 1, 'max_p': 1, 'max_q': 1, 'size': 0.8})
+    # model.ml_flow_register()

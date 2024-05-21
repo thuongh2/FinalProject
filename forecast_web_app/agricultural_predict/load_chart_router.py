@@ -20,6 +20,7 @@ from statsmodels.tsa.stattools import adfuller
 import io
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import load_model
+import os
 
 load_chart_router = Blueprint('load_chart_router', __name__, static_folder='static',
             template_folder='templates')
@@ -40,7 +41,8 @@ def load_chart():
     model_time = int(model_time)
     n_steps = 10
 
-    dict_model_file = {'ARIMA':'arima.joblib', 'LSTM':'LSTM_univariate_coffee.h5', 'GRU':'GRU_univariate_coffee.h5', 'BiLSTM':'BiLSTM_univariate_coffee.h5', 'VAR' : 'var.joblib', 'VARMA' : 'varma_model.joblib'}
+    file_name, _ = os.path.splitext(os.path.basename(model_data))
+    dict_model_file = {'ARIMA':'arima.joblib', 'LSTM':'LSTM_'+file_name+'.h5', 'GRU':'GRU_'+file_name+'.h5', 'BiLSTM':'BiLSTM_'+file_name+'.h5', 'VAR' : 'var.joblib', 'VARMA' : 'varma_model.joblib'}
     model_url = './file_model/' + dict_model_file.get(model_name)
     model = FactoryModel(model_name).factory()
     model_url = model_url

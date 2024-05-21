@@ -33,27 +33,39 @@ class LSTMModel(BaseModel):
         
         return predicted_values
 
-    # def forecast_accuracy(self, test_data, predicted_values):
-    #     test_values = self.test_data['price'].values
-    #     mape = np.mean(np.abs((test_values - predicted_values) / test_values)) * 100
-    #     mse = mean_squared_error(test_values, predicted_values)
-    #     rmse = np.sqrt(mse)
-    #
-    #     return {'mape': round(mape, 2), 'rmse': round(rmse, 2)}
-
-    def forecast_future(self, forecast_num, data, n_steps):
+    def forecast_future(self, forecast_num, data, time_step):
         self.model = load_model(self.model_url)
-        scaler = MinMaxScaler(feature_range=(0, 1))
-        prices = data['price'].values
-        dataset = scaler.fit_transform(prices.reshape(-1, 1))
-        last_data = dataset[-(n_steps+1):]
-        last_data = last_data.reshape(1, -1)[:, -((n_steps+1) - 1):]
+
+        scaler_price = MinMaxScaler(feature_range=(0, 1))
+        scaled_data = scaler_price.fit_transform(self.data[self.PRICE_COLUMN].values.reshape(-1, 1))
+
+        if len(self.data.columns) == 1 and self.PRICE_COLUMN in self.data.columns:
+            last_data = scaled_data[-(time_step + 1):]
+            last_data = last_data.reshape(1, -1)[:, -((time_step + 1) - 1):]
+        else:
+            other_columns = self.data.drop(columns=[self.PRICE_COLUMN])
+            scalers_other = {}
+            scaled_other = np.zeros(other_columns.shape)
+            for i, col in enumerate(other_columns.columns):
+                scalers_other[col] = MinMaxScaler(feature_range=(0, 1))
+                scaled_other[:, i] = scalers_other[col].fit_transform(
+                    other_columns[col].values.reshape(-1, 1)).flatten()
+            scaled_data = np.concatenate((scaled_data, scaled_other), axis=1)
+            last_data = scaled_data[-(time_step + 1):]
+            last_data = last_data.reshape(1, -1, scaled_data.shape[1])[:, -((time_step + 1) - 1):]
 
         predicted_prices = []
         for day in range(forecast_num):
             next_prediction = self.model.predict(last_data)
-            last_data = np.append(last_data, next_prediction).reshape(1, -1)[:, 1:]
-            predicted_price = scaler.inverse_transform(next_prediction.reshape(-1, 1))
+            if len(self.data.columns) == 1 and self.PRICE_COLUMN in self.data.columns:
+                last_data = np.append(last_data, next_prediction).reshape(1, -1)[:, 1:]
+            else:
+                new_price = next_prediction[0, 0]
+                new_feature = last_data[0, -1, 1]
+                last_data = np.append(last_data, [[[new_price, new_feature]]], axis=1)
+                last_data = last_data[:, 1:, :]
+
+            predicted_price = scaler_price.inverse_transform(next_prediction.reshape(-1, 1))
             predicted_prices.append(predicted_price[0, 0])
 
         last_date = self.data.index[-1]
@@ -75,15 +87,6 @@ class LSTMModel(BaseModel):
 
         self.accuracy = self.forecast_accuracy(self.test_data, self.forecast_data.price.values)
         return self.forecast_data, self.accuracy
-
-    def concat_dataframes(self, original_df, predicted_df):
-        predicted_df['date'] = pd.to_datetime(predicted_df['date'])
-        predicted_df['date'] = predicted_df['date'].dt.strftime('%m/%d/%Y')
-        original_df['date'] = pd.to_datetime(original_df['date'])
-        original_df['date'] = original_df['date'].dt.strftime('%m/%d/%Y')
-        data_predicted = pd.concat([original_df, predicted_df], ignore_index=True)
-
-        return data_predicted
 
     def create_sequences(self, data, seq_length):
         X, y = [], []
@@ -231,10 +234,3 @@ if __name__ == '__main__':
     # # Dự đoán giá trong tương lai
     # forecast_num = 60
     # predicted_df = model.forecast_future(forecast_num, test_data, n_steps)
-    #
-    # # Nối dữ liệu dự đoán vào tập dữ liệu gốc
-    # data_predicted = model.concat_dataframes(data, predicted_df)
-    #
-    # # # Vẽ biểu đồ
-    # # target_date = pd.Timestamp('2024-01-01')
-    # # model.plot_predictions(data, data_predicted, target_date)

@@ -33,24 +33,6 @@ class BiLSTMModel(BaseModel):
         
         return predicted_values
 
-    
-    def predict_ensemble(self, forecast_num, data, n_steps, time):
-        model = load_model(self.model_url)
-        scaler = MinMaxScaler(feature_range=(0, 1))
-        prices = data['price'].values
-        dataset = scaler.fit_transform(prices.reshape(-1, 1))
-        last_data = dataset[-time:]
-        last_data = last_data.reshape(1, -1)[:, -(time-1):]
-    
-        predicted_prices = []
-        for day in range(forecast_num):
-            next_prediction = model.predict(last_data)
-            last_data = np.append(last_data, next_prediction).reshape(1, -1)[:, 1:]
-            predicted_price = scaler.inverse_transform(next_prediction.reshape(-1, 1))
-            predicted_prices.append(predicted_price[0, 0])
-    
-        return predicted_prices
-
     def train_for_upload_mode(self, n_periods, test_data):
         n_steps = 10
         forecast = self.predict(test_data, n_steps)
@@ -65,12 +47,45 @@ class BiLSTMModel(BaseModel):
         self.accuracy = self.forecast_accuracy(self.test_data.price.values, self.forecast_data.price.values)
         return self.forecast_data, self.accuracy
 
-    def forecast_future(self, forecast_num, data, n_steps):
-        predicted = self.predict_ensemble(forecast_num, data, n_steps, n_steps+1)
-        last_date = data.index[-1]
+    def forecast_future(self, forecast_num, data, time_step):
+        self.model = load_model(self.model_url)
+
+        scaler_price = MinMaxScaler(feature_range=(0, 1))
+        scaled_data = scaler_price.fit_transform(self.data[self.PRICE_COLUMN].values.reshape(-1, 1))
+
+        if len(self.data.columns) == 1 and self.PRICE_COLUMN in self.data.columns:
+            last_data = scaled_data[-(time_step + 1):]
+            last_data = last_data.reshape(1, -1)[:, -((time_step + 1) - 1):]
+        else:
+            other_columns = self.data.drop(columns=[self.PRICE_COLUMN])
+            scalers_other = {}
+            scaled_other = np.zeros(other_columns.shape)
+            for i, col in enumerate(other_columns.columns):
+                scalers_other[col] = MinMaxScaler(feature_range=(0, 1))
+                scaled_other[:, i] = scalers_other[col].fit_transform(
+                    other_columns[col].values.reshape(-1, 1)).flatten()
+            scaled_data = np.concatenate((scaled_data, scaled_other), axis=1)
+            last_data = scaled_data[-(time_step + 1):]
+            last_data = last_data.reshape(1, -1, scaled_data.shape[1])[:, -((time_step + 1) - 1):]
+
+        predicted_prices = []
+        for day in range(forecast_num):
+            next_prediction = self.model.predict(last_data)
+            if len(self.data.columns) == 1 and self.PRICE_COLUMN in self.data.columns:
+                last_data = np.append(last_data, next_prediction).reshape(1, -1)[:, 1:]
+            else:
+                new_price = next_prediction[0, 0]
+                new_feature = last_data[0, -1, 1]
+                last_data = np.append(last_data, [[[new_price, new_feature]]], axis=1)
+                last_data = last_data[:, 1:, :]
+
+            predicted_price = scaler_price.inverse_transform(next_prediction.reshape(-1, 1))
+            predicted_prices.append(predicted_price[0, 0])
+
+        last_date = self.data.index[-1]
         next_dates = pd.date_range(start=last_date, periods=forecast_num + 1)[1:]
-        predicted_df = pd.DataFrame({'date': next_dates, 'price': predicted})
-        
+        predicted_df = pd.DataFrame({'date': next_dates, 'price': predicted_prices})
+
         return predicted_df
     
     def concat_dataframes(self, original_df, predicted_df):

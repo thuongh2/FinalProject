@@ -131,7 +131,7 @@ def train_model_rnn_data():
         data_model['status'] = 'FAIL'
         data_model['error'] = str(e)
 
-    train_model.insert_one(data_model)
+    # train_model.insert_one(data_model)
     if os.path.exists(file_dir):
         os.remove(file_dir)
         print("Remove temp file " + file_name)
@@ -145,8 +145,9 @@ def train_model_rnn_data():
 def submit_train_model_rnn_data():
     data = request.get_json()
     data = eval(data.replace("'", "\"").replace('false', 'False'))
-    
-    del data['plot_data']
 
-    train_model.insert_one(data)
-    return json_util.dumps(data.get('_id'))
+    try:
+        train_model.insert_one(data)
+        return json_util.dumps(data.get('_id'))
+    except Exception as e:
+        return jsonify({'error': str(e)})

@@ -182,11 +182,11 @@ async function submitModel() {
       const data = JSON.parse(response);
       console.log(data);
 
-      if (data.$oid) {
-        window.location.href = "/detail-model?model_id=" + data.$oid;
-        return;
-      }
-      alertify.error("Submit model không thành công");
+      // if (data.$oid) {
+      //   window.location.href = "/detail-model?model_id=" + data.$oid;
+      //   return;
+      // }
+      alertify.success("Submit model thành công");
     },
     error: function (error) {
       alert("error" + error);

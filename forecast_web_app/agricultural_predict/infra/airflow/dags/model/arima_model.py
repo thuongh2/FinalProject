@@ -24,7 +24,7 @@ class ARIMAModel(BaseModel):
             raise Exception("Không tìm thấy model")
 
     def forecast_future(self, forecast_num, data=None, n_steps=None):
-        self._load_model()
+        self.load_model()
         if self.model is None:
             raise Exception("Không tìm thấy model")
         
@@ -39,11 +39,12 @@ class ARIMAModel(BaseModel):
 
         return predicted_df
     
-    def _load_model(self):
+    def load_model(self):
         self.model = joblib.load(self.model_url)
 
+
     def train_for_upload_mode(self, n_periods, data=None):
-        self._load_model()
+        self.load_model()
         if self.model is None:
             raise Exception("Không tìm thấy model")
         

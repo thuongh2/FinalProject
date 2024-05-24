@@ -29,6 +29,9 @@ class LSTMModel(BaseModel):
         
         return predicted_values
 
+    def load_model(self):
+        self.model = load_model(self.model_url)
+
     def forecast_accuracy(self, test_data, predicted_values):
         test_values = self.test_data['price'].values
         mape = np.mean(np.abs((test_values - predicted_values) / test_values)) * 100

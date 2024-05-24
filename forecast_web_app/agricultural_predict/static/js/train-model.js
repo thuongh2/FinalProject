@@ -1,5 +1,5 @@
 const URL_SERVER = "http://localhost:5000";
-
+var interval = null;
 $("#data_name").change(function () {
   const selectedValue = JSON.parse($(this).val().replace(/'/g, '"'));
   console.log(selectedValue);
@@ -203,6 +203,7 @@ async function applyDiffSeasonal(value) {
 
 async function trainModel() {
   const model_name = sessionStorage.getItem("model_name");
+  await sessionStorage.removeItem("dags_run_id");
   if (!model_name) {
     alertify.error("Vui lòng chọn tên model");
   }
@@ -229,11 +230,11 @@ async function trainModel() {
       return;
     }
     if (name == "exogenous") {
-        var names = [];
-        $('#checkboxContainer input:checked').each(function() {
-            names.push(this.value);
-        });
-        argument[name] = names;
+      var names = [];
+      $("#checkboxContainer input:checked").each(function () {
+        names.push(this.value);
+      });
+      argument[name] = names;
     } else {
       value = parseInt(value);
       if (name == "size") value = value / 100;
@@ -261,8 +262,9 @@ async function trainModel() {
       console.log(data);
 
       handelStoreSession("model_submit_detail", JSON.stringify(data));
+      handelStoreSession("dags_run_id", data.dag_run_id);
 
-      if (data.status === "SUCCESS") {
+      if (data.status === "DONE") {
         $("#model_detail_name").text(data.model_name);
         $("#model_detail_mape").text(data.score["mape"] | 0);
         $("#model_detail_rmse").text(data.score["rmse"] | 0);
@@ -278,7 +280,7 @@ async function trainModel() {
       alertify.error("Thất bại" + error);
     },
   });
-  await $("#modelTrainingInProcess").modal("hide");
+  //
 }
 
 async function submitModel() {
@@ -312,6 +314,107 @@ async function submitModel() {
   $("#modelTrainingInProcess").modal("hide");
 }
 
+const pipelineTemplate = `
+<div class="card" >
+<div class="card-body">
+    <h6 class="card-title text-primary font-bold font-weight-normal">{{value}}</h6>
+    <span class="badge badge-primary">{{status}}</span>
+</div>
+</div>
+`;
+
+function loadLogTrainModel() {
+  var dag_run_id = sessionStorage.getItem("dags_run_id");
+  if (dag_run_id === undefined || dag_run_id === null || dag_run_id === "") {
+    console.error("Không tìm thấy dag id");
+    return;
+  }
+
+  let username = "airflow";
+  let password = "airflow";
+  let auth = btoa(`${username}:${password}`);
+
+  var url = "http://localhost:5000/pipeline/{dag_run_id}";
+  url = url.replaceAll("{dag_run_id}", dag_run_id);
+  var settings = {
+    url: url,
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": "true",
+      Authorization: `Basic ${auth}`,
+    },
+    data: JSON.stringify({
+      dag_run_id: dag_run_id,
+    }),
+  };
+
+  var responseData = null;
+  $.ajax(settings).done(function (response) {
+
+    var url = "http://localhost:5000/pipeline-logs/{dag_run_id}/prepare_data";
+    url = url.replaceAll("{dag_run_id}", dag_run_id);
+    var settings = {
+      url: url,
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    };
+
+    $.ajax(settings).done(function (response) {
+      
+        const container = $("#pipeline-logs");
+        container.empty();
+
+        container.append(response);
+    })
+
+    response = JSON.parse(response);
+    console.log(response);
+    responseData = response;
+
+    const container = $("#pipeline-step");
+    container.empty();
+    var count_waiting_task = 0;
+    response.task_instances.forEach((value, index) => {
+      if (value.state === "success") {
+        count_waiting_task++;
+      }
+      const html = pipelineTemplate
+        .replace("{{value}}", value.task_id)
+        .replace("{{status}}", value.state);
+      container.append(html);
+    });
+    console.log(count_waiting_task);
+    if (count_waiting_task == 4) {
+      clearInterval(interval);
+      $("#modelTrainingInProcess").modal("hide");
+    }
+  });
+
+
+
+}
+
+function loadPipelineData() {
+  console.log("load pipeline data");
+  response = loadLogTrainModel();
+  console.log("LOG");
+  console.log(response);
+
+  count_waiting_task = response?.task_instances.fillter(
+    (value) =>
+      value.state === undefined ||
+      value.state === null ||
+      value.state === "running"
+  ).length;
+  if (count_waiting_task <= 0) {
+    clearInterval(interval);
+  }
+}
+
 $(document).ready(function () {
   $("input[type=radio][name=flexRadioDefault]").change(function () {
     var selectedValue = $(this).val();
@@ -335,6 +438,8 @@ $(document).ready(function () {
     alertify.set("notifier", "position", "top-right");
 
     trainModel(event);
+
+    interval = setInterval(loadLogTrainModel, 3000);
   });
 
   $("#submitModel").on("click", function (event) {

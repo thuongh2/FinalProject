@@ -50,6 +50,9 @@ class VARModel(BaseModel):
         
         return predicted_df
 
+    def load_model(self):
+        self.model = joblib.load(self.model_url)
+
     def _load_model(self):
         self.model = joblib.load(self.model_url)
 
@@ -142,6 +145,9 @@ class VARModel(BaseModel):
         return df_res
 
 
+    def ml_flow_param(self):
+        return {"P": self.model.k_ar}
+
     def ml_flow_register(self):
         ARTIFACT_PATH = "model"
 
@@ -157,16 +163,16 @@ class VARModel(BaseModel):
             mlflow.autolog(log_models=True)
 
             input_sample = pd.DataFrame(self.train_data)
-            output_sample = pd.DataFrame(self.forecast_data)
+            # output_sample = pd.DataFrame(self.forecast_data)
             
             mlflow.log_input(dataset, context="training")
             
-            mlflow.log_params({"P": self.model.k_ar})
+            mlflow.log_params(self.ml_flow_param())
             
             for k, v in self.accuracy.items():
                 mlflow.log_metric(k, round(v,4))
             
-            signature = infer_signature(input_sample, output_sample)
+            signature = infer_signature(input_sample)
 
             model_info = mlflow.statsmodels.log_model(statsmodels_model=self.model,
                                                       signature=signature,

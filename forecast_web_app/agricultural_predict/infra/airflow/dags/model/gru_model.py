@@ -51,7 +51,10 @@ class GRUModel(BaseModel):
 
         self.accuracy = self.forecast_accuracy(self.test_data.price.values, self.forecast_data.price.values)
         return self.forecast_data, self.accuracy
-       
+
+    def load_model(self):
+        self.model = load_model(self.model_url)
+
     def forecast_future(self, forecast_num, data, n_steps):
         self.model = load_model(self.model_url)
         scaler = MinMaxScaler(feature_range=(0, 1))
@@ -82,7 +85,8 @@ class GRUModel(BaseModel):
         
         return data_predicted
 
-
+    def load_model(self):
+        self.model = load_model(self.model_url)
     
 if __name__ == '__main__':
     model_url = "../test_data/GRU_univariate_coffee.h5"

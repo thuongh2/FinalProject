@@ -66,12 +66,18 @@ x-airflow-common:
     # See https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/logging-monitoring/check-health.html#scheduler-health-check-server
     # yamllint enable rule:line-length
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+    AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: 10
+    AWS_ACCESS_KEY_ID: minio
+    AIRFLOW__CORE__EXPOSE_CONFIG: True
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: True
+    AWS_SECRET_ACCESS_KEY: minio123
+    AIRFLOW__API__ACCESS_CONTROL_ALLOW_ORIGIN: "*"
     # WARNING: Use _PIP_ADDITIONAL_REQUIREMENTS option ONLY for a quick checks
     # for other purpose (development, test and especially production usage) build/extend Airflow image.
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     # The following line can be used to set a custom config file, stored in the local config folder
     # If you want to use it, outcomment it and replace airflow.cfg with the name of your config file
-    # AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
+    AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
@@ -84,8 +90,7 @@ x-airflow-common:
       condition: service_healthy
     postgres:
       condition: service_healthy
-
-
+  
 
 
 
@@ -288,5 +293,11 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
+  awscli:
+    image: amazon/aws-cli
+    entrypoint: tail -f /dev/null
+    environment:
+      <<: *airflow-common-env
+      
 volumes:
   postgres-db-volume:

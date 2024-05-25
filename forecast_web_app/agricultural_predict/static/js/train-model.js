@@ -331,7 +331,7 @@ const pipelineTemplate = `
                                                 </h6>
                                                 <div class="d-flex justify-content-between">
                                                     <span class="badge badge-{{status-class}} align-middle">{{status}}</span>
-                                                    <span class="badge badge-secondary align-middle">Logs</span>
+                                                    // <span class="badge badge-secondary align-middle">Logs</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -475,7 +475,8 @@ async function getTranningModelDetail(modelId) {
       }
     },
     error: function (error) {
-      alertify.error("Thất bại" + error);
+      console.log(error);
+      alertify.error("Không tìm thấy model");
     },
   });
 }
@@ -498,6 +499,7 @@ function loadPipelineData() {
 }
 
 $(document).ready(function () {
+  alertify.set("notifier", "position", "top-right");
   $("input[type=radio][name=flexRadioDefault]").change(function () {
     var selectedValue = $(this).val();
     if (selectedValue === "DIFF") {
@@ -517,7 +519,7 @@ $(document).ready(function () {
 
   $("#trainModelForm").submit(function (event) {
     event.preventDefault();
-    alertify.set("notifier", "position", "top-right");
+   
 
     trainModel(event);
 

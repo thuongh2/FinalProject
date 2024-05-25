@@ -115,8 +115,6 @@ def admin_train_model():
 
         n_periods = len(test_data)
         data_predict, acuracy = factory_model.train_for_upload_mode(n_periods, test_data)
-        if not data_predict or not acuracy:
-            raise Exception("Train model thất bại")
 
         data_model = {
             "user_id": session.get('username'),
@@ -144,7 +142,7 @@ def admin_detail_model():
     global plot_data
     model_id = request.args.get('model_id')
     current_app.logger.info(model_id)
-    model_data = train_model.find_one(ObjectId(model_id))
+    model_data = train_model.find_one({"_id": model_id})
     current_app.logger.info(model_data)
 
     if model_data:

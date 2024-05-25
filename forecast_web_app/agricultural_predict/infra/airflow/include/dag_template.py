@@ -26,6 +26,8 @@ default_args = {
         "agricultural_name": "{agricultural_name}",
 
         "owner": "{user_name}",
+
+        "model_id": "{model_id}"
     }
 }
 
@@ -83,6 +85,7 @@ with DAG(
         op_kwargs={
             "agricultural_name": "{{ params.agricultural_name }}",
             "user_name": "{{ params.owner }}",
+            "model_id": "{{ params.model_id }}",
         },
     )
 

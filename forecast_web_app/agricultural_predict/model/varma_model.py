@@ -48,6 +48,9 @@ class VARMAModel(BaseModel):
         
         return predicted_df
 
+    def load_model(self):
+        self.model = joblib.load(self.model_url)
+
     def _load_model(self):
         self.model = joblib.load(self.model_url)
 

@@ -5,15 +5,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/alertify.min.js"
     integrity="sha512-JnjG+Wt53GspUQXQhc+c4j8SBERsgJAoHeehagKHlxQN+MtCCmFDghX9/AcbkkNRZptyZU4zC8utK59M5L45Iw=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/css/alertify.css"
     integrity="sha512-MpdEaY2YQ3EokN6lCD6bnWMl5Gwk7RjBbpKLovlrH6X+DRokrPRAF3zQJl1hZUiLXfo2e9MrOt+udOnHCAmi5w=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-<!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsPlumb/6.2.10/css/jsplumb.min.css"
-    integrity="sha512-TEiIjPFAwtobaoJBrKZz1R/mzqgXvWIJt+nmgRQzPx4od18DsipNhW14gdXuDGd3ypZzAj6ks3EI0vSjrHeQPQ=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 <!-- Begin Page Content -->
@@ -59,15 +53,13 @@
             </div>
         </a>
     </div>
-
-    <!-- Earnings (Monthly) Card Example -->
-
 </div>
 
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0  text-dark font-bold">TRAIN MODEL</h1>
+    <h1 class="h3 mb-0  text-dark font-bold">TRAIN MODEL {{ model_name }}</h1>
 </div>
 
+<div id="modelId" class="d-none">{{ model_id }}</div>
 
 <div class="row">
     <div class="col-2">
@@ -234,6 +226,7 @@
                             <!-- Card Header - Dropdown -->
                             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                                 <h5 class="m-0 font-weight-bold text-primary">Thông tin mô hình</h5>
+                                 <button type="button" id="reloadModel" class="w-100 btn btn-primary">Reload</button>
                             </div>
                             <!-- Card Body -->
                             <div class="card-body">
@@ -274,30 +267,25 @@
     aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
-
             <div class="modal-body">
-                <div class="text-center">
-                    <div class="spinner-border" role="status">
-                    </div>
-                </div>
-                <p class="text-center">Đang xử lí</p>
-                
+            
+                <p class="text-center">Train mô hình</p>
+
                 <div class="">
                     <div class="row align-items-start">
-                        <div id="pipeline-step" class="col-4">
-
-                            <div class="card" >
+                        <div id="pipeline-step" class="col-12">
+                            <div class='spinner-border text-secondary'
+                            style="width: 15px; height: 15px;" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                            <div class="card">
                                 <div class="card-body">
                                     <h6 class="card-title text-primary font-bold font-weight-normal">Setup Pipeline</h6>
-                                    <span class="badge badge-primary">Running</span>
+                                    <span class="badge badge-primary">Đang xử lí</span>
                                 </div>
                             </div>
-                           
-                        </div>
-                        <div id="pipeline-logs" class="col">
-                            Log
-                        </div>
 
+                        </div>
                     </div>
                 </div>
 

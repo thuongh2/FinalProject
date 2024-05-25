@@ -41,6 +41,8 @@ class ARIMAXModel(BaseModel):
 
         return predicted_df
 
+    def load_model(self):
+        self.model = joblib.load(self.model_url)
 
     def _load_model(self):
         self.model = joblib.load(self.model_url)
@@ -163,7 +165,7 @@ class ARIMAXModel(BaseModel):
             signature = infer_signature(input_sample, output_sample)
 
             model_mflow = mlflow.pmdarima.log_model(
-                model, ARTIFACT_PATH, signature=signature
+                self.model, ARTIFACT_PATH, signature=signature
             )
             return model_mflow
 

@@ -11,6 +11,7 @@ def create_dags_file(dag_name, data_url, model, argument, agricultural_name, use
     try:
         dirname = os.path.dirname(__file__)
         new_filename = "dags/" + dag_name + ".py"
+        print(dag_name)
         print(new_filename)
         template_file = os.path.join(dirname, dag_template_filename)
         dag_dir = dirname.replace("include", "")
@@ -19,6 +20,7 @@ def create_dags_file(dag_name, data_url, model, argument, agricultural_name, use
 
         for line in fileinput.input(dag_file, inplace=True):
             line = line.replace("{dag_id_to_replace}", dag_name)
+            line = line.replace("{model_id}", dag_name)
             line = line.replace("{model_name}", model)
             line = line.replace("{data_name}", data_url)
             line = line.replace("{type}", type)
@@ -43,4 +45,4 @@ def check_dag_exists(dag_name):
 
 if __name__ == "__main__":
     create_dags_file("test_12", "https://raw.githubusercontent.com/thuongh2/FinalProject/main/data/var_data.csv",
-                     "VAR", {'P': 10, 'size': 0.8}, "LUA", "test","DIFF");
+                     "VAR", {'P': 10, 'size': 0.8}, "LUA", "test","DIFF")

@@ -140,6 +140,9 @@ class ARIMAXModel(BaseModel):
     def inverse_difference(self, last_ob, value):
         return value + last_ob
 
+    def ml_flow_param(self):
+        return {"order": self.model.order}
+
     def ml_flow_register(self):
         ARTIFACT_PATH = "model"
 

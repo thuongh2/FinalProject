@@ -37,11 +37,11 @@ from time import sleep
 pipeline_router = Blueprint('pipeline_router', __name__, static_folder='static',
                                template_folder='templates')
 
-@pipeline_router.route('/pipeline/<dags_id>', methods=['GET'])
+@pipeline_router.route('/pipeline/<dags_id>/<task_id>', methods=['GET'])
 @cross_origin()
-def pipeline_airflow(dags_id):
+def pipeline_airflow(dags_id, task_id):
     try:
-        airflow_url = f"http://localhost:8080/api/v1/dags/{dags_id}/dagRuns/{dags_id}/taskInstances"
+        airflow_url = f"http://localhost:8080/api/v1/dags/{dags_id}/dagRuns/{task_id}/taskInstances"
         print("Get data from " + airflow_url)
         response = requests_api.get(airflow_url, 
                                     auth=HTTPBasicAuth('airflow', 'airflow'),

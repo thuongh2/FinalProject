@@ -132,6 +132,9 @@ class ARIMAModel(BaseModel):
         """ invert differenced forecast """
         return value + last_ob
 
+    def ml_flow_param(self):
+        return {"order": self.model.order}
+
     def ml_flow_register(self, experient_name="DEFAUT_MODEL"):
         ARTIFACT_PATH = "model"
 

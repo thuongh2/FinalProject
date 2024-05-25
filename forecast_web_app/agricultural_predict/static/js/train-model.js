@@ -5,7 +5,7 @@ $("#data_name").change(function () {
   console.log(selectedValue);
   callDrawPlot(selectedValue.data);
   handelStoreSession("data_url", selectedValue.data);
-  handelStoreSession("agricutural_name", selectedValue.type);
+  handelStoreSession("agricultural_name", selectedValue.type);
   handelStoreSession("model_name", $("#model_name").find(":selected").text());
   return;
 });
@@ -178,7 +178,9 @@ async function applyDiffSeasonal(value) {
     lag: lag,
     model_data: modelData,
   };
+
   handelStoreSession("stationary_data", JSON.stringify(params));
+  handelStoreSession("diff_type", diffType);
 
   const queryString = $.param(params);
   const fullUrl = url + "?" + queryString;
@@ -212,7 +214,7 @@ async function trainModel() {
     alertify.error("Vui lòng chọn dữ liệu");
   }
   const username = $("#username").text();
-  const agricutural_name = sessionStorage.getItem("agricutural_name");
+  const agricultural_name = sessionStorage.getItem("agricultural_name");
 
   var formEl = document.getElementById("trainModelForm");
 
@@ -241,13 +243,17 @@ async function trainModel() {
       argument[name] = value;
     }
   }
+  diff_type = sessionStorage.getItem("diff_type");
+  argument["stationary_type"] = diff_type;
+  model_id = $("#modelId").text().trim();
 
   data = {
     model_name: model_name,
     model_data: model_data,
     username: username,
-    agricutural_name: agricutural_name,
+    agricultural_name: agricultural_name,
     argument: argument,
+    model_id: model_id,
   };
   console.log(data);
 
@@ -270,8 +276,7 @@ async function trainModel() {
         $("#model_detail_rmse").text(data.score["rmse"] | 0);
 
         // show chart data như trang detail
-        plotChartData(data.plot_data);
-        $("#detail-tab").tab("show");
+        // plotChartData(data.plot_data);
       } else {
         alertify.error(data.error);
       }
@@ -299,8 +304,8 @@ async function submitModel() {
       const data = JSON.parse(response);
       console.log(data);
 
-      if (data.$oid) {
-        window.location.href = "/detail-model?model_id=" + data.$oid;
+      if (data) {
+        window.location.href = "/detail-model?model_id=" + data;
         return;
       }
       alertify.error("Submit model không thành công");
@@ -315,17 +320,61 @@ async function submitModel() {
 }
 
 const pipelineTemplate = `
-<div class="card" >
-<div class="card-body">
-    <h6 class="card-title text-primary font-bold font-weight-normal">{{value}}</h6>
-    <span class="badge badge-primary">{{status}}</span>
-</div>
+                                      <div class="card">
+                                            <div class="card-body">
+                                                <h6 class="card-title text-primary font-bold font-weight-normal">
+                                                    <div class='{{status-display}} spinner-border text-secondary'
+                                                        style="width: 15px; height: 15px;" role="status">
+                                                        <span class="sr-only">Loading...</span>
+                                                    </div>
+                                                    {{value}}
+                                                </h6>
+                                                <div class="d-flex justify-content-between">
+                                                    <span class="badge badge-{{status-class}} align-middle">{{status}}</span>
+                                                    <span class="badge badge-secondary align-middle">Logs</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+`;
+
+const arrowTemplate = `
+<div class="text-center">
+<i class="bi bi-arrow-down text-center text-primary "
+    style="font-weight: 600!important;"></i>
 </div>
 `;
 
-function loadLogTrainModel() {
+const statusClass = new Map([
+  ["success", "success"],
+  ["failed", "danger"],
+  ["running", "info"],
+  ["queued", "warning"],
+  ["undefined", "muted"],
+]);
+
+const statusMapping = new Map([
+  ["success", "Thành công"],
+  ["failed", "Thất bại"],
+  ["running", "Đang xử lí"],
+  ["queued", "Đang xử lí"],
+  ["waiting", "Chờ xử lí"],
+  ["undefined", "Chờ xử lí"],
+]);
+
+function compare(a, b) {
+  if (a.priority_weight < b.priority_weight) {
+    return 1;
+  }
+  if (a.priority_weight > b.priority_weight) {
+    return -1;
+  }
+  return 0;
+}
+
+async function loadLogTrainModel() {
   var dag_run_id = sessionStorage.getItem("dags_run_id");
-  if (dag_run_id === undefined || dag_run_id === null || dag_run_id === "") {
+  if (dag_run_id === 'undefined' || dag_run_id === 'null' || dag_run_id === "") {
     console.error("Không tìm thấy dag id");
     return;
   }
@@ -333,9 +382,10 @@ function loadLogTrainModel() {
   let username = "airflow";
   let password = "airflow";
   let auth = btoa(`${username}:${password}`);
+  let model_id = $("#modelId").text().trim();
 
-  var url = "http://localhost:5000/pipeline/{dag_run_id}";
-  url = url.replaceAll("{dag_run_id}", dag_run_id);
+  var url = "http://localhost:5000/pipeline/{dag_run_id}" + "/" + dag_run_id;
+  url = url.replaceAll("{dag_run_id}", model_id);
   var settings = {
     url: url,
     method: "GET",
@@ -345,57 +395,89 @@ function loadLogTrainModel() {
       "Access-Control-Allow-Credentials": "true",
       Authorization: `Basic ${auth}`,
     },
-    data: JSON.stringify({
-      dag_run_id: dag_run_id,
-    }),
   };
 
   var responseData = null;
-  $.ajax(settings).done(function (response) {
-
-    var url = "http://localhost:5000/pipeline-logs/{dag_run_id}/prepare_data";
-    url = url.replaceAll("{dag_run_id}", dag_run_id);
-    var settings = {
-      url: url,
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      }
-    };
-
-    $.ajax(settings).done(function (response) {
-      
-        const container = $("#pipeline-logs");
-        container.empty();
-
-        container.append(response);
-    })
-
+  await $.ajax(settings).done(function (response) {
     response = JSON.parse(response);
     console.log(response);
     responseData = response;
+    if (response.total_entries === 0){
+      console.log("Không tìm thấy task")
+      return
+    }
 
     const container = $("#pipeline-step");
     container.empty();
     var count_waiting_task = 0;
+
+    response.task_instances.sort(compare);
+    console.log(response.task_instances);
+
     response.task_instances.forEach((value, index) => {
       if (value.state === "success") {
         count_waiting_task++;
       }
+      if (value.state === "failed") {
+        clearInterval(interval);
+        alertify.error("Model training thất bại");
+        return;
+      }
       const html = pipelineTemplate
         .replace("{{value}}", value.task_id)
-        .replace("{{status}}", value.state);
+        .replace("{{status}}", statusMapping.get(value.state || "waiting"))
+        .replace(
+          "{{status-class}}",
+          statusClass.get(value.state) || "secondary"
+        )
+        .replace(
+          "{{status-display}}",
+          value.state === "running" || value.state === "queued" ? "" : "d-none"
+        );
       container.append(html);
+      if (index !== response.task_instances.length - 1) {
+        container.append(arrowTemplate);
+      }
     });
     console.log(count_waiting_task);
-    if (count_waiting_task == 4) {
+    if (count_waiting_task === response.total_entries) {
       clearInterval(interval);
+      // call api get model detail
+      getTranningModelDetail(model_id);
+      $("#detail-tab").tab("show");
       $("#modelTrainingInProcess").modal("hide");
+
     }
   });
+}
 
+async function getTranningModelDetail(modelId) {
+  await $.ajax({
+    url: URL_SERVER + "/get_train_model_airflow" + "/" + modelId,
+    method: "GET", 
+    contentType: "application/json; charset=utf-8",
+    success: async  function (response) {
+      const data = JSON.parse(response);
+      console.log(data);
 
+      await handelStoreSession("model_submit_detail", JSON.stringify(data));
+      await handelStoreSession("dags_run_id", data.dag_run_id);
 
+      if (data.status === "SUCCESS") {
+        $("#model_detail_name").text(data.model_name);
+        $("#model_detail_mape").text(data.evaluate["mape"] | 0);
+        $("#model_detail_rmse").text(data.evaluate["rmse"] | 0);
+
+        // show chart data như trang detail
+        await plotChartData(data.plot_data);
+      } else {
+        alertify.error(data.error);
+      }
+    },
+    error: function (error) {
+      alertify.error("Thất bại" + error);
+    },
+  });
 }
 
 function loadPipelineData() {
@@ -439,13 +521,21 @@ $(document).ready(function () {
 
     trainModel(event);
 
-    interval = setInterval(loadLogTrainModel, 3000);
+    interval = setInterval(loadLogTrainModel, 5000);
   });
 
   $("#submitModel").on("click", function (event) {
     event.preventDefault();
     console.log("submit model");
     submitModel();
+  });
+
+
+  $("#reloadModel").on("click", function (event) {
+    event.preventDefault();
+    console.log("submit model");
+    let model_id = $("#modelId").text().trim();
+    getTranningModelDetail(model_id);
   });
 
   var el = document.getElementById("curr");

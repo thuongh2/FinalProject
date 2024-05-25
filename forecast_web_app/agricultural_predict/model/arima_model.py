@@ -38,7 +38,10 @@ class ARIMAModel(BaseModel):
         predicted_df = pd.DataFrame({'date': next_dates, 'price': predicted})
 
         return predicted_df
-    
+
+    def load_model(self):
+        self.model = joblib.load(self.model_url)
+
     def _load_model(self):
         self.model = joblib.load(self.model_url)
 
@@ -159,7 +162,7 @@ class ARIMAModel(BaseModel):
             signature = infer_signature(input_sample, output_sample)
 
             model_mflow = mlflow.pmdarima.log_model(
-                model, ARTIFACT_PATH, signature=signature
+                self.model, ARTIFACT_PATH, signature=signature
             )
             return model_mflow
 

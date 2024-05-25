@@ -18,3 +18,5 @@ def forecast_accuracy(forecast, actual):
     mape = mae(actual, forecast) * 100  # MAPE     # ME
     rmse = np.mean((forecast - actual)**2)**.5  # RMS
     return({'mape':mape,'mae': mae_score, 'rmse':rmse})
+
+

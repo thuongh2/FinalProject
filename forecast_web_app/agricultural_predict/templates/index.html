@@ -1,243 +1,194 @@
 {% extends "layout.html" %} {% block title %}Dự đoán giá nông sản{% endblock %}
 {% block header %}{% endblock %} {% block content %}
 
-<!-- Begin Page Content -->
-<!-- Slide image -->
-<div class="row" style="height: 450px">
-  <div class="slide-container col-xl-12">
-    <div class="slide-wrap">
-      <div class="slide-image col-xl-12 bg-slide-image1" style="height: 450px">
-        <a href="#container-fluid" class="text-overlay">Dự đoán giá nông sản</a>
-      </div>
-      <div class="slide-image col-xl-12 bg-slide-image2" style="height: 450px">
-        <a href="#container-fluid" class="text-overlay">Dự đoán giá nông sản</a>
-      </div>
-      <div class="slide-image col-xl-12 bg-slide-image3" style="height: 450px">
-        <a href="#container-fluid" class="text-overlay">Dự đoán giá nông sản</a>
-      </div>
+    <!-- Begin Page Content -->
+    <!-- Slide image -->
+    <div class="row" style="height: 450px">
+        <div class="slide-container col-xl-12">
+            <div class="slide-wrap">
+                <div class="slide-image col-xl-12 bg-slide-image1" style="height: 450px">
+                    <a href="#container-fluid" class="text-overlay">Dự đoán giá nông sản</a>
+                </div>
+                <div class="slide-image col-xl-12 bg-slide-image2" style="height: 450px">
+                    <a href="#container-fluid" class="text-overlay">Dự đoán giá nông sản</a>
+                </div>
+                <div class="slide-image col-xl-12 bg-slide-image3" style="height: 450px">
+                    <a href="#container-fluid" class="text-overlay">Dự đoán giá nông sản</a>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 
-<div id="container-fluid" class="container-fluid mt-2" style="padding: 0">
-  <div class="row shadow" style="padding: 0">
-    <!-- Card 1 -->
-    <a id="coffee" href="?agricultural_type=CAFE" class="col-xl-4 price-agricutural active-card">
-      <div class="card-price h-100 py-2">
-        <div class="card-body">
-          <div class="row no-gutters align-items-center">
-            <div class="col mr-2">
-              <div class="h5 font-weight-bold text-primary text-uppercase mb-1">
-                Giá cà phê
-              </div>
-              <div class="h5 mb-0 font-weight-bold text-primary text-gray-800">
-                Hôm nay: 10.000đ
-              </div>
-            </div>
-            <div class="col-auto">
-              <i class="fas fa-arrow-trend-up text-success" style="font-size: 1.5em"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </a>
+    <div id="container-fluid" class="container-fluid mt-2" style="padding: 0">
+        <div class="row shadow" style="padding: 0">
 
-    <!-- Card 2 -->
-    <a id="rice" href="?agricultural_type=LUA" class="col-xl-4 price-agricutural">
-      <div class="card-price h-100 py-2">
-        <div class="card-body">
-          <div class="row no-gutters align-items-center">
-            <div class="col mr-2">
-              <div class="h5 font-weight-bold text-primary text-uppercase mb-1">
-                Giá lúa
-              </div>
-              <div class="h5 mb-0 font-weight-bold text-gray-800">
-                Hôm nay: 10.000đ
-              </div>
-            </div>
-            <div class="col-auto">
-              <i
-                class="fas fa-arrow-trend-up text-success"
-                style="font-size: 1.5em"
-              ></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </a>
-    <!-- Card 3 -->
-    <a id="watermelon" href="?agricultural_type=DAUHAU" class="col-xl-4 price-agricutural">
-      <div class="card-price h-100 py-2">
-        <div class="card-body">
-          <div class="row no-gutters align-items-center">
-            <div class="col mr-2">
-              <div class="h5 font-weight-bold text-primary text-uppercase mb-1">
-                Giá dưa hấu
-              </div>
-              <div class="h5 mb-0 font-weight-bold text-gray-800">
-                Hôm nay: 10.000đ
-              </div>
-            </div>
-            <div class="col-auto">
-              <i
-                class="fas fa-arrow-trend-down text-danger"
-                style="font-size: 1.5em"
-              ></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </a>
-  </div>
-</div>
-<!-- Content Row -->
+            {% for type in agricultural_type %}
+                <a id="coffee" href="?agricultural_type=CAFE" class="col-xl-4 price-agricutural active-card">
+                    <div class="card-price h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="h5 font-weight-bold text-primary text-uppercase mb-1">
+                                        Giá {{ agricultural_mapping.get(type) }}
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-primary text-gray-800">
+                                        {{ price_agricultural.get(type)[0] }}: {{ price_agricultural.get(type)[1] }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
 
-<div class="row">
-  <!-- Area Chart -->
-  <div class="col-xl-9 mt-4">
-    <div class="card shadow mb-4">
-      <!-- Card Header - Dropdown -->
-      <div
-        class="card-header py-3 d-flex flex-row align-items-center justify-content-between"
-      >
-        <h5 class="m-0 font-weight-bold text-primary">
-          Biểu đồ dự đoán giá nông sản
-        </h5>
-      </div>
-      <!-- Card Body -->
-      <div class="card-body">
-        <div id="charts-container" style="height: 100%;">
-          <div id="myDiv" style="height: 100%"></div>
-          <div id="loadingIndicator" style="display: none;">
-            <i class="fas fa-circle-notch fa-spin"></i> Đang tải...
-          </div>
+            {% endfor %}
+
+    <div class="row">
+        <!-- Area Chart -->
+        <div class="col-xl-9 mt-4">
+            <div class="card shadow mb-4">
+                <!-- Card Header - Dropdown -->
+                <div
+                        class="card-header py-3 d-flex flex-row align-items-center justify-content-between"
+                >
+                    <h5 class="m-0 font-weight-bold text-primary">
+                        Biểu đồ dự đoán giá nông sản
+                    </h5>
+                </div>
+                <!-- Card Body -->
+                <div class="card-body">
+                    <div id="charts-container" style="height: 100%;">
+                        <div id="myDiv" style="height: 100%"></div>
+                        <div id="loadingIndicator" style="display: none;">
+                            <i class="fas fa-circle-notch fa-spin"></i> Đang tải...
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+        <!-- Select area -->
+        <div class="col-xl-3 card shadow mt-4" style="height: 547px">
+            <div class="col-xl-12 mt-4">
+                <div
+                        class="h5 font-weight-bold text-uppercase text-gray-800 mb-1"
+                        style="text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1)"
+                >
+                    Giá <span id="priceActualDate"></span>: <span id="priceActual" class="font-weight-bold">100.000đ</span>
+                </div>
+                <div
+                        class="h5 mt-2 mb-0 font-weight-bold text-warning"
+                        style="text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1)"
+                >
+                    Giá dự đoán <span id="pricePredictDate"></span>: <span id="pricePredict">100.000đ</span>
+                </div>
+                <div class="pt-4"></div>
+                <!-- Chọn mô hình -->
+                <div class="mt-4">
+                    <select id="model_name" class="form-control form-select col-xl-12" style="color: black">
+                        {% for model in models %}
+                            {% if model.name == 'GRU' %}
+                                <option value="{{ model.name }}" selected>{{ model.name }}</option>
+                            {% else %}
+                                <option value="{{ model.name }}">{{ model.name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Chọn dữ liệu -->
+                <div class="mt-4">
+                    <select id="data_name" name="data_name" class="form-control form-select col-xl-12"
+                            style="color: black">
+                        {% for item in data %}
+                            {% if item['type'] == 'CAFE' %}
+                                <option value="{{ item.data }}" selected>{{ item.name }}</option>
+                            {% else %}
+                                <option value="{{ item.data }}">{{ item.name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Chọn thời gian -->
+                <div class="mt-4">
+                    <select
+                            id="model_time"
+                            class="form-control form-select col-xl-12"
+                            style="color: black"
+                    >
+                        <option value="30" selected>30 ngày</option>
+                        <option value="60">60 ngày</option>
+                    </select>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-    <!-- Select area -->
-    <div class="col-xl-3 card shadow mt-4" style="height: 547px">
-      <div class="col-xl-12 mt-4">
-        <div
-          class="h4 font-weight-bold text-uppercase text-gray-800 mb-1"
-          style="text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1)"
-        >
-          Giá cà phê 5/5/2024: <strong>100.000đ</strong>
-        </div>
-        <div
-          class="h4 mt-2 mb-0 font-weight-bold text-warning"
-          style="text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1)"
-        >
-          Giá dự đoán: 100.000đ
-        </div>
-        <div class="pt-4"></div>
-        <!-- Chọn mô hình -->
-        <div class="mt-4">
-          <select id="model_name" class="form-control form-select col-xl-12" style="color: black">
-            {% for model in models %}
-              {% if model.name == 'GRU' %}
-                <option value="{{model.name}}" selected>{{model.name}}</option> 
-              {% else %}
-                <option value="{{model.name}}">{{model.name}}</option>
-              {% endif %}
-            {% endfor %}
-          </select>        
-        </div>
-        
-        <!-- Chọn dữ liệu -->
-        <div class="mt-4">
-          <select id="data_name" name="data_name" class="form-control form-select col-xl-12" style="color: black">
-            {% for item in data %}
-                {% if item['type'] == 'CAFE' %}
-                <option value="{{ item.data }}" selected>{{ item.name }}</option>
-                {% else %}
-                <option value="{{ item.data }}">{{ item.name }}</option>
-                {% endif %}
-            {% endfor %}
-          </select>        
-        </div>
 
-        <!-- Chọn thời gian -->
-        <div class="mt-4">
-          <select
-            id="model_time"
-            class="form-control form-select col-xl-12"
-            style="color: black"
-          >
-            <option value="30" selected>30 ngày</option>
-            <option value="60">60 ngày</option>
-          </select>
-        </div>
-      </div>
-    </div>  
-  </div>
-
-  <!-- Content Row -->
-  <div class="row">
-    <!-- Content Column -->
-    <div class="col-lg-12 mb-4">
-      <div class="card shadow mb-4">
-        <div class="card-header py-3">
-          <h5 class="m-0 font-weight-bold text-primary">Bảng giá nông sản</h5>
-        </div>
-        <div class="card-body">
-          <div class="custom-scroll" style="height: 350px; overflow-y: scroll">
-            <table
-              class="table table-bordered dataTable"
-              id="priceDataTable"
-              width="100%"
-              cellspacing="0"
-              role="grid"
-              aria-describedby="dataTable_info"
-            >
-              <thead
-                style="
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Content Column -->
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h5 class="m-0 font-weight-bold text-primary">Bảng giá nông sản</h5>
+                </div>
+                <div class="card-body">
+                    <div class="custom-scroll" style="height: 350px; overflow-y: scroll">
+                        <table
+                                class="table table-bordered dataTable"
+                                id="priceDataTable"
+                                width="100%"
+                                cellspacing="0"
+                                role="grid"
+                                aria-describedby="dataTable_info"
+                        >
+                            <thead
+                                    style="
                   background-color: rgb(247, 246, 246);
                   position: sticky;
                   top: -2px;
                   z-index: 1;
                 "
-              >
-                <tr role="row">
-                  <th
-                    class="sorting sorting_asc"
-                    tabindex="0"
-                    aria-controls="dataTable"
-                    rowspan="1"
-                    colspan="1"
-                    aria-sort="ascending"
-                    aria-label="Name: activate to sort column descending"
-                    style="width: 160px; background-color: rgba(247, 246, 246, 1); color: black"
-                  >
-                    <strong>Ngày</strong>
-                  </th>
-                  <th
-                    class="sorting"
-                    tabindex="0"
-                    aria-controls="dataTable"
-                    rowspan="1"
-                    colspan="1"
-                    aria-label="Position: activate to sort column ascending"
-                    style="width: 246px; background-color: rgba(247, 246, 246, 1); color: black"
-                  >
-                    <strong>Giá</strong>
-                  </th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
+                            >
+                            <tr role="row">
+                                <th
+                                        class="sorting sorting_asc"
+                                        tabindex="0"
+                                        aria-controls="dataTable"
+                                        rowspan="1"
+                                        colspan="1"
+                                        aria-sort="ascending"
+                                        aria-label="Name: activate to sort column descending"
+                                        style="width: 160px; background-color: rgba(247, 246, 246, 1); color: black"
+                                >
+                                    <strong>Ngày</strong>
+                                </th>
+                                <th
+                                        class="sorting"
+                                        tabindex="0"
+                                        aria-controls="dataTable"
+                                        rowspan="1"
+                                        colspan="1"
+                                        aria-label="Position: activate to sort column ascending"
+                                        style="width: 246px; background-color: rgba(247, 246, 246, 1); color: black"
+                                >
+                                    <strong>Giá</strong>
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
-  <!-- /.container-fluid -->
+    <!-- /.container-fluid -->
 
-  <!-- Javascript -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
-  <script src="js/index.js"></script>
-  
-  {% endblock %}
+    <!-- Javascript -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+    <script src="js/index.js"></script>
+
+{% endblock %}
 </div>

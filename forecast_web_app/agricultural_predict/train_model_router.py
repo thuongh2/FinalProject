@@ -285,7 +285,7 @@ def submit_train_model_airflow():
                     "user_id": user_name,
                     "file_name": file_name,
                     "model_name": model_name,
-                    "name": "Dự đoán giá mô hình {model_name}",
+                    "name": f"Dự đoán giá mô hình {model_name}",
                     "agricultural_name": agricultural_name,
                     "data_name": data_url,
                     "type": constant.SELF_TRAIN_MODEL,

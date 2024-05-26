@@ -327,7 +327,7 @@ def get_train_model_airflow(model_id):
     model_name = model_training.get('model_name')
     model_url = minio_utils.get_minio_object(model_training.get('file_name'))
     data = pd.read_csv(model_training.get('data_name'))
-    model_factory = FactoryModel(model_training).factory()
+    model_factory = FactoryModel(model_name).factory()
     model_factory.model_url = model_url
     model_factory.data_uri = model_training.get('data_name')
     model_factory.data = data

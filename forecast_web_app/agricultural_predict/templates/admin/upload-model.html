@@ -4,19 +4,16 @@
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 
-    <!-- Begin Page Content -->
     <div class="container-fluid">
-        <!-- Content Row -->
 
         <div class="row">
-            <!-- Earnings (Monthly) Card Example -->
             <a href="upload-model">
                 <div class="col-xl-3 col-md-6 mb-4 ">
                     <div class="card border-primary border  border-5 shadow h-100 py-2">
                         <div class="card-body ">
                             <div class="row no-gutters align-items-center">
                                 <div class="col mr-2">
-                                    <div class="text-md font-weight-bold text-primary text-uppercase mb-1">
+                                    <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
                                         UPLOAD MÔ HÌNH
                                     </div>
                                 </div>
@@ -26,10 +23,10 @@
                             </div>
                         </div>
                     </div>
+
             </a>
         </div>
 
-        <!-- Earnings (Monthly) Card Example -->
         <div class="col-xl-3 col-md-6 mb-4">
             <a href="train-model">
                 <div class="card shadow h-100 py-2">
@@ -48,9 +45,6 @@
                 </div>
             </a>
         </div>
-
-        <!-- Earnings (Monthly) Card Example -->
-
     </div>
 
 
@@ -58,14 +52,12 @@
         <h1 class="h3 mb-0 text-gray-800 font-weight-bold">UPLOAD MÔ HÌNH {{ model_name }}</h1>
     </div>
 
-    <!-- Begin Page Content -->
     <div class="container-fluid  p-0 mb-3">
-        <!-- Content Row -->
         <div class="col-12 d-flex p-x-2 mb-3">
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
                     {% for message in messages %}
-                        <div class="alert alert-danger" role="alert">
+                        <div class="alert col-12 alert-danger" role="alert">
                             {{ message }}
                         </div>
                     {% endfor %}
@@ -75,8 +67,6 @@
         </div>
 
         <div class="">
-
-            <!-- Earnings (Monthly) Card Example -->
             <form action="{{ 'upload-model?model_name=' ~ model_name }}" enctype='multipart/form-data' method="POST">
                 <div class="col-12 d-flex p-0 mb-3">
                     <div class=" mt-2 col-4">
@@ -94,7 +84,6 @@
 
 
                     {% if data %}
-
                         <div class=" mt-2 col-4 mb-3">
                             <input name="name_train" type="text" class="form-control" placeholder="Tên"
                                    aria-describedby="basic-addon1">

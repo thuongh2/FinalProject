@@ -22,17 +22,15 @@ from sklearn.preprocessing import MinMaxScaler
 from keras.models import load_model
 import os
 import datetime
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
-load_chart_router = Blueprint('load_chart_router', __name__, static_folder='static',
-                              template_folder='templates')
+load_chart_router = Blueprint('load_chart_router',
+                            __name__, 
+                            static_folder='static',
+                            template_folder='templates')
+
 cache = TTLCache(maxsize=10, ttl=600)
-
-def adf_test(series):
-    result = adfuller(series.dropna())
-    labels = ['ADF test statistic', 'p-value', '# lags used', '# observations']
-    out = pd.Series(result[0:4], index=labels)
-    current_app.logger.info(out)
-    return result[1]
 
 
 @load_chart_router.route('/load-chart', methods=['GET'])
@@ -45,6 +43,7 @@ def load_chart():
     n_steps = 10
 
     file_name, _ = os.path.splitext(os.path.basename(model_data))
+    #TODO: refactor this
     dict_model_file = {'ARIMA': 'arima.joblib', 'LSTM': 'LSTM_' + file_name + '.h5',
                        'GRU': 'GRU_' + file_name + '.h5', 'BiLSTM': 'BiLSTM_' + file_name + '.h5',
                        'VAR': 'var.joblib', 'VARMA': 'varma_model.joblib'}
@@ -104,4 +103,4 @@ def load_chart():
     response_data = {'plot_data': plot_data}
     response_data['price_actual'] = price_actual.to_json()
     response_data['price_forecast'] = price_forecast.to_json()
-    return jsonify(response_data)
+    return jsonify(response_data), 200

@@ -16,6 +16,7 @@ import plotly.io as pio
 import ast
 import utils.constant as constant
 import utils.minio_utils as minio_utils
+import utils.common_utils as common_utils
 
 upload_model_router = Blueprint('upload_model_router', __name__, static_folder='static',
                                 template_folder='templates')
@@ -117,6 +118,7 @@ def admin_train_model():
         data_predict, acuracy = factory_model.train_for_upload_mode(n_periods, test_data)
 
         data_model = {
+            "_id": common_utils.generate_id(model_name),
             "user_id": session.get('username'),
             "name": name_train,
             "model_name": model_name,
@@ -128,13 +130,15 @@ def admin_train_model():
             "evaluate": acuracy,
             "type": constant.UPLOAD_MODEL,
             "status": constant.SUCCESS,
-            "is_used": False
+            "is_used": False,
+            "is_training": False,
         }
 
         train_model.insert_one(data_model)
         return redirect("detail-model?model_id=" + str(data_model.get('_id')))
     except Exception as e:
-        flash("Thất bại: " + str(e))
+        print(e)
+        flash("Upload model thất bại")
         return redirect("/upload-model")
 
 @upload_model_router.route('/detail-model')
@@ -196,7 +200,11 @@ def admin_detail_model():
 
 @upload_model_router.route('/admin')
 def admin():
-    records = list(train_model.find())
+    user_name = session['username']
+    if user_name is None:
+        return redirect('/')
+    filter = {"$and": [{'user_id': user_name, 'is_training': False}]}
+    records = list(train_model.find(filter))
     for record in records:
         data_url = record.get('data_name')
         url_parts = data_url.split('/')

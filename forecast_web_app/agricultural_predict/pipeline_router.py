@@ -34,8 +34,11 @@ import time
 from utils import constant
 from time import sleep
 
-pipeline_router = Blueprint('pipeline_router', __name__, static_folder='static',
-                               template_folder='templates')
+pipeline_router = Blueprint('pipeline_router',
+                            __name__,
+                            static_folder='static',
+                            template_folder='templates')
+
 
 @pipeline_router.route('/pipeline/<dags_id>/<task_id>', methods=['GET'])
 @cross_origin()
@@ -46,7 +49,7 @@ def pipeline_airflow(dags_id, task_id):
         response = requests_api.get(airflow_url, 
                                     auth=HTTPBasicAuth('airflow', 'airflow'),
                                     headers={'Content-Type': 'application/json'})
-        return jsonify(response.text)
+        return jsonify(response.text), 200
     except Exception as e:
         print(e)
         return jsonify({'error': str(e)}), http.HTTPStatus.INTERNAL_SERVER_ERROR

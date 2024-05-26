@@ -1,5 +1,49 @@
 const URL_SERVER = "http://localhost:5000";
 var interval = null;
+
+
+const pipelineTemplate = `
+                                      <div class="card">
+                                            <div class="card-body">
+                                                <h6 class="card-title text-primary font-bold font-weight-normal">
+                                                    <div class='{{status-display}} spinner-border text-secondary'
+                                                        style="width: 15px; height: 15px;" role="status">
+                                                        <span class="sr-only">Loading...</span>
+                                                    </div>
+                                                    {{value}}
+                                                </h6>
+                                                <div class="d-flex justify-content-between">
+                                                    <span class="badge badge-{{status-class}} align-middle">{{status}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+`;
+
+const arrowTemplate = `
+<div class="text-center">
+<i class="bi bi-arrow-down text-center text-primary "
+    style="font-weight: 600!important;"></i>
+</div>
+`;
+
+const statusClass = new Map([
+    ["success", "success"],
+    ["failed", "danger"],
+    ["running", "info"],
+    ["queued", "warning"],
+    ["undefined", "muted"],
+]);
+
+const statusMapping = new Map([
+    ["success", "Thành công"],
+    ["failed", "Thất bại"],
+    ["running", "Đang xử lí"],
+    ["queued", "Đang xử lí"],
+    ["waiting", "Chờ xử lí"],
+    ["undefined", "Chờ xử lí"],
+]);
+
 $("#data_name").change(function () {
     const selectedValue = JSON.parse($(this).val().replace(/'/g, '"'));
     console.log(selectedValue);
@@ -38,8 +82,10 @@ function checkStationary(pValue) {
     $("#pValueDesc").text(`Data is None stationary`);
 }
 
-function callDrawPlot(selectedValue) {
-    d3.csv(selectedValue, function (err, rows) {
+async function callDrawPlot(selectedValue) {
+    sessionStorage.clear()
+    await $("#loadChartLoading").removeClass("d-none")
+    await d3.csv(selectedValue, function (err, rows) {
         function unpack(rows, key) {
             return rows.map(function (row) {
                 if (key === "date") {
@@ -95,6 +141,8 @@ function callDrawPlot(selectedValue) {
             container.append(html);
         });
     });
+
+    await $("#loadChartLoading").addClass("d-none")
 }
 
 function plotChartData(data) {
@@ -102,7 +150,10 @@ function plotChartData(data) {
 
     data.forEach((value, index) => {
         xDim = new Array();
-        for (i in value.x) xDim.push(new Date(value.x[i].$date));
+        for (i in value.x) {
+            xDim.push(new Date(value.x[i].$date));
+        }
+        F
         yDim = value.y;
         mode = value.mode;
 
@@ -114,7 +165,6 @@ function plotChartData(data) {
             name: value.name,
         };
         console.log(trace);
-
         plot_data.push(trace);
     });
 
@@ -204,6 +254,7 @@ async function applyDiffSeasonal(value) {
 }
 
 async function trainModel() {
+    debugger
     const model_name = sessionStorage.getItem("model_name");
     await sessionStorage.removeItem("dags_run_id");
     if (!model_name) {
@@ -258,9 +309,10 @@ async function trainModel() {
     console.log(data);
 
     await $("#modelTrainingInProcess").modal("show");
+
     await $.ajax({
         url: URL_SERVER + "/train-model-data",
-        method: "POST", // First change type to method here
+        method: "POST",
         contentType: "application/json; charset=utf-8",
         data: JSON.stringify(data),
         success: function (response) {
@@ -270,22 +322,14 @@ async function trainModel() {
             handelStoreSession("model_submit_detail", JSON.stringify(data));
             handelStoreSession("dags_run_id", data.dag_run_id);
 
-            if (data.status === "DONE") {
-                $("#model_detail_name").text(data.model_name);
-                $("#model_detail_mape").text(data.score["mape"] | 0);
-                $("#model_detail_rmse").text(data.score["rmse"] | 0);
-
-                // show chart data như trang detail
-                // plotChartData(data.plot_data);
-            } else {
-                alertify.error(data.error);
-            }
+            const container = $("#pipeline-step");
+            container.empty();
+            container.append(createPipelineSetupStep("running"))
         },
         error: function (error) {
             alertify.error("Thất bại" + error);
         },
     });
-    //
 }
 
 async function submitModel() {
@@ -305,62 +349,19 @@ async function submitModel() {
             console.log(data);
 
             if (data) {
+                sessionStorage.clear()
                 window.location.href = "/detail-model?model_id=" + data;
                 return;
             }
             alertify.error("Submit model không thành công");
         },
         error: function (error) {
-            alert("error" + error);
-
             alertify.error("Submit model không thành công");
         },
     });
+
     $("#modelTrainingInProcess").modal("hide");
 }
-
-const pipelineTemplate = `
-                                      <div class="card">
-                                            <div class="card-body">
-                                                <h6 class="card-title text-primary font-bold font-weight-normal">
-                                                    <div class='{{status-display}} spinner-border text-secondary'
-                                                        style="width: 15px; height: 15px;" role="status">
-                                                        <span class="sr-only">Loading...</span>
-                                                    </div>
-                                                    {{value}}
-                                                </h6>
-                                                <div class="d-flex justify-content-between">
-                                                    <span class="badge badge-{{status-class}} align-middle">{{status}}</span>
-                                                    // <span class="badge badge-secondary align-middle">Logs</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-`;
-
-const arrowTemplate = `
-<div class="text-center">
-<i class="bi bi-arrow-down text-center text-primary "
-    style="font-weight: 600!important;"></i>
-</div>
-`;
-
-const statusClass = new Map([
-    ["success", "success"],
-    ["failed", "danger"],
-    ["running", "info"],
-    ["queued", "warning"],
-    ["undefined", "muted"],
-]);
-
-const statusMapping = new Map([
-    ["success", "Thành công"],
-    ["failed", "Thất bại"],
-    ["running", "Đang xử lí"],
-    ["queued", "Đang xử lí"],
-    ["waiting", "Chờ xử lí"],
-    ["undefined", "Chờ xử lí"],
-]);
 
 function compare(a, b) {
     if (a.priority_weight < b.priority_weight) {
@@ -373,7 +374,8 @@ function compare(a, b) {
 }
 
 async function loadLogTrainModel() {
-    var dag_run_id = sessionStorage.getItem("dags_run_id");
+
+    let dag_run_id = sessionStorage.getItem("dags_run_id");
     if (dag_run_id === 'undefined' || dag_run_id === 'null' || dag_run_id === "") {
         console.error("Không tìm thấy dag id");
         return;
@@ -384,9 +386,9 @@ async function loadLogTrainModel() {
     let auth = btoa(`${username}:${password}`);
     let model_id = $("#modelId").text().trim();
 
-    var url = "http://localhost:5000/pipeline/{dag_run_id}" + "/" + dag_run_id;
+    let url = URL_SERVER + "/pipeline/{dag_run_id}" + "/" + dag_run_id;
     url = url.replaceAll("{dag_run_id}", model_id);
-    var settings = {
+    let settings = {
         url: url,
         method: "GET",
         headers: {
@@ -397,11 +399,9 @@ async function loadLogTrainModel() {
         },
     };
 
-    var responseData = null;
     await $.ajax(settings).done(function (response) {
         response = JSON.parse(response);
         console.log(response);
-        responseData = response;
         if (response.total_entries === 0) {
             console.log("Không tìm thấy task")
             return
@@ -409,12 +409,16 @@ async function loadLogTrainModel() {
 
         const container = $("#pipeline-step");
         container.empty();
+        container.append(createPipelineSetupStep("success"))
         var count_waiting_task = 0;
 
         response.task_instances.sort(compare);
         console.log(response.task_instances);
 
         response.task_instances.forEach((value, index) => {
+            const html = createPipelineStep(value)
+
+            container.append(html);
             if (value.state === "success") {
                 count_waiting_task++;
             }
@@ -423,18 +427,6 @@ async function loadLogTrainModel() {
                 alertify.error("Model training thất bại");
                 return;
             }
-            const html = pipelineTemplate
-                .replace("{{value}}", value.task_id)
-                .replace("{{status}}", statusMapping.get(value.state || "waiting"))
-                .replace(
-                    "{{status-class}}",
-                    statusClass.get(value.state) || "secondary"
-                )
-                .replace(
-                    "{{status-display}}",
-                    value.state === "running" || value.state === "queued" ? "" : "d-none"
-                );
-            container.append(html);
             if (index !== response.task_instances.length - 1) {
                 container.append(arrowTemplate);
             }
@@ -449,6 +441,36 @@ async function loadLogTrainModel() {
 
         }
     });
+}
+
+function createPipelineStep(value) {
+    return pipelineTemplate
+        .replace("{{value}}", value.task_id)
+        .replace("{{status}}", statusMapping.get(value.state || "waiting"))
+        .replace(
+            "{{status-class}}",
+            statusClass.get(value.state) || "secondary"
+        )
+        .replace(
+            "{{status-display}}",
+            value.state === "running" ||
+            value.state === "queued" ? "" : "d-none"
+        );
+}
+
+function createPipelineSetupStep(state) {
+    return pipelineTemplate
+        .replace("{{value}}", "Setup Pipeline")
+        .replace("{{status}}", state)
+        .replace(
+            "{{status-class}}",
+            statusClass.get(state) || "secondary"
+        )
+        .replace(
+            "{{status-display}}",
+            state === "running" ||
+            state === "queued" ? "" : "d-none"
+        );
 }
 
 async function getTranningModelDetail(modelId) {
@@ -481,25 +503,11 @@ async function getTranningModelDetail(modelId) {
     });
 }
 
-function loadPipelineData() {
-    console.log("load pipeline data");
-    response = loadLogTrainModel();
-    console.log("LOG");
-    console.log(response);
-
-    count_waiting_task = response?.task_instances.fillter(
-        (value) =>
-            value.state === undefined ||
-            value.state === null ||
-            value.state === "running"
-    ).length;
-    if (count_waiting_task <= 0) {
-        clearInterval(interval);
-    }
-}
 
 $(document).ready(function () {
+    // config for alertify notify
     alertify.set("notifier", "position", "top-right");
+
     $("input[type=radio][name=flexRadioDefault]").change(function () {
         var selectedValue = $(this).val();
         if (selectedValue === "DIFF") {
@@ -518,10 +526,10 @@ $(document).ready(function () {
     });
 
     $("#trainModelForm").submit(function (event) {
+
         event.preventDefault();
-
-
         trainModel(event);
+
 
         interval = setInterval(loadLogTrainModel, 5000);
     });
@@ -531,7 +539,6 @@ $(document).ready(function () {
         console.log("submit model");
         submitModel();
     });
-
 
     $("#reloadModel").on("click", function (event) {
         event.preventDefault();

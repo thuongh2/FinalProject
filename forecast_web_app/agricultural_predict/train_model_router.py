@@ -210,7 +210,6 @@ def train_model_data():
     data_model = {
         "_id": model_id,
         "user_id": data.get('username'),
-        "name": "Dự đoán giá" + " " +  data.get('agricutural_name') + " " + "mô hình" + " " + model_name,
         "model_name": model_name,
         "agricultural_name": data.get('agricultural_name'),
         "data_name": model_data,
@@ -251,85 +250,88 @@ def submit_train_model_data():
 @train_model_router.route('/submit_train_model', methods=['GET'])
 @cross_origin()
 def submit_train_model_airflow():
-    file_name = request.args.get('file_name')
-    data_url = request.args.get('data_url')
-    accuracy = eval(request.args.get('accuracy'))
-    model_name = request.args.get('model_name')
-    user_name = request.args.get('user_name')
-    agricultural_name = request.args.get('agricultural_name')
-    model_id = request.args.get('model_id')
-    argument = eval(request.args.get('argument'))
+    try:
+        file_name = request.args.get('file_name')
+        data_url = request.args.get('data_url')
+        accuracy = eval(request.args.get('accuracy'))
+        model_name = request.args.get('model_name')
+        user_name = request.args.get('user_name')
+        agricultural_name = request.args.get('agricultural_name')
+        model_id = request.args.get('model_id')
+        argument = eval(request.args.get('argument'))
 
-    model_url = minio_utils.get_minio_object(file_name)
-    data = pd.read_csv(data_url)
-    model_factory = FactoryModel(model_name).factory()
-    model_factory.model_url = model_url
-    model_factory.data_uri = data_url
-    model_factory.data = data
-    model_factory.accuracy = accuracy
+        model_url = minio_utils.get_minio_object(file_name)
+        data = pd.read_csv(data_url)
+        model_factory = FactoryModel(model_name).factory()
+        model_factory.model_url = model_url
+        model_factory.data_uri = data_url
+        model_factory.data = data
+        model_factory.accuracy = accuracy
 
-    model_factory.load_model()
-    _, test_data = model_factory.prepare_data_for_self_train()
+        model_factory.load_model()
+        _, test_data = model_factory.prepare_data_for_self_train()
 
-    n_periods = len(test_data)
-    forecast_data, ac = model_factory.train_for_upload_mode(n_periods, test_data)
+        n_periods = len(test_data)
+        forecast_data, ac = model_factory.train_for_upload_mode(n_periods, test_data)
 
-    if isinstance(forecast_data, pd.DataFrame):
-        forecast_data.set_index(test_data.index, inplace=True)
-    else:
-        forecast_data = pd.DataFrame(forecast_data, index=test_data.index, columns=['price'])
+        if isinstance(forecast_data, pd.DataFrame):
+            forecast_data.set_index(test_data.index, inplace=True)
+        else:
+            forecast_data = pd.DataFrame(forecast_data, index=test_data.index, columns=['price'])
 
-    model_factory.ml_flow_register(argument=argument)
+        model_factory.ml_flow_register(argument=argument)
 
-    data_model = {"_id": model_id,
-                  "user_id": user_name,
-                  "file_name": file_name,
-                  "model_name": model_name,
-                  "name": "Dự đoán giá",
-                  "agricultural_name": agricultural_name,
-                  "data_name": data_url,
-                  "type": constant.SELF_TRAIN_MODEL,
-                  "create_time": datetime.now(),
-                  "evaluate": accuracy,
-                  "status": constant.SUCCESS,
-                  "isUsed": False,
-                  "isTranning": True
-                  }
+        data_model = {"_id": model_id,
+                    "user_id": user_name,
+                    "file_name": file_name,
+                    "model_name": model_name,
+                    "name": "Dự đoán giá mô hình {model_name}",
+                    "agricultural_name": agricultural_name,
+                    "data_name": data_url,
+                    "type": constant.SELF_TRAIN_MODEL,
+                    "create_time": datetime.now(),
+                    "evaluate": accuracy,
+                    "status": constant.SUCCESS,
+                    "is_used": False,
+                    "is_training": True
+                    }
 
-    train_model.insert_one(data_model)
-    print("Thêm model thành công")
+        train_model.insert_one(data_model)
+        print("Thêm model thành công")
 
-    trace_predict = dict(
-        x=forecast_data.index.tolist(),
-        y=forecast_data.price.values.tolist(),
-        mode='lines',
-        name='Dự đoán'
-    )
-    trace_actual = dict(
-        x=test_data.index.tolist(),
-        y=test_data.price.values.tolist(),
-        mode='lines',
-        name='thực tế'
-    )
-    plot_data = [trace_predict, trace_actual]
-    data_model['plot_data'] = plot_data
-    return json_util.dumps(data_model), 200
-
+        trace_predict = dict(
+            x=forecast_data.index.tolist(),
+            y=forecast_data.price.values.tolist(),
+            mode='lines',
+            name='Dự đoán'
+        )
+        trace_actual = dict(
+            x=test_data.index.tolist(),
+            y=test_data.price.values.tolist(),
+            mode='lines',
+            name='thực tế'
+        )
+        plot_data = [trace_predict, trace_actual]
+        data_model['plot_data'] = plot_data
+        return json_util.dumps(data_model), 200
+    except Exception as e:
+        print(e)
+        return jsonify({'error': str(e)}), 500
 
 @train_model_router.route('/get_train_model_airflow/<model_id>', methods=['GET'])
 @cross_origin()
 def get_train_model_airflow(model_id):
-    model_tranning = train_model.find_one({"_id": model_id})
-    if not model_tranning:
+    model_training = train_model.find_one({"_id": model_id})
+    if not model_training:
         return json_util.dumps({"error": "Model not found"}), 404
-    model_name = model_tranning.get('model_name')
-    model_url = minio_utils.get_minio_object(model_tranning.get('file_name'))
-    data = pd.read_csv(model_tranning.get('data_name'))
-    model_factory = FactoryModel(model_name).factory()
+    model_name = model_training.get('model_name')
+    model_url = minio_utils.get_minio_object(model_training.get('file_name'))
+    data = pd.read_csv(model_training.get('data_name'))
+    model_factory = FactoryModel(model_training).factory()
     model_factory.model_url = model_url
-    model_factory.data_uri = model_tranning.get('data_name')
+    model_factory.data_uri = model_training.get('data_name')
     model_factory.data = data
-    model_factory.accuracy = model_tranning.get('evaluate')
+    model_factory.accuracy = model_training.get('evaluate')
 
     model_factory.load_model()
     _, test_data = model_factory.prepare_data_for_self_train()
@@ -342,7 +344,7 @@ def get_train_model_airflow(model_id):
     else:
         forecast_data = pd.DataFrame(forecast_data, index=test_data.index, columns=['price'])
 
-    data_model = model_tranning
+    data_model = model_training
 
     trace_predict = dict(
         x=forecast_data.index.tolist(),

@@ -9,6 +9,8 @@ from config.db import db, model, user, train_model
 import requests
 import pandas as pd
 import datetime
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 main_router = Blueprint('main_router', __name__, static_folder='static',
                         template_folder='templates')
@@ -55,7 +57,7 @@ def index():
         # TODO: refactor this
         return render_template('index.html', data=filtered_data,
                                models=records, records_data=records_data,
-                               price_data=price_data, agricutural_type=agricultural_type,
+                               price_data=price_data, agricultural=agricultural_type,
                                price_agricultural=price_agricultural,
                                agricultural_type=AGRICULTURAL_TYPES,
                                agricultural_mapping=AGRICULTURAL_TYPES_MAPPING)

@@ -105,6 +105,7 @@ def start_trigger_airflow(dag_id, retry=None):
     time.sleep(10)
     print("Start airflow trigger")
 
+    # TODO set this in os
     airflow_url = "http://localhost:8080/api/v1/dags/{dag_id}/dagRuns"
     airflow_url = airflow_url.replace("{dag_id}", dag_id)
     print("Start trigger " + airflow_url)

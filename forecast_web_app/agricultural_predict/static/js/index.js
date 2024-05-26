@@ -206,19 +206,19 @@ $(document).ready(function () {
   });
 });
 
-// Active card
-$(".price-agricutural").click(function () {
-  var id = $(this).attr("id");
-  localStorage.setItem("activeTab", id);
-});
+// // Active card
+// $(".price-agricutural").click(function () {
+//   var id = $(this).attr("id");
+//   localStorage.setItem("activeTab", id);
+// });
 
-$(document).ready(function () {
-  var activeTabId = localStorage.getItem("activeTab");
-  if (activeTabId) {
-    $(".price-agricutural").removeClass("active-card");
-    $("#" + activeTabId).addClass("active-card");
-  }
-});
+// $(document).ready(function () {
+//   var activeTabId = localStorage.getItem("activeTab");
+//   if (activeTabId) {
+//     $(".price-agricutural").removeClass("active-card");
+//     $("#" + activeTabId).addClass("active-card");
+//   }
+// });
 
 // Display price
 function updateTableFromCSV(csvFilePath) {

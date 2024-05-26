@@ -1,25 +1,25 @@
-const URL_SERVER = "http://localhost:5000"
+const URL_SERVER = "http://localhost:5000";
 
 // Roll price list
 document.addEventListener("DOMContentLoaded", function () {
-      const table = document.getElementById("priceDataTable");
-      const scrollbar = document.getElementById("scrollbar");
+  const table = document.getElementById("priceDataTable");
+  const scrollbar = document.getElementById("scrollbar");
 
-      scrollbar.addEventListener("scroll", function () {
-        table.style.transform = `translateY(-${scrollbar.scrollTop}px)`;
-      });
+  scrollbar.addEventListener("scroll", function () {
+    table.style.transform = `translateY(-${scrollbar.scrollTop}px)`;
+  });
 
-      function updateScrollbarHeight() {
-        const totalHeight = table.clientHeight;
-        const visibleHeight = scrollbar.clientHeight;
-        const scrollHeight = (visibleHeight / totalHeight) * visibleHeight;
-        scrollbar.style.height = `${scrollHeight}px`;
-      }
+  function updateScrollbarHeight() {
+    const totalHeight = table.clientHeight;
+    const visibleHeight = scrollbar.clientHeight;
+    const scrollHeight = (visibleHeight / totalHeight) * visibleHeight;
+    scrollbar.style.height = `${scrollHeight}px`;
+  }
 
-      updateScrollbarHeight();
+  updateScrollbarHeight();
 
-      window.addEventListener("resize", updateScrollbarHeight);
-    });
+  window.addEventListener("resize", updateScrollbarHeight);
+});
 
 // Predictive processing
 $(document).ready(function () {
@@ -159,15 +159,44 @@ async function callPlotChart(data) {
     type: "GET",
     contentType: "application/json",
     success: function (response) {
+      console.log(response);
       hideLoading();
       Plotly.purge("myDiv");
       plotChart(response.plot_data);
+      plotActualPrice(response.price_actual);
+      plotPredictPrice(response.price_forecast);
     },
     error: function (xhr, status, error) {
       console.log(error);
       hideLoading();
     },
   });
+}
+
+function plotActualPrice(data) {
+  let price = JSON.parse(data);
+  console.log(price);
+  $("#priceActualDate").text(price.date);
+  $("#priceActual").text(
+    parseInt(price.price).toLocaleString("it-IT", {
+      style: "currency",
+      currency: "VND",
+    })
+  );
+}
+
+function plotPredictPrice(data) {
+  let price = JSON.parse(data);
+  console.log(price);
+
+  $("#pricePredictDate").text(price.date);
+
+  $("#pricePredict").text(
+    parseInt(price.price).toLocaleString("it-IT", {
+      style: "currency",
+      currency: "VND",
+    })
+  );
 }
 
 $(document).ready(function () {

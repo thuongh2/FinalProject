@@ -4,7 +4,7 @@ import pandas as pd
 from statsmodels.tsa.stattools import acf
 import mlflow
 from mlflow.models import infer_signature
-from sklearn.metrics import mean_absolute_error as mae 
+from sklearn.metrics import mean_absolute_error as mae
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 import logging
@@ -13,11 +13,10 @@ from model.base_model import BaseModel
 
 
 class VARModel(BaseModel):
-    
+
     def __init__(self):
         super().__init__()
-        
-        
+
     def predict(self, n_periods, df_forecast=None):
         if self.model:
             lag_order = self.model.k_ar
@@ -27,19 +26,18 @@ class VARModel(BaseModel):
         else:
             raise Exception("Không tìm thấy model")
 
-
     def forecast_future(self, forecast_num, data=None, n_steps=None):
-        self._load_model()
+        self.load_model()
         if self.model is None:
             raise Exception("Không tìm thấy model")
-        
+
         n_periods = len(self.test_data) + forecast_num
         df_diff = self.difference_dataset()
 
         predict_data = self.predict(n_periods, df_diff)
         self.forecast_data = pd.DataFrame(predict_data, columns=self.test_data.columns)
 
-        predicted = self.invert_transformation(self.train_data,  self.forecast_data, second_diff=True)
+        predicted = self.invert_transformation(self.train_data, self.forecast_data, second_diff=True)
         predicted['price'] = predicted['price_forecast']
 
         last_date = self.test_data.index[-1]
@@ -47,15 +45,14 @@ class VARModel(BaseModel):
         predicted = predicted[-forecast_num:]
 
         predicted_df = pd.DataFrame({'date': next_dates, 'price': predicted[self.PRICE_COLUMN]})
-        
+
         return predicted_df
 
-    def _load_model(self):
+    def load_model(self):
         self.model = joblib.load(self.model_url)
 
-
     def train_for_upload_mode(self, n_periods, data=None):
-        self._load_model()
+        self.load_model()
         if self.model is None:
             raise Exception("Không tìm thấy model")
         df_diff = self.difference_dataset()
@@ -63,15 +60,16 @@ class VARModel(BaseModel):
         if self.forecast_data.size == 0:
             raise Exception("Không tìm thấy model")
 
-        self.forecast_data = pd.DataFrame(self.forecast_data, index=self.test_data.index[-n_periods:], columns=self.test_data.columns)
+        self.forecast_data = pd.DataFrame(self.forecast_data, index=self.test_data.index[-n_periods:],
+                                          columns=self.test_data.columns)
 
         self.forecast_data = self.invert_transformation(self.train_data, self.forecast_data, second_diff=True)
         self.forecast_data['price'] = self.forecast_data['price_forecast']
-        self.accuracy = self.forecast_accuracy(self.forecast_data[self.PRICE_COLUMN].values, self.test_data[self.PRICE_COLUMN].values)
+        self.accuracy = self.forecast_accuracy(self.forecast_data[self.PRICE_COLUMN].values,
+                                               self.test_data[self.PRICE_COLUMN].values)
 
         return self.forecast_data, self.accuracy
 
-  
     def train_model(self, argument):
         """
         Train model in web
@@ -119,19 +117,16 @@ class VARModel(BaseModel):
     def __adjust(val, length=6):
         return str(val).ljust(length)
 
-    
-    def difference_dataset(self, interval=None):
+    def difference_dataset(self, type=None, interval=None):
         df_dif = self.train_data.copy()
         return df_dif.diff().dropna()
 
-
-    def seasonal_diff(self, dataset, interval= 1):
+    def seasonal_diff(self, dataset, interval=1):
         diff = list()
         for i in range(interval, len(dataset)):
             value = dataset[i] - dataset[i - interval]
             diff.append(value)
         return diff
-
 
     def invert_transformation(self, df_train, df_forecast, second_diff=False):
         """Revert back the differencing to get the forecast to original scale."""
@@ -141,8 +136,10 @@ class VARModel(BaseModel):
             df_res[str(col) + '_forecast'] = df_train[col].iloc[-1] + df_res[str(col)].cumsum()
         return df_res
 
+    def ml_flow_param(self):
+        return {"P": self.model.k_ar}
 
-    def ml_flow_register(self):
+    def ml_flow_register(self, params=None):
         ARTIFACT_PATH = "model"
 
         mlflow.set_tracking_uri(uri="http://20.2.210.176:5000/")
@@ -157,16 +154,17 @@ class VARModel(BaseModel):
             mlflow.autolog(log_models=True)
 
             input_sample = pd.DataFrame(self.train_data)
-            output_sample = pd.DataFrame(self.forecast_data)
-            
+            # output_sample = pd.DataFrame(self.forecast_data)
+
             mlflow.log_input(dataset, context="training")
-            
-            mlflow.log_params({"P": self.model.k_ar})
-            
+            if (params == None):
+                params = self.ml_flow_param()
+            mlflow.log_params(params)
+
             for k, v in self.accuracy.items():
-                mlflow.log_metric(k, round(v,4))
-            
-            signature = infer_signature(input_sample, output_sample)
+                mlflow.log_metric(k, round(v, 4))
+
+            signature = infer_signature(input_sample)
 
             model_info = mlflow.statsmodels.log_model(statsmodels_model=self.model,
                                                       signature=signature,
@@ -175,12 +173,11 @@ class VARModel(BaseModel):
             return model_info
 
 
-    
 if __name__ == '__main__':
     data_url = "../test_data/var_data.csv"
     model_url = "../test_data/var_model.joblib"
     model = VARModel()
-    model.model_url = model_url    
+    model.model_url = model_url
     model.data_uri = data_url
     # tạo data
     # _ , test_data = model.prepare_data(data_url)
@@ -201,5 +198,3 @@ if __name__ == '__main__':
 
     _, a, _ = model.train_model({'max_p': 10})
     print(a)
-
-    

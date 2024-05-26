@@ -60,7 +60,8 @@ class BaseModel:
 
         mse = mean_squared_error(actual_value, predicted_values)
         rmse = np.sqrt(mse)
-
+        print("rmse: ", rmse)
+        print("mape: ", mape)
         return {'mape': round(mape, 2), 'rmse': round(rmse, 2)}
 
     def prepare_data(self, data_url, split_size=0.8):

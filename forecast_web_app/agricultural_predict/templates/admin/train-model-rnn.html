@@ -64,6 +64,7 @@
         <h1 class="h3 mb-0  text-dark font-bold">TRAIN MODEL</h1>
     </div>
 
+    <div id="modelId" class="d-none">{{ model_id }}</div>
 
     <div class="row">
         <div class="col-2">
@@ -89,7 +90,7 @@
             <div class="tab-content" id="v-pills-tabContent">
                 <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel"
                      aria-labelledby="v-pills-home-tab">
-                     <h5 class="text-uppercase text-dark font-bold">Chọn Model</h5>
+                    <h5 class="text-uppercase text-dark font-bold">Chọn Model</h5>
                     <form class="p-0 mt-3">
                         <div class=" mt-2 col-12 p-0">
                             <select name="model_name" id="model_name" onchange="this.options[this.selectedIndex].value
@@ -98,11 +99,12 @@
                                 <option value="upload-model">Mô hình</option>
                                 {% for item in model_names %}
                                     {% if item == "LSTM" or item == "GRU" or item == "BiLSTM" %}
-                                        <option value="{{ 'train-model-rnn?model_name=' ~ item }}" {% if item==model_name %}
-                                            selected {% endif %}>{{ item }}</option>
+                                        <option value="{{ 'train-model-rnn?model_name=' ~ item }}"
+                                                {% if item==model_name %}
+                                                selected {% endif %}>{{ item }}</option>
                                     {% else %}
                                         <option value="{{ 'train-model?model_name=' ~ item }}" {% if item==model_name %}
-                                            selected {% endif %}>{{ item }}</option>
+                                                selected {% endif %}>{{ item }}</option>
                                     {% endif %}
                                 {% endfor %}
                             </select>
@@ -124,11 +126,14 @@
                 </div>
 
                 <!-- Bước 2 -->
-               <div class="tab-pane fade text-dark" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+                <div class="tab-pane fade text-dark" id="v-pills-profile" role="tabpanel"
+                     aria-labelledby="v-pills-profile-tab">
                     <h5 class="text-uppercase text-dark font-bold">Chọn số Layer</h5>
                     <div class="row mt-3">
                         <div class="col-12">
-                            <button type="button" id="add-input" class="btn btn-primary" style="margin: 0 32px 0 8px;">+</button>
+                            <button type="button" id="add-input" class="btn btn-primary" style="margin: 0 32px 0 8px;">
+                                +
+                            </button>
                             <button type="button" id="remove-input" class="btn btn-danger">-</button>
                         </div>
                     </div>
@@ -139,7 +144,8 @@
                                     <label for="flexInputDefault1"><strong>LAYER 1</strong></label>
                                     <div class="d-flex align-items-center">
                                         <span>Unit:</span>
-                                        <input class="form-control ml-2" type="text" id="flexInputDefault1" name="flexInputDefault1" oninput="saveLayersToSession()">
+                                        <input class="form-control ml-2" type="text" id="flexInputDefault1"
+                                               name="flexInputDefault1" oninput="saveLayersToSession()">
                                     </div>
                                 </div>
                             </div>
@@ -155,8 +161,9 @@
                         <h5 class="text-uppercase text-dark font-bold">Kích thước chia tập dữ liệu</h5>
                         <div class="d-flex align-items-center my-3">
 
-                            <input id="size" name="size" value="80" min="0" max="100" type="range" class="form-range mr-2"
-                                style="width: 80%;" />
+                            <input id="size" name="size" value="80" min="0" max="100" type="range"
+                                   class="form-range mr-2"
+                                   style="width: 80%;"/>
 
                             <span>
                                 <span id="curr">50%</span>
@@ -172,16 +179,19 @@
                                     <div class="row">
                                         <div class="col-xl-4 d-flex align-items-center">
                                             <span>time step:</span>
-                                            <input class="form-control ml-2" type="text" id="timestep" name="timestep" oninput="saveTimestepToSession('timestep', this.value)">
+                                            <input class="form-control ml-2" type="text" id="timestep" name="timestep"
+                                                   oninput="saveTimestepToSession('timestep', this.value)">
                                         </div>
                                         <div class="col-xl-4 d-flex align-items-center">
                                             <span>epoch:</span>
-                                            <input class="form-control ml-2" type="text" id="epochs" name="epochs" oninput="saveEpochsToSession('epochs', this.value)">
+                                            <input class="form-control ml-2" type="text" id="epochs" name="epochs"
+                                                   oninput="saveEpochsToSession('epochs', this.value)">
                                         </div>
                                         <div class="col-xl-4 d-flex align-items-center">
                                             <span>batch size:</span>
-                                            <input class="form-control ml-2" type="text" id="batchsize" name="batchsize" oninput="saveBatchsizeToSession('batchsize', this.value)">
-                                        </div>                                        
+                                            <input class="form-control ml-2" type="text" id="batchsize" name="batchsize"
+                                                   oninput="saveBatchsizeToSession('batchsize', this.value)">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -200,7 +210,10 @@
                             <div class="card shadow mb-4">
                                 <!-- Card Header - Dropdown -->
                                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h5 class="m-0 font-weight-bold text-primary">Thông tin mô hình</h5>
+                                    <h5 class="m-0 font-weight-bold text-primary">Thông tin mô hình
+                                        <button type="button" id="reloadModel" class="btn btn-outline-secondary"><i
+                                                class="bi bi-arrow-repeat"></i></button>
+                                    </h5>
                                 </div>
                                 <!-- Card Body -->
                                 <div class="card-body">
@@ -241,16 +254,29 @@
          aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
-                <div class="modal-header text-dark">
-
-                </div>
                 <div class="modal-body">
-                    <div class="text-center">
-                        <div class="spinner-border" role="status">
-                            <span class="sr-only">Loading...</span>
+
+                    <p class="text-center">Train mô hình</p>
+
+                    <div class="">
+                        <div class="row align-items-start">
+                            <div id="pipeline-step" class="col-12">
+                                <div class='spinner-border text-secondary' style="width: 15px; height: 15px;"
+                                     role="status">
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-primary font-bold font-weight-normal">Setup
+                                            Pipeline</h6>
+                                        <span class="badge badge-primary">Đang xử lí</span>
+                                    </div>
+                                </div>
+
+                            </div>
                         </div>
                     </div>
-                    <p>Đang xử lí</p>
+
                 </div>
             </div>
         </div>

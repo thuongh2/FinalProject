@@ -9,7 +9,7 @@ from config.db import model
 from flask import session
 
 from flask import current_app
-from minio import Minio
+from cachetools import TTLCache
 
 import pandas as pd
 from werkzeug.utils import secure_filename
@@ -21,16 +21,19 @@ import io
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import load_model
 import os
+import datetime
 
 load_chart_router = Blueprint('load_chart_router', __name__, static_folder='static',
-            template_folder='templates')
+                              template_folder='templates')
+cache = TTLCache(maxsize=10, ttl=600)
 
 def adf_test(series):
     result = adfuller(series.dropna())
-    labels = ['ADF test statistic','p-value','# lags used','# observations']
-    out = pd.Series(result[0:4],index=labels)
+    labels = ['ADF test statistic', 'p-value', '# lags used', '# observations']
+    out = pd.Series(result[0:4], index=labels)
     current_app.logger.info(out)
     return result[1]
+
 
 @load_chart_router.route('/load-chart', methods=['GET'])
 @cross_origin()
@@ -42,14 +45,22 @@ def load_chart():
     n_steps = 10
 
     file_name, _ = os.path.splitext(os.path.basename(model_data))
-    dict_model_file = {'ARIMA':'arima.joblib', 'LSTM':'LSTM_'+file_name+'.h5', 'GRU':'GRU_'+file_name+'.h5', 'BiLSTM':'BiLSTM_'+file_name+'.h5', 'VAR' : 'var.joblib', 'VARMA' : 'varma_model.joblib'}
-    model_url = './file_model/' + dict_model_file.get(model_name)
+    dict_model_file = {'ARIMA': 'arima.joblib', 'LSTM': 'LSTM_' + file_name + '.h5',
+                       'GRU': 'GRU_' + file_name + '.h5', 'BiLSTM': 'BiLSTM_' + file_name + '.h5',
+                       'VAR': 'var.joblib', 'VARMA': 'varma_model.joblib'}
+    model_file_name = dict_model_file.get(model_name)
+    model_url = './file_model/' + model_file_name
     model = FactoryModel(model_name).factory()
     model_url = model_url
     model.data_uri = model_data
     model.model_url = model_url
     _, test_data = model.prepare_data_for_self_train()
-    predict_data = model.forecast_future(model_time, test_data, n_steps)
+
+    try:
+        predict_data = cache[model_file_name]
+    except:
+        predict_data = model.forecast_future(model_time, test_data, n_steps)
+        cache[model_file_name] = predict_data
 
     predict_data['date'] = pd.to_datetime(predict_data['date'])
     predict_data.set_index(['date'], inplace=True)
@@ -75,6 +86,22 @@ def load_chart():
     )
     plot_data.append(trace2)
 
-    response_data = {'plot_data': plot_data}
-    return jsonify(response_data)
+    # get price actual and predict by date
+    today = datetime.date.today()
+    test_data['date'] = test_data.index
+    predict_data['date'] = predict_data.index
+    price_actual = test_data[test_data.index.date == today]
+    price_forecast = predict_data[predict_data.index.date == today]
+    if price_actual.empty:
+        # nếu ko có giá hôm này lấy giá cuối của dữ liệu (giá mới nhất)
+        price_actual = test_data.iloc[-1]
+    if price_forecast.empty:
+        # nếu ko có giá hôm này lấy giá đầu của dữ liệu (giá dự đoán cho ngày hôm sau)
+        price_forecast = predict_data.iloc[1]
+    price_actual['date'] = price_actual['date'].strftime('%d-%m-%Y')
+    price_forecast['date'] = price_forecast['date'].strftime('%d-%m-%Y')
 
+    response_data = {'plot_data': plot_data}
+    response_data['price_actual'] = price_actual.to_json()
+    response_data['price_forecast'] = price_forecast.to_json()
+    return jsonify(response_data)

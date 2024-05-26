@@ -24,4 +24,5 @@ class FactoryModel:
             "GRU": GRUModel,
             "BiLSTM": BiLSTMModel,
         }
+    
         return localizers[self.model]()

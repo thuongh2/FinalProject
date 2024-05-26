@@ -41,6 +41,8 @@ class ARIMAXModel(BaseModel):
 
         return predicted_df
 
+    def load_model(self):
+        self.model = joblib.load(self.model_url)
 
     def _load_model(self):
         self.model = joblib.load(self.model_url)
@@ -138,7 +140,7 @@ class ARIMAXModel(BaseModel):
     def inverse_difference(self, last_ob, value):
         return value + last_ob
 
-    def ml_flow_register(self):
+    def ml_flow_register(self, experient_name="DEFAUT_MODEL", argument=None):
         ARTIFACT_PATH = "model"
 
         mlflow.set_tracking_uri(uri="http://20.2.210.176:5000/")
@@ -163,7 +165,7 @@ class ARIMAXModel(BaseModel):
             signature = infer_signature(input_sample, output_sample)
 
             model_mflow = mlflow.pmdarima.log_model(
-                model, ARTIFACT_PATH, signature=signature
+                self.model, ARTIFACT_PATH, signature=signature
             )
             return model_mflow
 

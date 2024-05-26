@@ -1,5 +1,3 @@
-import http
-
 from flask import Blueprint
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask import render_template
@@ -20,7 +18,7 @@ import json
 from pprint import pprint
 from datetime import datetime, timedelta
 from statsmodels.tsa.stattools import acf, pacf
-
+from requests.auth import HTTPBasicAuth
 from model.factory_model import FactoryModel
 from bson import json_util
 from statsmodels.tsa.stattools import adfuller
@@ -28,8 +26,16 @@ import joblib
 import uuid
 import os
 import utils.minio_utils as minio_utils
+from infra.airflow.include import dag_config
+import requests as requests_api
+import time
+from utils import constant
+from utils import common_utils
+from config.db import model, train_model
 
-train_model_router = Blueprint('train_model_router', __name__, static_folder='static',
+train_model_router = Blueprint('train_model_router',
+                               __name__,
+                               static_folder='static',
                                template_folder='templates')
 
 
@@ -42,23 +48,30 @@ def train_model_page():
     current_app.logger.info(model_names)
 
     if (model_name):
-        model_data_find = model.find_one({'name': model_name})
-        data = model_data_find.get('attrs')
-        default_param = model_data_find.get('default_param')
+        model_entity = model.find_one({'name': model_name})
+        data = model_entity.get('attrs')
+        default_param = model_entity.get('default_param')
 
-        if(default_param):
+        if (default_param):
             params_render = default_param.get('param')
             stationary_option = default_param.get('stationary_option')
-        current_app.logger.info(params_render)
+
+        model_id = common_utils.generate_id(model_name)
 
         return render_template('admin/train-model.html',
-                                model_names=model_names, data=data,
-                                model_name=model_name, params_render = params_render,
-                                stationary_option=stationary_option)
+                               model_names=model_names,
+                               data=data,
+                               model_name=model_name,
+                               params_render=params_render,
+                               stationary_option=stationary_option,
+                               model_id=model_id)
 
     return render_template('admin/train-model.html',
-                           model_names=model_names, data=None, model_name="",
-                            params_render=None, stationary_option=None)
+                           model_names=model_names,
+                           data=None,
+                           model_name="",
+                           params_render=None,
+                           stationary_option=None)
 
 
 @train_model_router.route('/search-train-model', methods=['GET'])
@@ -70,6 +83,7 @@ def get_data_train_model():
     data.set_index(['date'], inplace=True)
     if data.empty:
         return jsonify({'error': 'Data is empty'})
+
     plot_data = []
     for columns in data.columns:
         data[columns] = data[columns].astype(float)
@@ -137,8 +151,50 @@ def make_stationary_data_train_model():
         )
         plot_data.append(trace)
 
-    respose_data = {'p_values': p_values, 'acf': df_acf, 'df_pacf': df_pacf, 'plot_data': plot_data}
-    return jsonify(respose_data)
+    response_data = {'p_values': p_values, 'acf': df_acf, 'df_pacf': df_pacf, 'plot_data': plot_data}
+    return jsonify(response_data)
+
+
+def create_dags_flow(dags_id, model_name, user_name, data_name,
+                     argument, agricultural_name, stationary_option=None):
+    print(dags_id)
+    is_created = dag_config.create_dags_file(dags_id, data_name, model_name, argument,
+                                             agricultural_name,user_name, stationary_option)
+    if not is_created:
+        raise Exception("DAG creation failed")
+
+    return start_trigger_airflow(dags_id)
+
+
+def start_trigger_airflow(dag_id, retry=None):
+    while (True):
+        if (dag_config.check_dag_exists(dag_id)):
+            break
+
+    print("Waiting for setup pipeline scheduling airflow")
+    time.sleep(10)
+    print("Start airflow trigger")
+
+    airflow_url = "http://localhost:8080/api/v1/dags/{dag_id}/dagRuns"
+    airflow_url = airflow_url.replace("{dag_id}", dag_id)
+    print("Start trigger " + airflow_url)
+    dags_run_id = dag_id + "_" + common_utils.generate_string()
+    response = requests_api.post(airflow_url,
+                                 auth=HTTPBasicAuth('airflow', 'airflow'),
+                                 headers={'Content-Type': 'application/json'},
+                                 data=json.dumps({
+                                     "dag_run_id": dags_run_id
+                                 }))
+    if (response.status_code >= 404):
+        if retry is None:
+            retry = 0
+        retry = retry + 1
+        if retry >= 3:
+            return
+        print(f"Retry airflow dag run {retry}")
+        return start_trigger_airflow(dag_id, retry)
+    print(response.json())
+    return dags_run_id
 
 
 @train_model_router.route('/train-model-data', methods=['POST'])
@@ -148,56 +204,27 @@ def train_model_data():
 
     model_name = data.get('model_name')
     model_data = data.get('model_data')
+    model_id = data.get('model_id')
     argument = data.get('argument')
 
-    data_model = {"user_id": data.get('username'),
-                  "model_name": model_name,
-                  "agricutural_name": data.get('agricutural_name'),
-                  "data_name": model_data,
-                  "type": "TRAIN_MODEL",
-                  "create_time": datetime.now(),
-                  "isUsed": False}
+    data_model = {
+        "_id": model_id,
+        "user_id": data.get('username'),
+        "name": "Dự đoán giá" + " " +  data.get('agricutural_name') + " " + "mô hình" + " " + model_name,
+        "model_name": model_name,
+        "agricultural_name": data.get('agricultural_name'),
+        "data_name": model_data,
+        "type": "TRAIN_MODEL",
+        "create_time": datetime.now(),
+        "isUsed": False
+    }
 
-    file_name = str(uuid.uuid4()) + '.joblib'
-    file_dir = "./temp/" + file_name
-    try:
-        factory_model = FactoryModel(model_name).factory()
-        factory_model.data_uri = model_data
-        forecast_data, accuracy, model = factory_model.train_model(argument)
+    dag_run_id = create_dags_flow(model_id, model_name, data_model.get('user_id'),
+                                  model_data, argument, data.get('agricultural_name'),
+                                  argument.get("stationary_type"))
 
-        joblib.dump(model, file_dir)
-
-        file_after_upload = minio_utils.fupload_object(file_name,  file_dir)
-        data_model["file_name"] = file_after_upload.object_name
-        data_model["file_etag"] = file_after_upload.etag
-        data_model['score'] = accuracy
-        data_model['status'] = 'DONE'
-
-        
-        trace_predict = dict(
-            x=forecast_data.index.tolist(),
-            y=forecast_data.price.values.tolist(),
-            mode='lines',
-            name='Dự đoán'
-        )
-        trace_actual = dict(
-            x=factory_model.test_data.index.tolist(),
-            y=factory_model.test_data.price.values.tolist(),
-            mode='lines',
-            name='thực tế'
-        )
-        plot_data = [trace_predict, trace_actual]
-        data_model['plot_data'] = plot_data
-    except Exception as e:
-        print(e)
-        data_model['status'] = 'FAIL'
-        data_model['error'] = str(e)
-
-    # train_model.insert_one(data_model)
-    if os.path.exists(file_dir):
-        os.remove(file_dir)
-        print("Remove temp file " + file_name)
     current_app.logger.info(data_model)
+    data_model['dag_run_id'] = dag_run_id
 
     return json_util.dumps(data_model)
 
@@ -206,9 +233,130 @@ def train_model_data():
 @cross_origin()
 def submit_train_model_data():
     data = request.get_json()
-    data = eval(data.replace("'", "\"").replace('false', 'False'))
-    
-    del data['plot_data']
+    if 'false' in data:
+        data = (eval(data.replace("'", "\"")
+                     .replace('false', 'False')
+                     .replace('true', 'True')))
+    else:
+        data = eval(data.replace("'", "\""))
+    model_tranning = train_model.find_one({'_id': data.get('_id')})
+    if not model_tranning:
+        return jsonify({'message': 'No train model found'}), 404
 
-    train_model.insert_one(data)
+
+    model_tranning.update({'isTranning': False})
     return json_util.dumps(data.get('_id'))
+
+
+@train_model_router.route('/submit_train_model', methods=['GET'])
+@cross_origin()
+def submit_train_model_airflow():
+    file_name = request.args.get('file_name')
+    data_url = request.args.get('data_url')
+    accuracy = eval(request.args.get('accuracy'))
+    model_name = request.args.get('model_name')
+    user_name = request.args.get('user_name')
+    agricultural_name = request.args.get('agricultural_name')
+    model_id = request.args.get('model_id')
+    argument = eval(request.args.get('argument'))
+
+    model_url = minio_utils.get_minio_object(file_name)
+    data = pd.read_csv(data_url)
+    model_factory = FactoryModel(model_name).factory()
+    model_factory.model_url = model_url
+    model_factory.data_uri = data_url
+    model_factory.data = data
+    model_factory.accuracy = accuracy
+
+    model_factory.load_model()
+    _, test_data = model_factory.prepare_data_for_self_train()
+
+    n_periods = len(test_data)
+    forecast_data, ac = model_factory.train_for_upload_mode(n_periods, test_data)
+
+    if isinstance(forecast_data, pd.DataFrame):
+        forecast_data.set_index(test_data.index, inplace=True)
+    else:
+        forecast_data = pd.DataFrame(forecast_data, index=test_data.index, columns=['price'])
+
+    model_factory.ml_flow_register(argument=argument)
+
+    data_model = {"_id": model_id,
+                  "user_id": user_name,
+                  "file_name": file_name,
+                  "model_name": model_name,
+                  "name": "Dự đoán giá",
+                  "agricultural_name": agricultural_name,
+                  "data_name": data_url,
+                  "type": constant.SELF_TRAIN_MODEL,
+                  "create_time": datetime.now(),
+                  "evaluate": accuracy,
+                  "status": constant.SUCCESS,
+                  "isUsed": False,
+                  "isTranning": True
+                  }
+
+    train_model.insert_one(data_model)
+    print("Thêm model thành công")
+
+    trace_predict = dict(
+        x=forecast_data.index.tolist(),
+        y=forecast_data.price.values.tolist(),
+        mode='lines',
+        name='Dự đoán'
+    )
+    trace_actual = dict(
+        x=test_data.index.tolist(),
+        y=test_data.price.values.tolist(),
+        mode='lines',
+        name='thực tế'
+    )
+    plot_data = [trace_predict, trace_actual]
+    data_model['plot_data'] = plot_data
+    return json_util.dumps(data_model), 200
+
+
+@train_model_router.route('/get_train_model_airflow/<model_id>', methods=['GET'])
+@cross_origin()
+def get_train_model_airflow(model_id):
+    model_tranning = train_model.find_one({"_id": model_id})
+    if not model_tranning:
+        return json_util.dumps({"error": "Model not found"}), 404
+    model_name = model_tranning.get('model_name')
+    model_url = minio_utils.get_minio_object(model_tranning.get('file_name'))
+    data = pd.read_csv(model_tranning.get('data_name'))
+    model_factory = FactoryModel(model_name).factory()
+    model_factory.model_url = model_url
+    model_factory.data_uri = model_tranning.get('data_name')
+    model_factory.data = data
+    model_factory.accuracy = model_tranning.get('evaluate')
+
+    model_factory.load_model()
+    _, test_data = model_factory.prepare_data_for_self_train()
+
+    n_periods = len(test_data)
+    forecast_data, ac = model_factory.train_for_upload_mode(n_periods, test_data)
+
+    if isinstance(forecast_data, pd.DataFrame):
+        forecast_data.set_index(test_data.index, inplace=True)
+    else:
+        forecast_data = pd.DataFrame(forecast_data, index=test_data.index, columns=['price'])
+
+    data_model = model_tranning
+
+    trace_predict = dict(
+        x=forecast_data.index.tolist(),
+        y=forecast_data.price.values.tolist(),
+        mode='lines',
+        name='Dự đoán'
+    )
+    trace_actual = dict(
+        x=test_data.index.tolist(),
+        y=test_data.price.values.tolist(),
+        mode='lines',
+        name='thực tế'
+    )
+    plot_data = [trace_predict, trace_actual]
+    data_model['plot_data'] = plot_data
+
+    return json_util.dumps(data_model)

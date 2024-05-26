@@ -49,6 +49,10 @@ class BaseModel:
     @abstractmethod
     def _load_model(self):
         pass
+
+    @abstractmethod
+    def difference_dataset(self, type, lag=1):
+        pass
     
     def prepare_data_for_self_train(self, split_size=0.8):
         print('Start prepare data ' + self.data_uri)
@@ -104,3 +108,7 @@ class BaseModel:
     @abstractmethod
     def ml_flow_register(self, experient_name="DEFAUT_MODEL"):
         pass
+
+    @abstractmethod
+    def ml_flow_param(self):
+        return ""

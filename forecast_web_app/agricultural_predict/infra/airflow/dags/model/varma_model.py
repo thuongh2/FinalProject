@@ -48,6 +48,9 @@ class VARMAModel(BaseModel):
         
         return predicted_df
 
+    def load_model(self):
+        self.model = joblib.load(self.model_url)
+
     def _load_model(self):
         self.model = joblib.load(self.model_url)
 
@@ -121,6 +124,9 @@ class VARMAModel(BaseModel):
     def difference_dataset(self, interval=None):
         df_dif = self.train_data.copy()
         return df_dif.diff().dropna()
+
+    def ml_flow_param(self):
+        return {"P": -1, "Q": -1}
 
     def ml_flow_register(self):
         ARTIFACT_PATH = "model"

@@ -41,6 +41,8 @@ class ARIMAXModel(BaseModel):
 
         return predicted_df
 
+    def load_model(self):
+        self.model = joblib.load(self.model_url)
 
     def _load_model(self):
         self.model = joblib.load(self.model_url)
@@ -137,6 +139,9 @@ class ARIMAXModel(BaseModel):
     # invert differenced forecast
     def inverse_difference(self, last_ob, value):
         return value + last_ob
+
+    def ml_flow_param(self):
+        return {"order": self.model.order}
 
     def ml_flow_register(self):
         ARTIFACT_PATH = "model"

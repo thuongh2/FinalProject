@@ -153,7 +153,7 @@ function plotChartData(data) {
         for (i in value.x) {
             xDim.push(new Date(value.x[i].$date));
         }
-        F
+    
         yDim = value.y;
         mode = value.mode;
 
@@ -254,7 +254,6 @@ async function applyDiffSeasonal(value) {
 }
 
 async function trainModel() {
-    debugger
     const model_name = sessionStorage.getItem("model_name");
     await sessionStorage.removeItem("dags_run_id");
     if (!model_name) {
@@ -410,6 +409,7 @@ async function loadLogTrainModel() {
         const container = $("#pipeline-step");
         container.empty();
         container.append(createPipelineSetupStep("success"))
+        container.append(arrowTemplate);
         var count_waiting_task = 0;
 
         response.task_instances.sort(compare);

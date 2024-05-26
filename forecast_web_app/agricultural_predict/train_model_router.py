@@ -293,7 +293,7 @@ def submit_train_model_airflow():
                     "evaluate": accuracy,
                     "status": constant.SUCCESS,
                     "is_used": False,
-                    "is_training": True
+                    "is_training": False
                     }
 
         train_model.insert_one(data_model)

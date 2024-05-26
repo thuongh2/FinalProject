@@ -148,7 +148,7 @@ class VARModel(BaseModel):
     def ml_flow_param(self):
         return {"P": self.model.k_ar}
 
-    def ml_flow_register(self):
+    def ml_flow_register(self, experient_name="DEFAUT_MODEL", argument=None):
         ARTIFACT_PATH = "model"
 
         mlflow.set_tracking_uri(uri="http://20.2.210.176:5000/")

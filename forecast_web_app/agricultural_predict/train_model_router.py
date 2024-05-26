@@ -210,7 +210,7 @@ def train_model_data():
     data_model = {
         "_id": model_id,
         "user_id": data.get('username'),
-        "name": "Train " + model_name,
+        "name": "Dự đoán giá" + " " +  data.get('agricutural_name') + " " + "mô hình" + " " + model_name,
         "model_name": model_name,
         "agricultural_name": data.get('agricultural_name'),
         "data_name": model_data,
@@ -248,7 +248,7 @@ def submit_train_model_data():
     return json_util.dumps(data.get('_id'))
 
 
-@train_model_router.route('/submit_train_model_airflow', methods=['GET'])
+@train_model_router.route('/submit_train_model', methods=['GET'])
 @cross_origin()
 def submit_train_model_airflow():
     file_name = request.args.get('file_name')
@@ -258,6 +258,7 @@ def submit_train_model_airflow():
     user_name = request.args.get('user_name')
     agricultural_name = request.args.get('agricultural_name')
     model_id = request.args.get('model_id')
+    argument = eval(request.args.get('argument'))
 
     model_url = minio_utils.get_minio_object(file_name)
     data = pd.read_csv(data_url)
@@ -278,12 +279,13 @@ def submit_train_model_airflow():
     else:
         forecast_data = pd.DataFrame(forecast_data, index=test_data.index, columns=['price'])
 
-    model_factory.ml_flow_register()
+    model_factory.ml_flow_register(argument=argument)
 
     data_model = {"_id": model_id,
                   "user_id": user_name,
                   "file_name": file_name,
                   "model_name": model_name,
+                  "name": "Dự đoán giá",
                   "agricultural_name": agricultural_name,
                   "data_name": data_url,
                   "type": constant.SELF_TRAIN_MODEL,
@@ -295,6 +297,7 @@ def submit_train_model_airflow():
                   }
 
     train_model.insert_one(data_model)
+    print("Thêm model thành công")
 
     trace_predict = dict(
         x=forecast_data.index.tolist(),

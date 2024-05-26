@@ -5,4 +5,3 @@ class StationaryStep:
 
     def __call__(self, prepare, model, type=None, lag=None) -> None:
         self.data_diff = model.difference_dataset(type, lag)
-        print(self.data_diff.info())

@@ -7,6 +7,8 @@ from flask import send_from_directory
 from flask import current_app
 from flask_cors import cross_origin
 from pymongo import MongoClient
+from requests.auth import HTTPBasicAuth
+
 from config.db import db, model, user, train_model
 from flask import session
 import hashlib
@@ -24,7 +26,11 @@ from model.factory_model import FactoryModel
 from bson import json_util
 import uuid
 import os
-import utils.minio_utils as minio_utils
+import time
+from infra.airflow.include import dag_config
+import requests as requests_api
+from utils import common_utils, constant
+
 
 train_model_rnn_router = Blueprint('train_model_rnn_router', __name__, static_folder='static',
                                template_folder='templates')
@@ -37,7 +43,7 @@ def train_model_rnn_page():
 
     model_names = [m.get('name') for m in model_data]
     current_app.logger.info(model_names)
-
+    model_id = common_utils.generate_id(model_name)
     if (model_name):
         model_data_find = model.find_one({'name': model_name})
         data = model_data_find.get('attrs')
@@ -48,7 +54,7 @@ def train_model_rnn_page():
 
         return render_template('admin/train-model-rnn.html',
                                 model_names=model_names, data=data,
-                                model_name=model_name, params_render = params_render)
+                                model_name=model_name, params_render = params_render, model_id=model_id)
 
     return render_template('admin/train-model-rnn.html',
                            model_names=model_names, data=None, model_name="", params_render=None)
@@ -76,6 +82,52 @@ def get_data_train_model_rnn():
 
     return plot_data
 
+
+
+
+def create_dags_flow(dags_id, model_name, user_name, data_name,
+                     argument, agricultural_name, stationary_option=None):
+    print(dags_id)
+    is_created = dag_config.create_dags_file(dags_id, data_name, model_name, argument,
+                                             agricultural_name, user_name, stationary_option)
+    if not is_created:
+        raise Exception("DAG creation failed")
+
+    return start_trigger_airflow(dags_id)
+
+
+def start_trigger_airflow(dag_id, retry=None):
+    while (True):
+        if (dag_config.check_dag_exists(dag_id)):
+            break
+
+    print("Waiting for setup pipeline scheduling airflow")
+    time.sleep(10)
+    print("Start airflow trigger")
+
+    airflow_url = "http://localhost:8080/api/v1/dags/{dag_id}/dagRuns"
+    airflow_url = airflow_url.replace("{dag_id}", dag_id)
+    print("Start trigger " + airflow_url)
+    dags_run_id = dag_id + "_" + common_utils.generate_string()
+    response = requests_api.post(airflow_url,
+                                 auth=HTTPBasicAuth('airflow', 'airflow'),
+                                 headers={'Content-Type': 'application/json'},
+                                 data=json.dumps({
+                                     "dag_run_id": dags_run_id
+                                 }))
+    if (response.status_code >= 404):
+        if retry is None:
+            retry = 0
+        retry = retry + 1
+        if retry >= 3:
+            return
+        print(f"Retry airflow dag run {retry}")
+        return start_trigger_airflow(dag_id, retry)
+    print(response.json())
+    return dags_run_id
+
+
+
 @train_model_rnn_router.route('/train-model-rnn-data', methods=['POST'])
 @cross_origin()
 def train_model_rnn_data():
@@ -83,9 +135,10 @@ def train_model_rnn_data():
     model_name = data.get('model_name')
     model_data = data.get('model_data')
     argument = data.get('argument')
+    model_id = data.get('model_id')
 
     data_model = {"user_id": data.get('username'),
-                  "name": "Dự đoán giá" + " " +  data.get('agricutural_name') + " " + "mô hình" + " " + model_name,
+                  # "name": "Dự đoán giá" + " " + data.get('agricutural_name') + " " + "mô hình" + " " + model_name,
                   "model_name": model_name,
                   "agricutural_name": data.get('agricutural_name'),
                   "data_name": model_data,
@@ -94,49 +147,56 @@ def train_model_rnn_data():
                   "create_time": datetime.now(),
                   "isUsed": False}
 
-    file_name = str(uuid.uuid4()) + '.h5'
-    file_dir = "./temp/" + file_name
-    try:
-        factory_model = FactoryModel(model_name).factory()
-        factory_model.data_uri = model_data
-        forecast_data, accuracy, model = factory_model.train_model(argument)
 
-        model.save(file_dir)
+    dag_run_id = create_dags_flow(model_id, model_name, data_model.get('user_id'),
+                                  model_data, argument, data.get('agricultural_name'),
+                                  argument.get("stationary_type"))
 
-        # file_after_upload = minio_utils.fupload_object(file_name,  file_dir)
-        # data_model["file_name"] = file_after_upload.object_name
-        # data_model["file_etag"] = file_after_upload.etag
-        # data_model['score'] = accuracy
-        # data_model['status'] = 'DONE'
-        data_model["file_name"] = file_name
-        data_model['evaluate'] = accuracy
-        data_model['status'] = 'SUCCESS'
+    # file_name = str(uuid.uuid4()) + '.h5'
+    # file_dir = "./temp/" + file_name
+    # try:
+    #     factory_model = FactoryModel(model_name).factory()
+    #     factory_model.data_uri = model_data
+    #     forecast_data, accuracy, model = factory_model.train_model(argument)
+    #
+    #     model.save(file_dir)
+    #
+    #     # file_after_upload = minio_utils.fupload_object(file_name,  file_dir)
+    #     # data_model["file_name"] = file_after_upload.object_name
+    #     # data_model["file_etag"] = file_after_upload.etag
+    #     # data_model['score'] = accuracy
+    #     # data_model['status'] = 'DONE'
+    #     data_model["file_name"] = file_name
+    #     data_model['evaluate'] = accuracy
+    #     data_model['status'] = 'SUCCESS'
+    #
+    #     trace_predict = dict(
+    #         x=forecast_data.index.tolist(),
+    #         y=forecast_data.price.values.tolist(),
+    #         mode='lines',
+    #         name='Dự đoán'
+    #     )
+    #     trace_actual = dict(
+    #         x=factory_model.actual_data.index.tolist(),
+    #         y=factory_model.actual_data.price.values.tolist(),
+    #         mode='lines',
+    #         name='thực tế'
+    #     )
+    #     plot_data = [trace_predict, trace_actual]
+    #     data_model['plot_data'] = plot_data
+    # except Exception as e:
+    #     print(e)
+    #     data_model['status'] = 'FAIL'
+    #     data_model['error'] = str(e)
+    #
+    # # train_model.insert_one(data_model)
+    # if os.path.exists(file_dir):
+    #     os.remove(file_dir)
+    #     print("Remove temp file " + file_name)
+    # current_app.logger.info(data_model)
 
-        trace_predict = dict(
-            x=forecast_data.index.tolist(),
-            y=forecast_data.price.values.tolist(),
-            mode='lines',
-            name='Dự đoán'
-        )
-        trace_actual = dict(
-            x=factory_model.actual_data.index.tolist(),
-            y=factory_model.actual_data.price.values.tolist(),
-            mode='lines',
-            name='thực tế'
-        )
-        plot_data = [trace_predict, trace_actual]
-        data_model['plot_data'] = plot_data
-    except Exception as e:
-        print(e)
-        data_model['status'] = 'FAIL'
-        data_model['error'] = str(e)
-
-    # train_model.insert_one(data_model)
-    if os.path.exists(file_dir):
-        os.remove(file_dir)
-        print("Remove temp file " + file_name)
     current_app.logger.info(data_model)
-
+    data_model['dag_run_id'] = dag_run_id
     return json_util.dumps(data_model)
 
 

@@ -17,9 +17,14 @@ class TrainStep:
         self.model = model
         self.model.data_uri = data
         self.predict_data, self.metrics, model_res = self.model.train_model(argument)
-        file_name = str(uuid.uuid4()) + '.joblib'
-        file_dir = "./" + file_name
-        joblib.dump(model_res, file_dir)
+        if model_name in ['LSTM', 'GRU', 'BiLSTM']:
+            file_name = str(uuid.uuid4()) + '.h5'
+            file_dir = "./" + file_name
+            model_res.save(file_dir)
+        else:
+            file_name = str(uuid.uuid4()) + '.joblib'
+            file_dir = "./" + file_name
+            joblib.dump(model_res, file_dir)
 
         self.fupload_object(file_name,  file_dir)
         ti.xcom_push(key='file_name', value=file_name)

@@ -55,8 +55,8 @@ with DAG(
         },
     )
 
-    stationary_task = PythonOperator(
-        task_id="stationary_data",
+    processing_data = PythonOperator(
+        task_id="processing_data",
         python_callable=stationary_step,
         op_kwargs={
             "prepare": preprocess_step,
@@ -78,15 +78,16 @@ with DAG(
     )
 
 
-    mlflow_task = PythonOperator(
-        task_id="mlflow",
+    submit_model = PythonOperator(
+        task_id="submit_model",
         python_callable=mlflow_step,
         provide_context=True,
         op_kwargs={
             "agricultural_name": "{{ params.agricultural_name }}",
             "user_name": "{{ params.owner }}",
             "model_id": "{{ params.model_id }}",
+            "argument": "{{ params.argument }}",
         },
     )
 
-    preprocessing_task >> stationary_task >> training_task >> mlflow_task
+    preprocessing_task >> processing_data >> training_task >> submit_model

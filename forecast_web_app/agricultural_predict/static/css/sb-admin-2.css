@@ -10363,7 +10363,7 @@ a:focus {
 
 .bg-gradient-warning {
   background-color: #f6c23e;
-  background-image:  url("../img/bg-image.jpg");;
+  background-image:  url("../img/bg-img.jpg");
   background-size: cover;
 }
 
@@ -10981,7 +10981,7 @@ a:focus {
     margin-right: 0.25rem;
   }
   .sidebar .nav-item .nav-link span {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     display: inline;
   }
   .sidebar .nav-item .nav-link[data-toggle="collapse"]::after {

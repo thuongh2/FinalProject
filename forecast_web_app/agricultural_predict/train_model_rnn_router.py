@@ -139,62 +139,18 @@ def train_model_rnn_data():
     model_id = data.get('model_id')
 
     data_model = {"user_id": data.get('username'),
-                  # "name": "Dự đoán giá" + " " + data.get('agricutural_name') + " " + "mô hình" + " " + model_name,
                   "model_name": model_name,
-                  "agricutural_name": data.get('agricutural_name'),
+                  "agricultural_name": data.get('agricultural_name'),
                   "data_name": model_data,
                   "argument": argument,
                   "type": "TRAIN_MODEL",
                   "create_time": datetime.now(),
-                  "isUsed": False}
+                  "is_used": False}
 
 
     dag_run_id = create_dags_flow(model_id, model_name, data_model.get('user_id'),
                                   model_data, argument, data.get('agricultural_name'),
                                   argument.get("stationary_type"))
-
-    # file_name = str(uuid.uuid4()) + '.h5'
-    # file_dir = "./temp/" + file_name
-    # try:
-    #     factory_model = FactoryModel(model_name).factory()
-    #     factory_model.data_uri = model_data
-    #     forecast_data, accuracy, model = factory_model.train_model(argument)
-    #
-    #     model.save(file_dir)
-    #
-    #     # file_after_upload = minio_utils.fupload_object(file_name,  file_dir)
-    #     # data_model["file_name"] = file_after_upload.object_name
-    #     # data_model["file_etag"] = file_after_upload.etag
-    #     # data_model['score'] = accuracy
-    #     # data_model['status'] = 'DONE'
-    #     data_model["file_name"] = file_name
-    #     data_model['evaluate'] = accuracy
-    #     data_model['status'] = 'SUCCESS'
-    #
-    #     trace_predict = dict(
-    #         x=forecast_data.index.tolist(),
-    #         y=forecast_data.price.values.tolist(),
-    #         mode='lines',
-    #         name='Dự đoán'
-    #     )
-    #     trace_actual = dict(
-    #         x=factory_model.actual_data.index.tolist(),
-    #         y=factory_model.actual_data.price.values.tolist(),
-    #         mode='lines',
-    #         name='thực tế'
-    #     )
-    #     plot_data = [trace_predict, trace_actual]
-    #     data_model['plot_data'] = plot_data
-    # except Exception as e:
-    #     print(e)
-    #     data_model['status'] = 'FAIL'
-    #     data_model['error'] = str(e)
-    #
-    # # train_model.insert_one(data_model)
-    # if os.path.exists(file_dir):
-    #     os.remove(file_dir)
-    #     print("Remove temp file " + file_name)
-    # current_app.logger.info(data_model)
 
     current_app.logger.info(data_model)
     data_model['dag_run_id'] = dag_run_id
@@ -205,10 +161,16 @@ def train_model_rnn_data():
 @cross_origin()
 def submit_train_model_rnn_data():
     data = request.get_json()
-    data = eval(data.replace("'", "\"").replace('false', 'False'))
+    if 'false' in data:
+        data = (eval(data.replace("'", "\"")
+                     .replace('false', 'False')
+                     .replace('true', 'True')))
+    else:
+        data = eval(data.replace("'", "\""))
+    model_traning = train_model.find_one({'_id': data.get('_id')})
+    if not model_traning:
+        return jsonify({'message': 'No train model found'}), 404
 
-    try:
-        train_model.insert_one(data)
-        return json_util.dumps(data.get('_id'))
-    except Exception as e:
-        return jsonify({'error': str(e)})
+
+    model_traning.update({'_id':  data.get('_id')}, {'is_tranning': False})
+    return json_util.dumps(data.get('_id'))

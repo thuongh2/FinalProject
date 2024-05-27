@@ -352,7 +352,7 @@ async function submitModel() {
                 window.location.href = "/detail-model?model_id=" + data;
                 return;
             }
-            alertify.error("Submit model không thành công");
+            alertify.success("Submit model không thành công");
         },
         error: function (error) {
             alertify.error("Submit model không thành công");

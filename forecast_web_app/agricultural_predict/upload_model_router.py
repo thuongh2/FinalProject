@@ -200,10 +200,10 @@ def admin_detail_model():
 
 @upload_model_router.route('/admin')
 def admin():
-    user_name = session['username']
-    if user_name is None:
+    if session.get('username') is None:
         return redirect('/')
-    filter = {"$and": [{'user_id': user_name, 'is_training': False}]}
+    user_name = session['username']
+    filter = {"$and": [{'user_id': user_name}]}
     records = list(train_model.find(filter))
     for record in records:
         data_url = record.get('data_name')

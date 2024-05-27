@@ -215,7 +215,7 @@ def train_model_data():
         "data_name": model_data,
         "type": "TRAIN_MODEL",
         "create_time": datetime.now(),
-        "isUsed": False
+        "is_used": False
     }
 
     dag_run_id = create_dags_flow(model_id, model_name, data_model.get('user_id'),
@@ -243,7 +243,7 @@ def submit_train_model_data():
         return jsonify({'message': 'No train model found'}), 404
 
 
-    model_tranning.update({'isTranning': False})
+    model_tranning.update({'_id':  data.get('_id')}, {'is_traning': False})
     return json_util.dumps(data.get('_id'))
 
 

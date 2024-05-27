@@ -1,5 +1,49 @@
 const URL_SERVER = "http://localhost:5000";
 
+var interval = null;
+const pipelineTemplate = `
+                                      <div class="card">
+                                            <div class="card-body">
+                                                <h6 class="card-title text-primary font-bold font-weight-normal">
+                                                    <div class='{{status-display}} spinner-border text-secondary'
+                                                        style="width: 15px; height: 15px;" role="status">
+                                                        <span class="sr-only">Loading...</span>
+                                                    </div>
+                                                    {{value}}
+                                                </h6>
+                                                <div class="d-flex justify-content-between">
+                                                    <span class="badge badge-{{status-class}} align-middle">{{status}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+`;
+
+const arrowTemplate = `
+<div class="text-center">
+<i class="bi bi-arrow-down text-center text-primary "
+    style="font-weight: 600!important;"></i>
+</div>
+`;
+
+const statusClass = new Map([
+    ["success", "success"],
+    ["failed", "danger"],
+    ["running", "info"],
+    ["queued", "warning"],
+    ["undefined", "muted"],
+]);
+
+const statusMapping = new Map([
+    ["success", "Thành công"],
+    ["failed", "Thất bại"],
+    ["running", "Đang xử lí"],
+    ["queued", "Đang xử lí"],
+    ["waiting", "Chờ xử lí"],
+    ["undefined", "Chờ xử lí"],
+]);
+
+
 $("#model_name").change(function () {
     sessionStorage.clear();
 });
@@ -10,7 +54,7 @@ $("#data_name").change(function () {
     console.log(selectedValue);
     callDrawPlot(selectedValue.data);
     handelStoreSession("data_url", selectedValue.data);
-    handelStoreSession("agricutural_name", selectedValue.type);
+    handelStoreSession("agricultural_name", selectedValue.type);
     handelStoreSession("model_name", $("#model_name").find(":selected").text());
     return;
 });
@@ -97,7 +141,7 @@ async function trainModel() {
         alertify.error("Vui lòng chọn dữ liệu");
     }
     const username = $("#username").text();
-    const agricutural_name = sessionStorage.getItem("agricutural_name");
+    const agricultural_name = sessionStorage.getItem("agricultural_name");
 
     const layers_data = sessionStorage.getItem("layers_data");
     if (!layers_data) {
@@ -130,7 +174,7 @@ async function trainModel() {
         model_name: model_name,
         model_data: model_data,
         username: username,
-        agricultural_name: agricutural_name,
+        agricultural_name: agricultural_name,
         argument: argument,
         model_id: model_id,
     };
@@ -148,26 +192,15 @@ async function trainModel() {
             handelStoreSession("model_submit_detail", JSON.stringify(data));
             handelStoreSession("dags_run_id", data.dag_run_id);
 
-            if (data.status === "SUCCESS") {
-                $("#model_detail_name").text(data.model_name);
-                $("#model_detail_mape").text(data.evaluate["mape"].toFixed(2) || 0);
-                $("#model_detail_rmse").text(data.evaluate["rmse"].toFixed(2) || 0);
-                // alertify.success("Train model thành công!");
-                // plotChartData(data.plot_data);
-                // $("#detail-tab").tab("show");
-
-            } else {
-                alertify.error(data.error);
-                alertify.error("Train model thất bại!");
-            }
+            const container = $("#pipeline-step");
+            container.empty();
+            container.append(createPipelineSetupStep("running"))
+          
         },
         error: function (error) {
-            alert("error" + error);
-
-            alertify.error(error);
+            alertify.error("Thất bại" + error);
         },
     });
-    // await $("#modelTrainingInProcess").modal("hide");
 }
 
 async function submitModel() {
@@ -187,6 +220,7 @@ async function submitModel() {
             console.log(data);
 
             if (data) {
+                sessionStorage.clear()
                 window.location.href = "/detail-model?model_id=" + data;
                 return;
             }
@@ -200,50 +234,6 @@ async function submitModel() {
     });
     $("#modelTrainingInProcess").modal("hide");
 }
-
-const pipelineTemplate = `
-                                      <div class="card">
-                                            <div class="card-body">
-                                                <h6 class="card-title text-primary font-bold font-weight-normal">
-                                                    <div class='{{status-display}} spinner-border text-secondary'
-                                                        style="width: 15px; height: 15px;" role="status">
-                                                        <span class="sr-only">Loading...</span>
-                                                    </div>
-                                                    {{value}}
-                                                </h6>
-                                                <div class="d-flex justify-content-between">
-                                                    <span class="badge badge-{{status-class}} align-middle">{{status}}</span>
-                                                    // <span class="badge badge-secondary align-middle">Logs</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-`;
-
-const arrowTemplate = `
-<div class="text-center">
-<i class="bi bi-arrow-down text-center text-primary "
-    style="font-weight: 600!important;"></i>
-</div>
-`;
-
-const statusClass = new Map([
-    ["success", "success"],
-    ["failed", "danger"],
-    ["running", "info"],
-    ["queued", "warning"],
-    ["undefined", "muted"],
-]);
-
-const statusMapping = new Map([
-    ["success", "Thành công"],
-    ["failed", "Thất bại"],
-    ["running", "Đang xử lí"],
-    ["queued", "Đang xử lí"],
-    ["waiting", "Chờ xử lí"],
-    ["undefined", "Chờ xử lí"],
-]);
-
 
 function compare(a, b) {
     if (a.priority_weight < b.priority_weight) {
@@ -267,7 +257,7 @@ async function loadLogTrainModel() {
     let auth = btoa(`${username}:${password}`);
     let model_id = $("#modelId").text().trim();
 
-    var url = "http://localhost:5000/pipeline/{dag_run_id}" + "/" + dag_run_id;
+    var url = URL_SERVER + "/pipeline/{dag_run_id}" + "/" + dag_run_id;
     url = url.replaceAll("{dag_run_id}", model_id);
     var settings = {
         url: url,
@@ -292,12 +282,17 @@ async function loadLogTrainModel() {
 
         const container = $("#pipeline-step");
         container.empty();
+        container.append(createPipelineSetupStep("success"))
+        container.append(arrowTemplate);
         var count_waiting_task = 0;
 
         response.task_instances.sort(compare);
         console.log(response.task_instances);
 
         response.task_instances.forEach((value, index) => {
+            const html = createPipelineStep(value)
+
+            container.append(html);
             if (value.state === "success") {
                 count_waiting_task++;
             }
@@ -306,18 +301,6 @@ async function loadLogTrainModel() {
                 alertify.error("Model training thất bại");
                 return;
             }
-            const html = pipelineTemplate
-                .replace("{{value}}", value.task_id)
-                .replace("{{status}}", statusMapping.get(value.state || "waiting"))
-                .replace(
-                    "{{status-class}}",
-                    statusClass.get(value.state) || "secondary"
-                )
-                .replace(
-                    "{{status-display}}",
-                    value.state === "running" || value.state === "queued" ? "" : "d-none"
-                );
-            container.append(html);
             if (index !== response.task_instances.length - 1) {
                 container.append(arrowTemplate);
             }
@@ -332,6 +315,37 @@ async function loadLogTrainModel() {
 
         }
     });
+}
+
+
+function createPipelineStep(value) {
+    return pipelineTemplate
+        .replace("{{value}}", value.task_id)
+        .replace("{{status}}", statusMapping.get(value.state || "waiting"))
+        .replace(
+            "{{status-class}}",
+            statusClass.get(value.state) || "secondary"
+        )
+        .replace(
+            "{{status-display}}",
+            value.state === "running" ||
+            value.state === "queued" ? "" : "d-none"
+        );
+}
+
+function createPipelineSetupStep(state) {
+    return pipelineTemplate
+        .replace("{{value}}", "Setup Pipeline")
+        .replace("{{status}}", state)
+        .replace(
+            "{{status-class}}",
+            statusClass.get(state) || "secondary"
+        )
+        .replace(
+            "{{status-display}}",
+            state === "running" ||
+            state === "queued" ? "" : "d-none"
+        );
 }
 
 async function getTranningModelDetail(modelId) {
@@ -365,6 +379,8 @@ async function getTranningModelDetail(modelId) {
 }
 
 $(document).ready(function () {
+    // config for alertify notify
+    alertify.set("notifier", "position", "top-right");
     $("#trainModelForm").submit(function (event) {
         event.preventDefault();
         alertify.set("notifier", "position", "top-right");

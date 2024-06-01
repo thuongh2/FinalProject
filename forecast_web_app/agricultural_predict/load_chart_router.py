@@ -40,7 +40,7 @@ def load_chart():
     model_data = request.args.get('model_data')
     model_time = request.args.get('model_time')
     model_time = int(model_time)
-    n_steps = 10
+    n_steps = ata
 
     file_name, _ = os.path.splitext(os.path.basename(model_data))
     #TODO: refactor this
@@ -97,8 +97,6 @@ def load_chart():
     if price_forecast.empty:
         # nếu ko có giá hôm này lấy giá đầu của dữ liệu (giá dự đoán cho ngày hôm sau)
         price_forecast = predict_data.iloc[1]
-    price_actual['date'] = price_actual['date'].strftime('%d-%m-%Y')
-    price_forecast['date'] = price_forecast['date'].strftime('%d-%m-%Y')
 
     response_data = {'plot_data': plot_data}
     response_data['price_actual'] = price_actual.to_json()

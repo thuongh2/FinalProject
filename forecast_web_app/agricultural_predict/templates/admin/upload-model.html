@@ -2,101 +2,119 @@
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 
-<div class="container-fluid">
+    <div class="container-fluid">
 
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb pl-1">
-            <li class="breadcrumb-item">
-                <a href="/admin"><i class="fa fa-home pb-1" style="font-size: 14px;" aria-hidden="true">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb pl-1">
+                <li class="breadcrumb-item">
+                    <a href="/admin"><i class="fa fa-home pb-1" style="font-size: 14px;" aria-hidden="true">
                     </i> Home
-                </a>
-            </li>
-            <li class="breadcrumb-item active"><a>Upload Model</a></li>
-        </ol>
-    </nav>
+                    </a>
+                </li>
+                <li class="breadcrumb-item active"><a>Upload Model</a></li>
+            </ol>
+        </nav>
 
-    <div class="d-sm-flex align-items-center justify-content-between mb-4 mt-2 ml-2">
-        <h1 class="h3 mb-0 text-gray-800 font-weight-bold">UPLOAD MÔ HÌNH {{ model_name }}</h1>
-    </div>
-
-    <div class="container-fluid  p-0 mb-3">
-        <div class="col-12 d-flex p-x-2 mb-3">
-            {% with messages = get_flashed_messages() %}
-            {% if messages %}
-            {% for message in messages %}
-            <div class="alert col-12 alert-danger" role="alert">
-                {{ message }}
-            </div>
-            {% endfor %}
-
-            {% endif %}
-            {% endwith %}
+        <div class="d-sm-flex align-items-center justify-content-between mb-4 mt-2 ml-2">
+            <h1 class="h3 mb-0 text-gray-800 font-weight-bold">UPLOAD MÔ HÌNH {{ model_name }}</h1>
         </div>
 
-        <div class="">
-            <form action="{{ 'upload-model?model_name=' ~ model_name }}" enctype='multipart/form-data' method="POST">
-                <div class="col-12 d-flex p-0 mb-3">
-                    <div class=" mt-2 col-4">
-                        <select name="model_name" onchange="this.options[this.selectedIndex].value
-                    && (window.location = this.options[this.selectedIndex].value);" id="select"
-                            class="form-control form-select">
-                            <option value="upload-model" selected>Mô hình</option>
-                            {% for item in model_names %}
-                            <option value="{{ 'upload-model?model_name=' ~ item }}" {% if item==model_name %} selected
-                                {% endif %}>{{ item }}</option>
+        <div class="container-fluid  p-0 mb-3">
+            <div class="col-12 d-flex p-x-2 mb-3">
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert col-12 alert-danger" role="alert">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
 
-                            {% endfor %}
-                        </select>
-                    </div>
-
-
-                    {% if data %}
-                    <div class=" mt-2 col-4 mb-3">
-                        <input name="name_train" type="text" class="form-control" placeholder="Tên"
-                            aria-describedby="basic-addon1">
-                    </div>
-
-                    <div class=" mt-2  col-4">
-                        <select name="data_name" class="form-control form-select">
-                            <option>Tập dữ liệu</option>
-                            {% for item in data.data %}
-                            <option value="{{ item }}">{{ item['name'] }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
                     {% endif %}
+                {% endwith %}
+            </div>
 
-                </div>
+            <div class="">
+                <form action="{{ 'upload-model?model_name=' ~ model_name }}" enctype='multipart/form-data'
+                      method="POST">
+                    <div class="col-12 d-flex p-0 mb-3">
+                        <div class=" mt-2 col-4">
+                            <select id="select"
+                                    name="model_name"
+                                    onchange="this.options[this.selectedIndex].value
+                                && (window.location = this.options[this.selectedIndex].value);"
+                                    class="form-control form-select">
+                                <option value="upload-model" selected>Mô hình</option>
+                                {% for item in model_names %}
+                                    <option value="{{ 'upload-model?model_name=' ~ item }}" {% if item==model_name %}
+                                            selected
+                                    {% endif %}>{{ item }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
 
-                <div class="col-12">
 
-                    <div class="card">
-                        <div class="card-body">
-
-
-                            <div id="drop-area" class="border rounded d-flex justify-content-center align-items-center"
-                                style="height: 200px; cursor: pointer;">
-
-                                <input type=file name=file>
+                        {% if data %}
+                            <div class=" mt-2 col-4 mb-3">
+                                <input name="name_train" type="text" class="form-control" placeholder="Tên"
+                                       aria-describedby="basic-addon1">
                             </div>
 
-                            <input class="btn btn-facebook btn-block mt-4" class="mt-3" type=submit value='Cập nhật'>
+                            <div class=" mt-2  col-4">
+                                <select id="selectData" name="data_name" class="form-control form-select">
+                                    <option>Tập dữ liệu</option>
+                                    {% for item in data.data %}
+                                        <option value="{{ item }}">{{ item['name'] }}</option>
+                                    {% endfor %}
+                                </select>
 
-                        </div>
+                                <a id="selectDataInfo" href="" target="_blank">
+                                    <span class="badge badge-info"> <i style="color: azure" class="bi bi-info-circle"></i> Xem dữ liệu</span>
+                                </a>
+
+                            </div>
+                        {% endif %}
+
                     </div>
 
-                </div>
-            </form>
+                    <div class="col-12">
+
+                        <div class="card">
+                            <div class="card-body">
+
+
+                                <div id="drop-area"
+                                     class="border rounded d-flex justify-content-center align-items-center"
+                                     style="height: 200px; cursor: pointer;">
+
+                                    <input type=file name=file>
+                                </div>
+
+                                <input class="btn btn-facebook btn-block mt-4" class="mt-3" type=submit
+                                       value='Cập nhật'>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
 
         </div>
 
     </div>
+    </div>
+    </div>
 
-</div>
-</div>
-</div>
+    <script>
+        $('#selectData').on('change', function () {
+            console.log($(this).find(":selected").val())
+            dataValue = JSON.parse($(this).find(":selected").val().replaceAll("'", '"'))
 
+            $("#selectDataInfo").attr("href", dataValue.data)
+        });
+    </script>
 
 {% endblock %}

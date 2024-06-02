@@ -18,7 +18,7 @@ class GRUModel(BaseModel):
         super().__init__()
     
     def predict(self, data, n_steps):
-        model = load_model(self.model_url)
+        self.model = load_model(self.model_url)
         
         prices = data['price'].values
         
@@ -30,7 +30,7 @@ class GRUModel(BaseModel):
         X = np.array(X)
         X = np.reshape(X, (X.shape[0], X.shape[1], 1))
         
-        predicted_values = model.predict(X)
+        predicted_values = self.model.predict(X)
         predicted_values = scaler.inverse_transform(predicted_values)
         
         return predicted_values
@@ -48,9 +48,10 @@ class GRUModel(BaseModel):
 
 
     def train_for_upload_mode(self, n_periods, test_data):
-        n_steps = 10
-        forecast = self.predict(test_data, n_steps)
-        forecast = np.concatenate([test_data.iloc[:n_steps]['price'].values, forecast.flatten()])
+        input_shape = self.model.layers[0].input_shape
+        self.time_steps = input_shape[1]
+        forecast = self.predict(test_data, self.time_steps)
+        forecast = np.concatenate([test_data.iloc[:self.time_steps]['price'].values, forecast.flatten()])
         self.forecast_data = pd.DataFrame(forecast, columns=['price'])
         self.forecast_data.set_index(test_data.index, inplace=True)
 

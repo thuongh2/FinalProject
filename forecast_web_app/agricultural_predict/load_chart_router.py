@@ -40,7 +40,7 @@ def load_chart():
     model_data = request.args.get('model_data')
     model_time = request.args.get('model_time')
     model_time = int(model_time)
-    n_steps = 30
+    n_steps = 15
 
     file_name, _ = os.path.splitext(os.path.basename(model_data))
     #TODO: refactor this

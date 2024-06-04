@@ -97,6 +97,9 @@ def load_chart():
     if price_forecast.empty:
         # nếu ko có giá hôm này lấy giá đầu của dữ liệu (giá dự đoán cho ngày hôm sau)
         price_forecast = predict_data.iloc[1]
+        
+    price_actual['date'] = price_actual['date'].strftime('%d-%m-%Y')
+    price_forecast['date'] = price_forecast['date'].strftime('%d-%m-%Y')
 
     response_data = {'plot_data': plot_data}
     response_data['price_actual'] = price_actual.to_json()

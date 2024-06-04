@@ -10,6 +10,8 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import GRU, Dense, Dropout
 from tensorflow.keras.optimizers import Adam
 import logging
+import mlflow
+from mlflow.models import infer_signature
 
 class GRUModel(BaseModel):
     def __init__(self):
@@ -214,6 +216,35 @@ class GRUModel(BaseModel):
         self.accuracy = self.forecast_accuracy(self.y_test_actual, self.X_test_predict)
 
         return self.forecast_data, self.accuracy, self.model
+    
+    def ml_flow_register(self, experient_name="DEFAUT_MODEL", argument=None):
+        ARTIFACT_PATH = "model"
+
+        mlflow.set_tracking_uri(uri="http://20.2.210.176:5000/")
+        mlflow.set_experiment(experient_name)
+
+        # Create an instance of a PandasDataset
+        dataset = mlflow.data.from_pandas(
+            self.data, source=self.data_uri, name="rice data", targets="price"
+        )
+
+        with mlflow.start_run() as run:
+            input_sample = pd.DataFrame(self.train_data)
+            output_sample = pd.DataFrame(self.forecast_data)
+
+            mlflow.log_input(dataset, context="training")
+
+            mlflow.log_params({"argument": argument})
+
+            for k, v in self.accuracy.items():
+                mlflow.log_metric(k, round(v, 4))
+
+            signature = infer_signature(input_sample, output_sample)
+
+            model_mflow = mlflow.sklearn.log_model(
+                self.model, ARTIFACT_PATH, signature=signature
+            )
+            return model_mflow 
     
 if __name__ == '__main__':
     model_url = "../test_data/GRU_univariate_coffee.h5"

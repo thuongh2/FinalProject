@@ -1,7 +1,7 @@
 from minio import Minio
 
 BUCKET_NAME = 'test'
-MINIO_URL = '20.2.210.176:9000'
+MINIO_URL = 'v270vdxl-9000.asse.devtunnels.ms'
 MINIO_ACCESS_KEY = 'minio'
 MINIO_SECRET = 'minio123'
 PATH = "./file/"

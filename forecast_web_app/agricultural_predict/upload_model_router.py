@@ -22,7 +22,7 @@ upload_model_router = Blueprint('upload_model_router', __name__, static_folder='
                                 template_folder='templates')
 
 BUCKET_NAME = 'test'
-MINIO_URL = '20.2.210.176:9000'
+MINIO_URL = 'v270vdxl-9000.asse.devtunnels.ms'
 MINIO_ACCESS_KEY = 'minio'
 MINIO_SECRET = 'minio123'
 

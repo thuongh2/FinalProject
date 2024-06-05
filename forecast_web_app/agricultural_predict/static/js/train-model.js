@@ -1,4 +1,4 @@
-import { URL_SERVER } from "./config"; 
+URL_SERVER = "http://20.2.210.176:5001"
 var interval = null;
 
 const pipelineTemplate = `

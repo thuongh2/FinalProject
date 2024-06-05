@@ -1,4 +1,4 @@
-URL_SERVER = require("./config"); 
+URL_SERVER = "http://20.2.210.176:5001"
 
 
 // Roll price list

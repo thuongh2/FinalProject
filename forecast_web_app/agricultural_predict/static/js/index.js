@@ -59,7 +59,7 @@ function plotChart(data) {
 
   data.forEach((value, index) => {
     var xDim = new Array();
-    for (i in value.x) xDim.push(new Date(value.x[i]));
+    for (var i in value.x) xDim.push(new Date(value.x[i]));
     var yDim = value.y;
     var mode = value.mode;
     var name = value.name;

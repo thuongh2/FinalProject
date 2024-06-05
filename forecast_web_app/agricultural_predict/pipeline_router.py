@@ -33,6 +33,7 @@ import requests as requests_api
 import time
 from utils import constant
 from time import sleep
+from config import host_config
 
 pipeline_router = Blueprint('pipeline_router',
                             __name__,
@@ -44,7 +45,7 @@ pipeline_router = Blueprint('pipeline_router',
 @cross_origin()
 def pipeline_airflow(dags_id, task_id):
     try:
-        airflow_url = f"http://localhost:8080/api/v1/dags/{dags_id}/dagRuns/{task_id}/taskInstances"
+        airflow_url = f"{host_config.SERVER_URL}/api/v1/dags/{dags_id}/dagRuns/{task_id}/taskInstances"
         print("Get data from " + airflow_url)
         response = requests_api.get(airflow_url, 
                                     auth=HTTPBasicAuth('airflow', 'airflow'),

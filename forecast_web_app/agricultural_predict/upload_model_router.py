@@ -17,12 +17,13 @@ import ast
 import utils.constant as constant
 import utils.minio_utils as minio_utils
 import utils.common_utils as common_utils
+from config import host_config
 
 upload_model_router = Blueprint('upload_model_router', __name__, static_folder='static',
                                 template_folder='templates')
 
 BUCKET_NAME = 'test'
-MINIO_URL = 'v270vdxl-9000.asse.devtunnels.ms'
+MINIO_URL = f'{host_config.HOST}:9000'
 MINIO_ACCESS_KEY = 'minio'
 MINIO_SECRET = 'minio123'
 

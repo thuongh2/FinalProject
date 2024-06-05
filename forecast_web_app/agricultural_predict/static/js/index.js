@@ -1,4 +1,4 @@
-const URL_SERVER = "http://localhost:5001";
+import { URL_SERVER } from "./config"; 
 
 // Roll price list
 document.addEventListener("DOMContentLoaded", function () {

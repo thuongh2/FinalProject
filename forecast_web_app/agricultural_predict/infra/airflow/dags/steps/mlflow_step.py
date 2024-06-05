@@ -24,7 +24,7 @@ class MLFlowStep:
             "argument": json.dumps(eval(argument))
         }
         print(params)
-        url = f"https://v270vdxl-5001.asse.devtunnels.ms/submit_train_model"
+        url = f"http://20.2.210.176:5001/submit_train_model"
         for retry in range(3):
             response = requests.get(
                 url=url,

@@ -30,6 +30,7 @@ import time
 from infra.airflow.include import dag_config
 import requests as requests_api
 from utils import common_utils, constant
+from config import host_config
 
 
 train_model_rnn_router = Blueprint('train_model_rnn_router', __name__, static_folder='static',
@@ -106,7 +107,7 @@ def start_trigger_airflow(dag_id, retry=None):
     print("Start airflow trigger")
 
     # TODO set this in os
-    airflow_url = "http://localhost:8080/api/v1/dags/{dag_id}/dagRuns"
+    airflow_url = f"{host_config.HOST}:8080/api/v1/dags/{dag_id}/dagRuns"
     airflow_url = airflow_url.replace("{dag_id}", dag_id)
     print("Start trigger " + airflow_url)
     dags_run_id = dag_id + "_" + common_utils.generate_string()

@@ -32,6 +32,7 @@ import time
 from utils import constant
 from utils import common_utils
 from config.db import model, train_model
+from config import host_config
 
 train_model_router = Blueprint('train_model_router',
                                __name__,
@@ -175,7 +176,7 @@ def start_trigger_airflow(dag_id, retry=None):
     time.sleep(10)
     print("Start airflow trigger")
 
-    airflow_url = "http://localhost:8080/api/v1/dags/{dag_id}/dagRuns"
+    airflow_url = f"{host_config.HOST}:8080/api/v1/dags/{dag_id}/dagRuns"
     airflow_url = airflow_url.replace("{dag_id}", dag_id)
     print("Start trigger " + airflow_url)
     dags_run_id = dag_id + "_" + common_utils.generate_string()

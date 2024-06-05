@@ -58,11 +58,11 @@ function plotChart(data) {
   var maxY = -Infinity;
 
   data.forEach((value, index) => {
-    xDim = new Array();
+    var xDim = new Array();
     for (i in value.x) xDim.push(new Date(value.x[i]));
-    yDim = value.y;
-    mode = value.mode;
-    name = value.name;
+    var yDim = value.y;
+    var mode = value.mode;
+    var name = value.name;
     var lineColor, fillColor, fillOpacity;
 
     if (index === 0) {

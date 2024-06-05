@@ -1,4 +1,5 @@
-import { URL_SERVER } from "./config"; 
+URL_SERVER = require("./config"); 
+
 
 // Roll price list
 document.addEventListener("DOMContentLoaded", function () {

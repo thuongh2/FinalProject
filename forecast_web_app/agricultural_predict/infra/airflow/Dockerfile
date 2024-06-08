@@ -1,5 +1,4 @@
-FROM apache/airflow:latest-python3.11
+FROM hoaithuongdata/airflow-final-project
 
-ADD requirements.txt .
-    
-RUN pip install apache-airflow==${AIRFLOW_VERSION} -r requirements.txt
+RUN pip install selenium
+RUN pip install apache-airflow==${AIRFLOW_VERSION} 

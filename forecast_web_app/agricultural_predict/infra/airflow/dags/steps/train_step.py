@@ -14,6 +14,7 @@ class TrainStep:
         print(model.__dict__)
         if type(argument) == str:
             argument = eval(argument)
+        data = ti.xcom_pull(task_ids='prepare_data', key="data_path")
         self.model = model
         self.model.data_uri = data
         self.predict_data, self.metrics, model_res = self.model.train_model(argument)
@@ -38,7 +39,7 @@ class TrainStep:
 
     def fupload_object(self, filename, data, length= None):
         BUCKET_NAME = 'test'
-        MINIO_URL = 'v270vdxl-9000.asse.devtunnels.ms'
+        MINIO_URL = '20.2.210.176:9000'
         MINIO_ACCESS_KEY = 'minio'
         MINIO_SECRET = 'minio123'
         PATH = "./file/"

@@ -37,7 +37,7 @@ def fupload_object(filename, data, length= None):
     print(f"{filename} is successfully uploaded to bucket {BUCKET_NAME}.")
     return file
 
-def get_minio_object(filename):
+def get_minio_object(filename, bucket= BUCKET_NAME):
     client = Minio(MINIO_URL, MINIO_ACCESS_KEY, MINIO_SECRET, secure=False)
-    client.fget_object(BUCKET_NAME, filename, PATH + filename)
+    client.fget_object(bucket, filename, PATH + filename)
     return PATH + filename

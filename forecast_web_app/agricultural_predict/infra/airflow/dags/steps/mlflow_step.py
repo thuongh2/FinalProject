@@ -7,7 +7,7 @@ class MLFlowStep:
     def __init__(self) -> None:
         self.model = None
 
-    def __call__(self, ti, agricultural_name, user_name, model_id, argument) -> None:
+    def __call__(self, ti, agricultural_name, user_name, model_id, argument, is_auto = False) -> None:
         file_name = ti.xcom_pull(task_ids='training', key="file_name")
         data_url = ti.xcom_pull(task_ids='training', key="data")
         accuracy = ti.xcom_pull(task_ids='training', key="accuracy")
@@ -24,7 +24,10 @@ class MLFlowStep:
             "argument": json.dumps(eval(argument))
         }
         print(params)
-        url = f"http://20.2.210.176:5001/submit_train_model"
+        enpoint = 'submit_train_model'
+        if is_auto:
+            enpoint = 'submit_auto_train_model'
+        url = f"https://6k46lxs5-5001.asse.devtunnels.ms/{enpoint}"
         for retry in range(3):
             response = requests.get(
                 url=url,

@@ -262,11 +262,9 @@ def submit_train_model_airflow():
         argument = eval(request.args.get('argument'))
 
         model_url = minio_utils.get_minio_object(file_name)
-        data = pd.read_csv(data_url)
         model_factory = FactoryModel(model_name).factory()
         model_factory.model_url = model_url
         model_factory.data_uri = data_url
-        model_factory.data = data
         model_factory.accuracy = accuracy
 
         model_factory.load_model()

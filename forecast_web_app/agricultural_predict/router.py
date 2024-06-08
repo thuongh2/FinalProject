@@ -22,25 +22,25 @@ AGRICULTURAL_TYPES_MAPPING = {'LUA': 'Lúa', 'CAFE': 'Cà phê'}
 @main_router.route('/')
 def index():
     records = list(model.find())
-    records_data = list(train_model.find())
+    # records_data = list(train_model.find())
     price_data = []
-    seen_agricultural_names = set()
+    # seen_agricultural_names = set()
     price_agricultural = get_price_with_date()
-    for record_data in records_data:
-        data_url = record_data.get('data_name')
-        if record_data.get('algricutural_name') not in seen_agricultural_names:
-            response = requests.get(data_url)
-
-            if response.status_code == 200:
-                df = pd.read_csv(data_url)
-                last_rows = df.tail(20)
-                for index, row in last_rows.iterrows():
-                    price_data.insert(0, {
-                        'date': row['date'],
-                        'price': row['price'],
-                        'algricutural_name': record_data.get('algricutural_name')
-                    })
-                seen_agricultural_names.add(record_data.get('algricutural_name'))
+    # for record_data in records:
+    #     data_url = record_data.get('data_name')
+    #     if record_data.get('algricutural_name') not in seen_agricultural_names:
+    #         response = requests.get(data_url)
+    #
+    #         if response.status_code == 200:
+    #             df = pd.read_csv(data_url)
+    #             last_rows = df.tail(20)
+    #             for index, row in last_rows.iterrows():
+    #                 price_data.insert(0, {
+    #                     'date': row['date'],
+    #                     'price': row['price'],
+    #                     'algricutural_name': record_data.get('algricutural_name')
+    #                 })
+    #             seen_agricultural_names.add(record_data.get('algricutural_name'))
 
     model_name = request.args.get('model_name', 'LSTM')
     agricultural_type = request.args.get('agricultural_type', 'CAFE')
@@ -56,14 +56,14 @@ def index():
         filtered_data = [d for d in data if d.get('type') == agricultural_type]
         # TODO: refactor this
         return render_template('index.html', data=filtered_data,
-                               models=records, records_data=records_data,
+                               models=records, records_data=None,
                                price_data=price_data, agricultural=agricultural_type,
                                price_agricultural=price_agricultural,
                                agricultural_type=AGRICULTURAL_TYPES,
                                agricultural_mapping=AGRICULTURAL_TYPES_MAPPING)
 
     return render_template('index.html', models=records,
-                           records_data=records_data, price_data=price_data,
+                           records_data=None, price_data=price_data,
                            data=None, model_name="", price_agricultural=price_agricultural,
                            agricultural_type=AGRICULTURAL_TYPES,
                            agricultural_mapping=AGRICULTURAL_TYPES_MAPPING)
@@ -81,6 +81,7 @@ def get_price_with_date():
         for d in data:
             if d.get('type') == type:
                 data_csv = d.get('data')
+                current_app.logger.info(data_csv)
                 df = pd.read_csv(data_csv)
                 if 'date' in df.columns:
                     df['date'] = pd.to_datetime(df['date'])

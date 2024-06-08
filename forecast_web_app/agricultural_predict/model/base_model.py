@@ -7,7 +7,7 @@ from pyparsing import Optional
 from sklearn.metrics import mean_squared_error
 from typing import Optional
 
-
+from utils.minio_utils import get_minio_object
 
 class BaseModel:
 
@@ -51,7 +51,6 @@ class BaseModel:
         pass
     
     def prepare_data_for_self_train(self, split_size=0.8):
-        print('Start prepare data ' + self.data_uri)
         return self.prepare_data(self.data_uri, split_size)
 
     def forecast_accuracy(self, actual_value, predicted_values):
@@ -79,6 +78,10 @@ class BaseModel:
         """
 
         print(f'Reading data from {data_url}')
+        if 'githubusercontent' not in data_url:
+            print('start read data from minio')
+            minio_file = data_url.split('/')[-1]
+            data_url = get_minio_object(minio_file, 'data')
         self.data = pd.read_csv(data_url)
 
         if self.data.empty:

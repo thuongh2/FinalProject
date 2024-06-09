@@ -28,7 +28,9 @@ $(document).ready(function () {
   callPlotChart(selectedValue);
 
   $("#model_name").change(function () {
-    modelName = $(this).val();
+    var modelName = $(this).val();
+    var agriculturalType = $('#agriculturalType').text()
+    getDataForLoadChart(modelName, agriculturalType)
     showLoading();
     clearChart();
     callPlotChart();
@@ -44,6 +46,37 @@ $(document).ready(function () {
     callPlotChart();
   });
 });
+
+function getDataForLoadChart(modelName, agriculturalType) {
+  if (modelName) {
+    $.ajax({
+      url: URL_SERVER + "/get-data-from-model/" + modelName,
+      type: "GET",
+      data: {'agricultural_type': agriculturalType},
+      success: function (response) {
+        var modelDataSelect = $("#data_name");
+        modelDataSelect.empty(); // Clear current options
+        // Add new options from response
+        $.each(response, function (key, value) {
+          modelDataSelect.append(
+            '<option data-value="' +
+              value.type +
+              '" value="' +
+              value.data +
+              '">' +
+              value.name +
+              "</option>"
+          );
+        });
+      },
+      error: function (xhr) {
+        $("#model_data").empty().append('<option value="">Chọn dữ liệu</option>');
+      },
+    });
+  } else {
+    $("#model_data").empty().append('<option value="">Chọn dữ liệu</option>');
+  }
+}
 
 document.addEventListener("DOMContentLoaded", function () {
   $("#model_name").val("LSTM");

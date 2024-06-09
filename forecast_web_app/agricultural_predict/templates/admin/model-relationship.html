@@ -1,0 +1,178 @@
+{% extends "layout.html" %} {% block title %}Dashboard{% endblock %} {% block
+content %}
+
+<!-- Begin Page Content -->
+<div class="container-fluid">
+    <!-- Content Row -->
+
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Thêm quan hệ mô hình</h1>
+    </div>
+
+    <div class="col-12 d-flex p-x-2 mb-3">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert col-12 alert-info" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+
+            {% endif %}
+        {% endwith %}
+    </div>
+
+
+    <div class="row">
+        <form method="POST" action="/model-relationship">
+            <div class="col-12 d-flex">
+            <div class="col-3 form-group">
+                <label for="model_name">Tên mô hình </label><br>
+                <select class="custom-select" id="model_name" name="model_name">
+                    <option selected>Chọn mô hình</option>
+                    {% for model in model_info %}
+                        <option value={{model.name}}>{{model.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-3 form-group">
+                <label for="model_data">Dữ liệu</label><br>
+                <select class="custom-select" id="model_data" name="model_data">
+                    <option selected>Chọn dữ liệu</option>
+                </select>
+            </div>
+            <input type="text" id="model_data_name" name='model_data_name' class="d-none"></input>
+
+
+            <div class="col-3 form-group">
+                <label for="training_data">Lựa chọn mô hình</label><br>
+                <select class="custom-select" id="training_data" name='train_model_id'>
+                    <option value="">Lựa chọn mô hình</option>
+                </select>
+            </div>
+
+            <input type="text" id="training_value" name='train_model_name' class="d-none"></input>
+
+            <div class="col-3 form-group">
+                <label></label><br>
+                <input type="submit" class="btn btn-primary mt-2" value="Cập nhật">
+            </div>
+        </div>
+      
+        </form>
+    </div>
+
+    <!-- Content Row -->
+
+    <div class="row">
+        <div class="container-fluid">
+            <!-- Page Heading -->
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                <h1 class="h3 mb-0 text-gray-800">Danh sách</h1>
+            </div>
+
+            <!-- DataTales Example -->
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Tên</th>
+                                    <th>Dữ liệu</th>
+                                    <th>Tên mô hình</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for model in model_relationships %}
+                                <tr>
+                                    <td>{{ model.model_name }}</td>
+                                    <td>{{ model.model_data_name }}</td>
+                                    <td> 
+                                        <a
+                                        href="{{ url_for('upload_model_router.admin_detail_model', model_id=model._id ) }}">
+                                        <span class="text-primary">#{{ model.train_model_id }}</span> - {{ model.train_model_name }}
+                                        </a>
+                                    </td>
+                                    <td class="text-center">
+                                        <a class="text-center"
+                                            href="{{ url_for('model_relationship_router.delete_model_relationship', model_id=model._id ) }}">
+                                            <i class="fa fa-trash text-danger" aria-hidden="true"></i>
+                                        </a>
+                                    </td>
+                                    
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $('#model_name').on('change', function () {
+        var modelName = $(this).val();
+        if (modelName) {
+            $.ajax({
+                url: 'http://localhost:5001/get-data-from-model/' + modelName,
+                type: 'GET',
+                success: function (response) {
+                    var modelDataSelect = $('#model_data');
+                    modelDataSelect.empty(); // Clear current options
+                    modelDataSelect.append('<option value="">Chọn dữ liệu</option>'); // Default option
+                    // Add new options from response
+                    $.each(response, function (key, value) {
+                        modelDataSelect.append('<option data-value="' + value.type +'" value="' + value.data + '">' + value.name + '</option>');
+                    });
+                },
+                error: function (xhr) {
+                    $('#model_data').empty().append('<option value="">Error: ' + xhr.responseText + '</option>');
+                }
+            });
+        } else {
+            $('#model_data').empty().append('<option value="">Select data</option>');
+        }
+    });
+
+
+    $('#model_data').on('change', function () {
+        var modelName = $('#model_name').val();
+        var modelData = $(this).val();
+        var modelType = $(this).find(":selected").data("value");
+        $('#model_data_name').val($(this).find('option:selected').text())
+        if (modelName && modelData) {
+            $.ajax({
+                url: 'http://localhost:5001/get-traning-from-model/' + modelName,
+                data: {'model_data' : modelData, 'model_type': modelType},
+                type: 'GET',
+                success: function (response) {
+                    var trainingDataSelect = $('#training_data');
+                    trainingDataSelect.empty(); // Clear current options
+                    trainingDataSelect.append('<option value="">Lựa chọn mô hình</option>'); // Default option
+                  
+                    // Add new options from response
+                    $.each(response, function (key, value) {
+                        trainingDataSelect.append('<option value="' + value._id + '">' + value.name + '</option>');
+                    });
+                },
+                error: function (xhr) {
+                    $('#training_data').empty().append('<option value="">Lựa chọn mô hình</option>');
+                }
+            });
+        } else {
+            $('#training_data').empty().append('<option value="">Lựa chọn mô hình</option>');
+        }
+    });
+
+    $('#training_data').on('change', function () {
+        $('#training_value').val($(this).find('option:selected').text())
+    });
+</script>
+
+{% endblock %}

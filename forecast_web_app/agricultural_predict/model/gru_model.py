@@ -12,6 +12,10 @@ from tensorflow.keras.optimizers import Adam
 import logging
 import mlflow
 from mlflow.models import infer_signature
+import os
+
+# Suppress TensorFlow logging
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 class GRUModel(BaseModel):
     def __init__(self):

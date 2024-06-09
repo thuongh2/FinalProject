@@ -79,6 +79,13 @@
           <span class="text-uppercase">Train Trên Web</span></a>
       </li>
 
+      {% if session['role'] == 'ADMIN' %}
+        <li class="nav-item">
+          <a class="nav-link " href="/model-relationship" aria-expanded="true" aria-controls="collapseTwo">
+            <i class="fa fa-id-card-o fa-2x "></i>
+            <span class="text-uppercase">Hiển thị mô hình</span></a>
+        </li>
+      {% endif %}
 
     </ul>
 
@@ -96,14 +103,11 @@
             <i class="fa fa-bars"></i>
           </button>
 
-          {% if session['is_authen'] == False %}
-
           <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
             <div class="sidebar-brand-text mx-3 font-weight-bold text-primary">
               Agricultural Predict
             </div>
           </form>
-          {% endif %}
 
 
           <ul class="navbar-nav ml-auto">
@@ -135,7 +139,9 @@
               {% if session['is_authen'] %}
               <a class="nav-link dropdown-toggle" id="userDropdown" role="button" data-toggle="dropdown"
                 aria-haspopup="true" aria-expanded="false" href="admin">
-                <span id="username" class="mr-2 d-none d-lg-inline text-gray-600 small">{{session['username']}}</span>
+                <span id="username" class="mr-2 d-none d-lg-inline text-gray-600 small">
+                  {{session['username']}}
+                </span>
                 <img class="img-profile rounded-circle" src="img/undraw_profile.svg" />
               </a>
 
@@ -162,13 +168,9 @@
             </li>
           </ul>
         </nav>
-        <!-- End of Topbar -->
-
         {% endblock %} {% block content %} {% endblock %}
       </div>
-      <!-- End of Main Content -->
 
-      <!-- Footer -->
       {% block footer %}
       <footer class="sticky-footer bg-white">
         <div class="container my-auto">
@@ -216,6 +218,7 @@
 
   <!-- Core plugin JavaScript-->
   <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+  
 
   <!-- Custom scripts for all pages-->
   <script src="js/sb-admin-2.min.js"></script>

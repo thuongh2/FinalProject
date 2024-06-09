@@ -144,7 +144,7 @@ def admin_train_model():
 
 @upload_model_router.route('/detail-model')
 def admin_detail_model():
-    global plot_data
+    plot_data = None
     model_id = request.args.get('model_id')
     current_app.logger.info(model_id)
     model_data = train_model.find_one({"_id": model_id})
@@ -204,11 +204,23 @@ def admin():
     if session.get('username') is None:
         return redirect('/')
     user_name = session['username']
-    filter = {"$and": [{'user_id': user_name}]}
+    user_admin = user.find_one({'username': user_name})
+        # Define the initial filter with the user_id
+    filter = {'user_id': user_name}
+
+    # If the user has an ADMIN role, append another condition to the filter
+    if user_admin.get('role') == 'ADMIN':
+        filter = {'$or': [{'user_id': user_name}, {'type': constant.AUTO_TRAIN_MODEL}]}
+
+    current_app.logger.info(filter)
     records = list(train_model.find(filter))
+    
     for record in records:
         data_url = record.get('data_name')
         url_parts = data_url.split('/')
         filename = url_parts[-1]
         record['data_name'] = filename
+
+        record['type_convert'] = constant.CONVERT_TYPE.get(record.get('type'))
+
     return render_template('admin/index.html', train_model_list=records, total_model=len(records))

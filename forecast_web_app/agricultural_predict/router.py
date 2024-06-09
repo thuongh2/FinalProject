@@ -10,6 +10,8 @@ import requests
 import pandas as pd
 import datetime
 import warnings
+import http
+
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 main_router = Blueprint('main_router', __name__, static_folder='static',
@@ -119,6 +121,20 @@ def get_data_train_model():
 
     return jsonify(data)
 
+@main_router.route('/get-data-from-model/<model_name>', methods=['GET'])
+def get_data_from_model(model_name):
+    agricultural_type = request.args.get('agricultural_type')
+    model_info = model.find_one({'name': model_name})
+    if model_info:
+        data_agricultural = model_info.get('attrs').get('data')
+        current_app.logger.info(agricultural_type)
+        if agricultural_type:
+            data_agricultural = [entry for entry in data_agricultural if entry['type'].startswith(agricultural_type)]
+
+        return jsonify(data_agricultural), http.HTTPStatus.OK
+    else:
+        return jsonify('Model data not found'), http.HTTPStatus.NOT_FOUND
+
 
 @main_router.route('/register', methods=['GET', 'POST'])
 def register():
@@ -159,6 +175,8 @@ def login():
         if user_login:
             session['username'] = username
             session['is_authen'] = True
+            session['role'] = user_login.get('role')
+
             # Add any additional logic, such as session management
             return redirect('admin')
         else:

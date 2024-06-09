@@ -5,7 +5,7 @@ from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask import current_app
 from flask_cors import cross_origin
 from pymongo import MongoClient
-from config.db import model
+from config.db import model, model_relationship_collection, train_model
 from flask import session
 
 from flask import current_app
@@ -23,6 +23,7 @@ from keras.models import load_model
 import os
 import datetime
 import warnings
+from utils import minio_utils 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 load_chart_router = Blueprint('load_chart_router',
@@ -30,7 +31,8 @@ load_chart_router = Blueprint('load_chart_router',
                             static_folder='static',
                             template_folder='templates')
 
-cache = TTLCache(maxsize=10, ttl=600)
+cache = TTLCache(maxsize=10, ttl=50000)
+model_file_path = './file_model/'
 
 
 @load_chart_router.route('/load-chart', methods=['GET'])
@@ -41,14 +43,35 @@ def load_chart():
     model_time = request.args.get('model_time')
     model_time = int(model_time)
     n_steps = 15
+    current_app.logger.info(model_data)
 
     file_name, _ = os.path.splitext(os.path.basename(model_data))
-    #TODO: refactor this
-    dict_model_file = {'ARIMA': 'arima.joblib', 'LSTM': 'LSTM_' + file_name + '.h5',
-                       'GRU': 'GRU_' + file_name + '.h5', 'BiLSTM': 'BiLSTM_' + file_name + '.h5',
-                       'VAR': 'var.joblib', 'VARMA': 'varma_model.joblib'}
-    model_file_name = dict_model_file.get(model_name)
-    model_url = './file_model/' + model_file_name
+    
+    model_relation = model_relationship_collection.find_one({
+        'model_name': model_name,
+        'model_data': model_data,
+        }
+    )
+
+    if not model_relation:
+        current_app.logger.error('not found model relationship')
+        model_file_name = get_model_file_local(model_name, file_name)
+    else:
+        model_train = train_model.find_one({'_id': model_relation.get('train_model_id')})
+        if model_train:
+            try:
+                minio_file_name = model_train.get(file_name)
+                current_app.logger.info('get model from minio' + minio_file_name)
+                model_file_name = minio_utils.get_minio_object(minio_file_name, path=model_file_path)
+            except:
+                current_app.logger.error('fail to get model from minio')
+                model_file_name = get_model_file_local(model_name, file_name)
+        else:
+            current_app.logger.error('not found model relationship')
+            model_file_name = get_model_file_local(model_name, file_name)
+
+    current_app.logger.info('get model from file ' + model_file_name)
+    model_url = model_file_name
     model = FactoryModel(model_name).factory()
     model_url = model_url
     model.data_uri = model_data
@@ -104,4 +127,20 @@ def load_chart():
     response_data = {'plot_data': plot_data}
     response_data['price_actual'] = price_actual.to_json()
     response_data['price_forecast'] = price_forecast.to_json()
-    return jsonify(response_data), 200
+    return jsonify(response_data), http.HTTPStatus.OK
+
+def get_model_from_file(model_file_name):
+    try:
+        model_filename_dir = cache['model_filename_dir']
+    except:
+        model_filename_dir = os.listdir(model_file_path)
+        cache['model_file_dir'] = model_filename_dir
+
+    matching_filename = next((filename for filename in model_filename_dir if filename.startswith(model_file_name)), None)
+    return matching_filename
+
+def get_model_file_local(model_name, file_name):
+    # not get find from minio and get from local
+    model_name_file_path = f'{model_name}_{file_name}'
+    current_app.logger.info('get model from local' + model_name_file_path)
+    return model_file_path +  get_model_from_file(model_name_file_path)

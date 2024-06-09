@@ -14,6 +14,10 @@ import mlflow
 from mlflow.models import infer_signature
 import mlflow
 from mlflow.models import infer_signature
+import os
+
+# Suppress TensorFlow logging
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 class BiLSTMModel(BaseModel):
     def __init__(self):

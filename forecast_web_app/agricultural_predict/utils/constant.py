@@ -1,6 +1,9 @@
 # define constants value
 LUA = 'LUA'
 CAFE = 'CAFE'
+CAM = 'CAM'
+XOAI = 'XOAI'
+DUA_HAU = 'DUA_HAU'
 
 # type train model
 UPLOAD_MODEL = 'UPLOAD_MODEL'
@@ -10,9 +13,22 @@ AUTO_TRAIN_MODEL = 'AUTO_TRAIN_MODEL'
 
 SYSTEM = 'SYSTEM'
 
-
 # status model
 ERROR = 'ERROR'
 SUCCESS = 'SUCCESS'
 
+# type model
+CONVERT_TYPE = {
+    UPLOAD_MODEL: 'MÔ HÌNH UPLOAD',
+    SELF_TRAIN_MODEL: 'TRAIN TRÊN WEB',
+    AUTO_TRAIN_MODEL: 'TỰ ĐỘNG TRAIN'
+}
 
+# convert type argicultural
+CONVERT_ARGICULTURAL = {
+    LUA: 'LÚA',
+    CAFE: 'CÀ PHÊ',
+    CAM: 'CAM',
+    XOAI: 'XOÀI',
+    DUA_HAU: 'DỪA HẤU'
+}

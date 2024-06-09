@@ -1,7 +1,7 @@
 from minio import Minio
 
 BUCKET_NAME = 'test'
-MINIO_URL = 'v270vdxl-9000.asse.devtunnels.ms'
+MINIO_URL = '20.2.210.176:9000'
 MINIO_ACCESS_KEY = 'minio'
 MINIO_SECRET = 'minio123'
 PATH = "./file/"
@@ -34,10 +34,10 @@ def fupload_object(filename, data, length= None):
         print(f"Bucket {BUCKET_NAME} already exists")
 
     file = client.fput_object(BUCKET_NAME, filename, data)
-    print(f"{filename} is successfully uploaded to bucket {BUCKET_NAME}.")
+    print(f"{filename} is successfully uploaded to bucket {BUCKET_NAME}."),
     return file
 
-def get_minio_object(filename, bucket= BUCKET_NAME):
+def get_minio_object(filename, bucket= BUCKET_NAME, path=PATH):
     client = Minio(MINIO_URL, MINIO_ACCESS_KEY, MINIO_SECRET, secure=False)
-    client.fget_object(bucket, filename, PATH + filename)
+    client.fget_object(bucket, filename, path + filename)
     return PATH + filename

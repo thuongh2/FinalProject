@@ -40,13 +40,15 @@
                             <h6 class="mb-4" style="display: block; text-align: left">
                                 <strong>Dữ liệu:</strong> {{ model_data.data_name }}
                             </h6>
-                            <h6 class="mb-4" style="display: block; text-align: left">
-                                <strong>Đánh giá:</strong>
-                            </h6>
-                            <p class="mb-4 ml-2" style="display: block; text-align: left">
-                                MAPE: {{ model_data.evaluate['mape'] }}</p>
-                            <p class="mb-4 ml-2" style="display: block; text-align: left">
-                                RMSE: {{ model_data.evaluate['rmse'] }}</p>
+                            {% if model_data %}
+                                <h6 class="mb-4" style="display: block; text-align: left">
+                                    <strong>Đánh giá:</strong>
+                                </h6>
+                                <p class="mb-4 ml-2" style="display: block; text-align: left">
+                                    MAPE: {{ model_data.evaluate['mape'] }}</p>
+                                <p class="mb-4 ml-2" style="display: block; text-align: left">
+                                    RMSE: {{ model_data.evaluate['rmse'] }}</p>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

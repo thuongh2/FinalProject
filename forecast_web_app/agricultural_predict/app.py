@@ -10,15 +10,18 @@ from load_chart_router import load_chart_router
 from train_model_router import train_model_router
 from train_model_rnn_router import train_model_rnn_router
 from pipeline_router import pipeline_router
+from model_relationship_router import model_relationship_router
 from flask_cors import CORS, cross_origin
 from flask_assets import Environment, Bundle
+import os
+import logging
 
 app = Flask(__name__,
             static_url_path='', 
             static_folder='static',
             template_folder='templates')
 assets = Environment(app)
-
+app.logger.setLevel(logging.INFO)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
@@ -32,8 +35,9 @@ app.register_blueprint(load_chart_router)
 app.register_blueprint(train_model_router)
 app.register_blueprint(train_model_rnn_router)
 app.register_blueprint(pipeline_router)
+app.register_blueprint(model_relationship_router)
 
 
 if __name__ == '__main__':
     db.init_app()
-    app.run(debug=True)
+    app.run()

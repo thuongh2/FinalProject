@@ -37,7 +37,7 @@
         </a>
 
         {% endfor %}
-
+        <div class="d-none" id="agriculturalType">{{agricultural}}</div>
         <div class="row">
             <div class="col-xl-9 mt-4">
                 <div class="card shadow mb-4">
@@ -90,9 +90,9 @@
                         <select id="data_name" name="data_name" class="form-control form-select col-xl-12"
                             style="color: black">
                             {% for item in data %} {% if item['type'] == 'CAFE' %}
-                            <option value="{{ item.data }}" selected>{{ item.name }}</option>
+                                <option value="{{ item.data }}" selected>{{ item.name }}</option>
                             {% else %}
-                            <option value="{{ item.data }}">{{ item.name }}</option>
+                                <option value="{{ item.data }}">{{ item.name }}</option>
                             {% endif %} {% endfor %}
                         </select>
                     </div>
@@ -157,7 +157,7 @@
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
-        <script type = "module" src="js/index.js"></script>
+        <script src="js/index.js"></script>
 
         {% endblock %}
     </div>

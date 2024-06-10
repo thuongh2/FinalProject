@@ -272,7 +272,6 @@ async function loadLogTrainModel() {
     },
   };
 
-  var responseData = null;
   await $.ajax(settings).done(function (response) {
     response = JSON.parse(response);
     console.log(response);
@@ -295,6 +294,9 @@ async function loadLogTrainModel() {
       const html = createPipelineStep(value);
 
       container.append(html);
+      if (index !== response.task_instances.length - 1) {
+        container.append(arrowTemplate);
+      }
       if (value.state === "success") {
         count_waiting_task++;
       }
@@ -303,9 +305,7 @@ async function loadLogTrainModel() {
         alertify.error("Model training thất bại");
         return;
       }
-      if (index !== response.task_instances.length - 1) {
-        container.append(arrowTemplate);
-      }
+     
     });
     console.log(count_waiting_task);
     if (count_waiting_task === response.total_entries) {
@@ -332,7 +332,7 @@ function createPipelineStep(value) {
 function createPipelineSetupStep(state) {
   return pipelineTemplate
     .replace("{{value}}", "Setup Pipeline")
-    .replace("{{status}}", state)
+    .replace("{{status}}", statusMapping.get(state || "waiting"))
     .replace("{{status-class}}", statusClass.get(state) || "secondary")
     .replace(
       "{{status-display}}",

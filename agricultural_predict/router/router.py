@@ -43,8 +43,7 @@ def index():
 
     if (model_name):
         model_data_find = model_info_collection.find_one({'name': model_name})
-        attrs = model_data_find.get('attrs')
-        data = attrs.get('data', [])
+        data = model_data_find.get('data', [])
         filtered_data = [d for d in data if d.get('type') == agricultural_type]
         
         return render_template('index.html', data=filtered_data,
@@ -64,10 +63,7 @@ def index():
 def get_price_with_date():
     # lấy arima làm chuẩn vì arima chỉ có giá
     arima_model = model_info_collection.find_one({'name': 'ARIMA'})
-    attrs = arima_model.get('attrs')
-    if not attrs:
-        return {}
-    data = attrs.get('data', [])
+    data = arima_model.get('data', [])
     price_agricultural = {}
     for type in AGRICULTURAL_TYPES:
         for d in data:
@@ -95,7 +91,6 @@ def get_all_models():
     for model_data in models:
         model_info = {
             'name': model_data.get('name'),
-            'attrs': model_data.get('attrs')
         }
         all_models.append(model_info)
     return jsonify(all_models)
@@ -116,7 +111,7 @@ def get_data_from_model(model_name):
     agricultural_type = request.args.get('agricultural_type')
     model_info = model_info_collection.find_one({'name': model_name})
     if model_info:
-        data_agricultural = model_info.get('attrs').get('data')
+        data_agricultural = model_info.get('data')
         current_app.logger.info(agricultural_type)
         if agricultural_type:
             data_agricultural = [entry for entry in data_agricultural if entry['type'].startswith(agricultural_type)]

@@ -49,7 +49,7 @@ def train_model_page():
 
     if (model_name):
         model_entity = model_info_collection.find_one({'name': model_name})
-        data = model_entity.get('attrs')
+        data = model_entity.get('data')
         default_param = model_entity.get('default_param')
 
         if (default_param):

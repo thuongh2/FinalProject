@@ -77,9 +77,11 @@
                             <div class="mt-2  col-12 p-0">
                                 <select id="data_name" name="data_name" class="form-control form-select">
                                     <option>Tập dữ liệu</option>
-                                    {% for item in data.data %}
-                                    <option value="{{ item }}">{{ item['name'] }}</option>
-                                    {% endfor %}
+                                    {% if data %}
+                                        {% for item in data %}
+                                            <option value="{{ item }}">{{ item['name'] }}</option>
+                                        {% endfor %}
+                                    {% endif %}
                                 </select>
                             </div>
                         </div>

@@ -47,7 +47,7 @@ def train_model_rnn_page():
     model_id = common_utils.generate_id(model_name)
     if (model_name):
         model_data_find = model_info_collection.find_one({'name': model_name})
-        data = model_data_find.get('attrs')
+        data = model_data_find.get('data')
         default_param = model_data_find.get('default_param')
         if(default_param):
             params_render = default_param.get('param')

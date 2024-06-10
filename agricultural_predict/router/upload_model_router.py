@@ -56,7 +56,7 @@ def admin_upload_train_model():
 
     if (model_name):
         model_data = model_info_collection.find_one({'name': model_name})
-        data = model_data.get('attrs')
+        data = model_data.get('data')
 
         return render_template('admin/upload-model.html',
                                model_names=model_names,
@@ -75,7 +75,7 @@ def get_data_train_model():
     if not model_name:
         return jsonify("Model name not found")
     model_data_find = model_info_collection.find_one({'name': model_name})
-    data = model_data_find.get('attrs')
+    data = model_data_find.get('data')
 
     return jsonify(data)
 

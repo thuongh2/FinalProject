@@ -120,7 +120,7 @@ async function plotChart() {
     },
     error: function (xhr, status, error) {
       console.log(xhr);
-      alertify.error(error);
+      alertify.error("Lỗi khi load dữ liệu!");
     },
   });
   $("#loadChartLoading").addClass("d-none");

@@ -58,48 +58,122 @@ $("#data_name").change(function () {
   return;
 });
 
+$("#smoothing_data").change(function () {
+  plotChart();
+  return;
+});
+
+$("#smoothing_value").change(function () {
+  plotChart();
+  return;
+});
+
 function handelStoreSession(key, value) {
   sessionStorage.setItem(key, value);
 }
 
-function callDrawPlot(selectedValue) {
-  d3.csv(selectedValue, function (err, rows) {
-    function unpack(rows, key) {
-      return rows.map(function (row) {
-        if (key === "date") {
-          return new Date(row[key]);
-        } else {
-          return parseFloat(row[key]);
-        }
-      });
-    }
 
-    Object.keys(rows[0]).forEach(function (row) {
-      var data = new Array();
-      if (row === "date") return;
-      var trace = {
-        type: "scatter",
-        mode: "lines",
-        name: row,
-        x: unpack(rows, "date"),
-        y: unpack(rows, row),
-        line: { color: "#17BECF" },
-      };
+function plotStationaryData(data, rootNode) {
+  data.forEach((value, index) => {
+    console.log(value.x);
+    xDim = new Array();
+    for (i in value.x) xDim.push(new Date(value.x[i]));
+    yDim = value.y;
+    mode = value.mode;
 
-      console.log(trace);
-      const nodeName = "myChart" + row;
-      const node = document.createElement("div");
-      node.id = nodeName;
+    trace = { x: xDim, y: yDim, type: "scatter", mode: "lines" };
+    console.log(trace);
+    const nodeName = rootNode + index;
+    const node = document.createElement("div");
+    node.id = nodeName;
+    console.log(node);
+    document.getElementById(rootNode).appendChild(node);
 
-      document.getElementById("myChart").appendChild(node);
-
-      var layout = {
-        title: "Biểu đồ giá " + row,
-      };
-
-      Plotly.newPlot(nodeName, [trace], layout);
-    });
+    var layout = {
+      title: "Biểu đồ giá",
+    };
+    Plotly.newPlot(nodeName, [trace], layout);
   });
+}
+
+
+async function plotChart() {
+  sessionStorage.clear();
+  await $("#loadChartLoading").removeClass("d-none");
+  var model_data = JSON.parse(
+    $("#data_name").find(":selected").val().replace(/'/g, '"')
+  );
+  var smoothing_type = $("#smoothing_data").find(":selected").val();
+  var smoothing_value = $("#smoothing_value").val();
+  handelStoreSession("data_url", model_data.data);
+  handelStoreSession("agricultural_name", model_data.type);
+  handelStoreSession("model_name", model_data.name);
+  handelStoreSession("smoothing_data", smoothing_type);
+  handelStoreSession("smoothing_value", smoothing_value);
+
+  await $.ajax({
+    url: URL_SERVER + "/get-data-self-train",
+    method: "GET",
+    data: {
+      model_data: model_data.data,
+      smoothing_type: smoothing_type,
+      smoothing_value: smoothing_value,
+    },
+    success: function (response) {
+      console.log(response);
+      $("#myChart").empty();
+      plotStationaryData(response, "myChart");
+    },
+    error: function (xhr, status, error) {
+      console.log(xhr);
+      alertify.error("Lỗi khi load dữ liệu!");
+    },
+  });
+  $("#loadChartLoading").addClass("d-none");
+}
+
+
+async function callDrawPlot(selectedValue) {
+  sessionStorage.clear();
+  
+  await plotChart();
+  // d3.csv(selectedValue, function (err, rows) {
+  //   function unpack(rows, key) {
+  //     return rows.map(function (row) {
+  //       if (key === "date") {
+  //         return new Date(row[key]);
+  //       } else {
+  //         return parseFloat(row[key]);
+  //       }
+  //     });
+  //   }
+
+  //   Object.keys(rows[0]).forEach(function (row) {
+  //     var data = new Array();
+  //     if (row === "date") return;
+  //     var trace = {
+  //       type: "scatter",
+  //       mode: "lines",
+  //       name: row,
+  //       x: unpack(rows, "date"),
+  //       y: unpack(rows, row),
+  //       line: { color: "#17BECF" },
+  //     };
+
+  //     console.log(trace);
+  //     const nodeName = "myChart" + row;
+  //     const node = document.createElement("div");
+  //     node.id = nodeName;
+
+  //     document.getElementById("myChart").appendChild(node);
+
+  //     var layout = {
+  //       title: "Biểu đồ giá " + row,
+  //     };
+
+  //     Plotly.newPlot(nodeName, [trace], layout);
+  //   });
+  // });
 }
 
 function plotChartData(data) {

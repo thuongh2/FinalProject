@@ -61,31 +61,6 @@ def train_model_rnn_page():
                            model_names=model_names, data=None, model_name="", params_render=None)
 
 
-@train_model_rnn_router.route('/search-train-model-rnn', methods=['GET'])
-def get_data_train_model_rnn():
-    model_data = request.args.get('model_data')
-
-    data = pd.read_csv(model_data)
-    data['date'] = pd.to_datetime(data['date'])
-    data.set_index(['date'], inplace=True)
-    if data.empty:
-        return jsonify({'error': 'Data is empty'})
-    plot_data = []
-    for columns in data.columns:
-        data[columns] = data[columns].astype(float)
-
-        trace = dict(
-            x=data.index.tolist(),
-            y=data[columns].values.tolist(),
-            mode='lines'
-        )
-        plot_data.append(trace)
-
-    return plot_data
-
-
-
-
 def create_dags_flow(dags_id, model_name, user_name, data_name,
                      argument, agricultural_name, stationary_option=None):
     print(dags_id)

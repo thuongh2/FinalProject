@@ -7,9 +7,9 @@ from flask_cors import cross_origin
 from pymongo import MongoClient
 from config.db_conn_config import model_info_collection, model_registry_collection, model_data_relations_collection
 from flask import session
-
+import cachetools
 from flask import current_app
-from cachetools import TTLCache
+from cachetools import TTLCache, LRUCache
 
 import pandas as pd
 
@@ -30,6 +30,9 @@ cache = TTLCache(maxsize=10, ttl=50000)
 model_file_path = './file_model/'
 
 
+# Cache configuration
+lru_cache = LRUCache(maxsize=100)
+
 @load_chart_router.route('/load-chart', methods=['GET'])
 @cross_origin()
 def load_chart():
@@ -42,11 +45,7 @@ def load_chart():
 
     file_name, _ = os.path.splitext(os.path.basename(model_data))
     
-    model_relation = model_data_relations_collection.find_one({
-        'model_name': model_name,
-        'model_data': model_data,
-        }
-    )
+    model_relation = get_model_relation(model_name=model_name, model_data=model_data)
 
     if not model_relation:
         current_app.logger.error('not found model relationship')
@@ -137,5 +136,13 @@ def get_model_from_file(model_file_name):
 def get_model_file_local(model_name, file_name):
     # not get find from minio and get from local
     model_name_file_path = f'{model_name}_{file_name}'
-    current_app.logger.info('get model from local' + model_name_file_path)
+    current_app.logger.info('get model from local ' + model_name_file_path)
     return model_file_path +  get_model_from_file(model_name_file_path)
+
+@cachetools.cached(cache, key=lambda model_name, model_data: (model_name, model_data))
+def get_model_relation(model_name, model_data):
+    model_relation = model_data_relations_collection.find_one({
+        'model_name': model_name,
+        'model_data': model_data,
+    })
+    return model_relation

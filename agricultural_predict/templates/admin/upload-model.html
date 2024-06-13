@@ -65,9 +65,9 @@
                                 <select id="selectData" name="data_name" class="form-control form-select">
                                     <option>Tập dữ liệu</option>
                                     {% if data %}
-                                    {% for item in data %}
-                                        <option value="{{ item }}">{{ item['name'] }}</option>
-                                    {% endfor %}
+                                        {% for item in data %}
+                                            <option value="{{ item }}">{{ item['name'] }}</option>
+                                        {% endfor %}
                                     {% endif %}
                                 </select>
 

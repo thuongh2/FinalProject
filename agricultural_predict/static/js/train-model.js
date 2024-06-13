@@ -1,4 +1,4 @@
-var URL_SERVER = "http://localhost:5001"
+var URL_SERVER = "http://localhost:5001";
 var interval = null;
 
 const pipelineTemplate = `
@@ -53,6 +53,16 @@ $("#data_name").change(function () {
   return;
 });
 
+$("#smoothing_data").change(function () {
+  plotChart();
+  return;
+});
+
+$("#smoothing_value").change(function () {
+  plotChart();
+  return;
+});
+
 function handelStoreSession(key, value) {
   sessionStorage.setItem(key, value);
 }
@@ -81,47 +91,83 @@ function checkStationary(pValue) {
   $("#pValueDesc").text(`Data is None stationary`);
 }
 
-async function callDrawPlot(selectedValue) {
+async function plotChart() {
   sessionStorage.clear();
   await $("#loadChartLoading").removeClass("d-none");
-  await d3.csv(selectedValue, function (err, rows) {
-    function unpack(rows, key) {
-      return rows.map(function (row) {
-        if (key === "date") {
-          return new Date(row[key]);
-        } else {
-          return parseFloat(row[key]);
-        }
-      });
-    }
+  var model_data = JSON.parse(
+    $("#data_name").find(":selected").val().replace(/'/g, '"')
+  );
+  var smoothing_type = $("#smoothing_data").find(":selected").val();
+  var smoothing_value = $("#smoothing_value").val();
+  handelStoreSession("data_url", model_data.data);
+  handelStoreSession("agricultural_name", model_data.type);
+  handelStoreSession("model_name", model_data.name);
+  handelStoreSession("smoothing_data", smoothing_type);
+  handelStoreSession("smoothing_value", smoothing_value);
 
-    Object.keys(rows[0]).forEach(function (row) {
-      var data = new Array();
-      if (row === "date") return;
-      var trace = {
-        type: "scatter",
-        mode: "lines",
-        name: row,
-        x: unpack(rows, "date"),
-        y: unpack(rows, row),
-        line: { color: "#17BECF" },
-      };
+  await $.ajax({
+    url: URL_SERVER + "/get-data-self-train",
+    method: "GET",
+    data: {
+      model_data: model_data.data,
+      smoothing_type: smoothing_type,
+      smoothing_value: smoothing_value,
+    },
+    success: function (response) {
+      console.log(response);
+      $("#myChart").empty();
+      plotStationaryData(response, "myChart");
+    },
+    error: function (xhr, status, error) {
+      console.log(xhr);
+      alertify.error(error);
+    },
+  });
+  $("#loadChartLoading").addClass("d-none");
+}
 
-      console.log(trace);
-      const nodeName = "myChart" + row;
-      const node = document.createElement("div");
-      node.id = nodeName;
+async function callDrawPlot(selectedValue) {
+  sessionStorage.clear();
+  
+  await plotChart();
+  // await d3.csv(selectedValue, function (err, rows) {
+  //   function unpack(rows, key) {
+  //     return rows.map(function (row) {
+  //       if (key === "date") {
+  //         return new Date(row[key]);
+  //       } else {
+  //         return parseFloat(row[key]);
+  //       }
+  //     });
+  //   }
 
-      document.getElementById("myChart").appendChild(node);
+  //   Object.keys(rows[0]).forEach(function (row) {
+  //     var data = new Array();
+  //     if (row === "date") return;
+  //     var trace = {
+  //       type: "scatter",
+  //       mode: "lines",
+  //       name: row,
+  //       x: unpack(rows, "date"),
+  //       y: unpack(rows, row),
+  //       line: { color: "#17BECF" },
+  //     };
 
-      var layout = {
-        title: "Biểu đồ giá " + row,
-      };
+  //     console.log(trace);
+  //     const nodeName = "myChart" + row;
+  //     const node = document.createElement("div");
+  //     node.id = nodeName;
 
-      Plotly.newPlot(nodeName, [trace], layout);
-    });
+  //     document.getElementById("myChart").appendChild(node);
 
-    const checkboxTemplate = `
+  //     var layout = {
+  //       title: "Biểu đồ giá " + row,
+  //     };
+
+  //     Plotly.newPlot(nodeName, [trace], layout);
+  //   });
+
+  const checkboxTemplate = `
             <div class="form-check">
             <input class="exogenous-checkbox" type="checkbox" name="exogenous" value="{{value}}" id="checkbox-{{value}}">
             <label class="form-check-label" for="checkbox-{{value}}">
@@ -129,16 +175,15 @@ async function callDrawPlot(selectedValue) {
             </label>
             </div>
             `;
-    const container = $("#checkboxContainer");
-    container.empty();
+  const container = $("#checkboxContainer");
+  container.empty();
 
-    Object.keys(rows[0]).forEach(function (name) {
-      if (name === "date") return;
-      const html = checkboxTemplate
-        .replace("{{value}}", name)
-        .replace("{{label}}", name);
-      container.append(html);
-    });
+  Object.keys(rows[0]).forEach(function (name) {
+    if (name === "date") return;
+    const html = checkboxTemplate
+      .replace("{{value}}", name)
+      .replace("{{label}}", name);
+    container.append(html);
   });
 
   await $("#loadChartLoading").addClass("d-none");
@@ -174,7 +219,7 @@ function plotChartData(data) {
   Plotly.newPlot("myChartTrainModel", plot_data, layout);
 }
 
-function plotStationaryData(data) {
+function plotStationaryData(data, rootNode) {
   data.forEach((value, index) => {
     console.log(value.x);
     xDim = new Array();
@@ -184,14 +229,14 @@ function plotStationaryData(data) {
 
     trace = { x: xDim, y: yDim, type: "scatter", mode: "lines" };
     console.log(trace);
-    const nodeName = "myDivStationary" + index;
+    const nodeName = rootNode + index;
     const node = document.createElement("div");
     node.id = nodeName;
     console.log(node);
-    document.getElementById("myDivStationary").appendChild(node);
+    document.getElementById(rootNode).appendChild(node);
 
     var layout = {
-      title: "Biểu đồ giá " + value.name,
+      title: "Biểu đồ giá",
     };
     Plotly.newPlot(nodeName, [trace], layout);
   });
@@ -244,7 +289,7 @@ async function applyDiffSeasonal(value) {
       plotAcf(response.acf, "ACF");
       plotAcf(response.df_pacf, "PACF");
       loadData(false);
-      plotStationaryData(response.plot_data);
+      plotStationaryData(response.plot_data, "myDivStationary");
     },
     error: function (xhr, status, error) {
       alertify.error("Lỗi!");
@@ -294,6 +339,8 @@ async function trainModel() {
   }
   diff_type = sessionStorage.getItem("diff_type");
   argument["stationary_type"] = diff_type;
+  argument["smoothing_data"] = sessionStorage.getItem("smoothing_data");
+  argument["smoothing_value"] = sessionStorage.getItem("smoothing_value");;
   model_id = $("#modelId").text().trim();
 
   data = {

@@ -32,6 +32,7 @@ import time
 from utils import constant
 from utils import common_utils
 from config import host_config
+import http
 
 train_model_router = Blueprint('train_model_router',
                                __name__,
@@ -74,16 +75,21 @@ def train_model_page():
                            stationary_option=None)
 
 
-@train_model_router.route('/search-train-model', methods=['GET'])
+@train_model_router.route('/get-data-self-train', methods=['GET'])
 def get_data_train_model():
     model_data = request.args.get('model_data')
+    smoothing_type = request.args.get('smoothing_type')
+    smoothing_value = request.args.get('smoothing_value')
 
-    data = pd.read_csv(model_data)
-    data['date'] = pd.to_datetime(data['date'])
-    data.set_index(['date'], inplace=True)
-    if data.empty:
+    base_model = FactoryModel(constant.BASE_MODEL).factory()
+    base_model.data_uri = model_data
+    base_model.prepare_data_for_self_train()
+
+    if base_model.data.empty:
         return jsonify({'error': 'Data is empty'})
-
+    if smoothing_type:
+        base_model.smoothing_data(type=smoothing_type, smoothing_value=smoothing_value)
+    data = base_model.data
     plot_data = []
     for columns in data.columns:
         data[columns] = data[columns].astype(float)
@@ -95,7 +101,7 @@ def get_data_train_model():
         )
         plot_data.append(trace)
 
-    return plot_data
+    return plot_data, http.HTTPStatus.OK
 
 
 def adf_test(series):

@@ -8,6 +8,7 @@ from sklearn.metrics import mean_squared_error
 from typing import Optional
 
 from utils.minio_utils import get_minio_object
+from sklearn.metrics import mean_absolute_percentage_error
 
 class BaseModel:
 
@@ -55,7 +56,7 @@ class BaseModel:
 
     def forecast_accuracy(self, actual_value, predicted_values):
 
-        mape = np.mean(np.abs((actual_value - predicted_values) / actual_value)) * 100
+        mape = mean_absolute_percentage_error(actual_value, predicted_values) * 100
 
         mse = mean_squared_error(actual_value, predicted_values)
         rmse = np.sqrt(mse)
@@ -83,7 +84,7 @@ class BaseModel:
             minio_file = data_url.split('/')[-1]
             data_url = get_minio_object(minio_file, 'data')
         self.data = pd.read_csv(data_url)
-
+        print(self.data)
         if self.data.empty:
             raise Exception(f'Data at {data_url} is empty')
 
@@ -108,3 +109,20 @@ class BaseModel:
     @abstractmethod
     def ml_flow_register(self, experient_name="DEFAUT_MODEL"):
         pass
+
+    def smoothing_data(self, type='exponential', smoothing_value=30):
+        if type == 'exponential':
+            if not smoothing_value:
+                smoothing_value = 0.5
+            self.data = self.data.ewm(alpha=float(smoothing_value), adjust=False).mean()
+        elif type == 'moving_average':
+            if not smoothing_value:
+                smoothing_value = 30
+            self.data = self.data.rolling(int(smoothing_value)).mean()
+        elif type == 'double_exponential':
+            if not smoothing_value:
+                smoothing_value = 0.5
+            self.data = self.data.ewm(alpha=float(smoothing_value), adjust=False).mean()
+            self.data = self.data.ewm(alpha=float(smoothing_value), adjust=False).mean()
+        self.data = self.data.dropna()
+

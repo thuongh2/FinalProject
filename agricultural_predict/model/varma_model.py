@@ -83,6 +83,8 @@ class VARMAModel(BaseModel):
         """
 
         self.prepare_data_for_self_train(argument.get('size', 0.8))
+        if argument.get('smoothing_data'):
+            self.smoothing_data(argument.get('smoothing_data'), argument.get('smoothing_value'))
 
         df_differenced = self.difference_dataset()
 

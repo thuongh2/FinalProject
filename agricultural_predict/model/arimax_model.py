@@ -80,7 +80,8 @@ class ARIMAXModel(BaseModel):
             raise Exception("Size is required")
 
         self.prepare_data_for_self_train(argument['size'])
-
+        if argument.get('smoothing_data'):
+            self.smoothing_data(argument.get('smoothing_data'), argument.get('smoothing_value'))
         logging.info('Start train ARIMA MODEL')
 
         self.model = pm.auto_arima(self.train_data.price.values,

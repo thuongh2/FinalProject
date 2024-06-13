@@ -62,11 +62,11 @@
                                 <option value="upload-model">Mô hình</option>
                                 {% for item in model_names %}
                                 {% if item == "LSTM" or item == "GRU" or item == "BiLSTM" %}
-                                <option value="{{ 'train-model-rnn?model_name=' ~ item }}" {% if item==model_name %}
-                                    selected {% endif %}>{{ item }}</option>
+                                    <option value="{{ 'train-model-rnn?model_name=' ~ item }}" {% if item==model_name %}
+                                        selected {% endif %}>{{ item }}</option>
                                 {% else %}
-                                <option value="{{ 'train-model?model_name=' ~ item }}" {% if item==model_name %}
-                                    selected {% endif %}>{{ item }}</option>
+                                    <option value="{{ 'train-model?model_name=' ~ item }}" {% if item==model_name %}
+                                        selected {% endif %}>{{ item }}</option>
                                 {% endif %}
                                 {% endfor %}
                             </select>
@@ -85,6 +85,22 @@
                                 </select>
                             </div>
                         </div>
+
+                        {% if data %}
+                        <div class="col-12 d-flex p-0 mt-2 ">
+                            <div class="mt-2 col-6 pl-0">
+                                <select id="smoothing_data" name="smoothing_data" class="form-control form-select">
+                                    <option value="">Chọn Smoothing</option>
+                                    <option value="moving_average">Moving average smoothing</option>
+                                    <option value="exponential">Exponential smoothing</option>
+                                    <option value="double_exponential">Double exponential smoothing</option>    
+                                </select>
+                            </div>
+                            <div class="mt-2  col-6 p-0">
+                                <input type="number" class="form-control" id="smoothing_value" placeholder="Windown/Alpha">
+                            </div>
+                        </div>
+                        {% endif %}
 
                         <div id='myChart' class="col-12 mt-3 p-0">
                             <div id="loadChartLoading" class="card d-none">

@@ -142,6 +142,22 @@ class GRUModel(BaseModel):
 
         optimizer = Adam()
         self.model.compile(optimizer=optimizer, loss='mean_squared_error')
+        
+    def smoothing_data(self, type='exponential', smoothing_value=30):
+        if type == 'exponential':
+            if not smoothing_value:
+                smoothing_value = 0.5
+            self.data = self.data.ewm(alpha=float(smoothing_value), adjust=False).mean()
+        elif type == 'moving_average':
+            if not smoothing_value:
+                smoothing_value = 30
+            self.data = self.data.rolling(window=int(smoothing_value), min_periods=1).mean()
+        elif type == 'double_exponential':
+            if not smoothing_value:
+                smoothing_value = 0.5
+            self.data = self.data.ewm(alpha=float(smoothing_value), adjust=False).mean()
+            self.data = self.data.ewm(alpha=float(smoothing_value), adjust=False).mean()
+        self.data = self.data.dropna()
     
     def train_model(self, argument):
         """
@@ -159,6 +175,9 @@ class GRUModel(BaseModel):
 
         self.data = pd.read_csv(self.data_uri)
         self._clean_data()
+        
+        if argument.get('smoothing_data'):
+            self.smoothing_data(argument.get('smoothing_data'), argument.get('smoothing_value'))
 
         time_step = argument.get('timestep', 10)
 
@@ -193,7 +212,7 @@ class GRUModel(BaseModel):
         self.train_dates, self.test_dates = self.dates[:train_size], self.dates[train_size:]
 
         # Start train model
-        logging.info('Start train LSTM MODEL')
+        logging.info('Start train GRU MODEL')
         self.create_model(argument, input_shape)
         epochs = argument['epochs']
         batchsize = argument.get('batchsize', 64)

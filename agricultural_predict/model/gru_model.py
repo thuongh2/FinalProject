@@ -142,22 +142,6 @@ class GRUModel(BaseModel):
 
         optimizer = Adam()
         self.model.compile(optimizer=optimizer, loss='mean_squared_error')
-        
-    def smoothing_data(self, type='exponential', smoothing_value=30):
-        if type == 'exponential':
-            if not smoothing_value:
-                smoothing_value = 0.5
-            self.data = self.data.ewm(alpha=float(smoothing_value), adjust=False).mean()
-        elif type == 'moving_average':
-            if not smoothing_value:
-                smoothing_value = 30
-            self.data = self.data.rolling(window=int(smoothing_value), min_periods=1).mean()
-        elif type == 'double_exponential':
-            if not smoothing_value:
-                smoothing_value = 0.5
-            self.data = self.data.ewm(alpha=float(smoothing_value), adjust=False).mean()
-            self.data = self.data.ewm(alpha=float(smoothing_value), adjust=False).mean()
-        self.data = self.data.dropna()
     
     def train_model(self, argument):
         """

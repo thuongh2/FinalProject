@@ -143,6 +143,9 @@ class LSTMModel(BaseModel):
 
         self.data = pd.read_csv(self.data_uri)
         self._clean_data()
+        
+        if argument.get('smoothing_data'):
+            self.smoothing_data(argument.get('smoothing_data'), argument.get('smoothing_value'))
 
         time_step = argument.get('timestep', 10)
 

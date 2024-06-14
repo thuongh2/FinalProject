@@ -118,7 +118,7 @@ class BaseModel:
         elif type == 'moving_average':
             if not smoothing_value:
                 smoothing_value = 30
-            self.data = self.data.rolling(int(smoothing_value)).mean()
+            self.data = self.data.rolling(int(smoothing_value), min_periods=1).mean()
         elif type == 'double_exponential':
             if not smoothing_value:
                 smoothing_value = 0.5

@@ -17,8 +17,8 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 main_router = Blueprint('main_router', __name__, static_folder='static',
                         template_folder='templates')
 
-AGRICULTURAL_TYPES = ['LUA', 'CAFE']
-AGRICULTURAL_TYPES_MAPPING = {'LUA': 'Lúa', 'CAFE': 'Cà phê'}
+AGRICULTURAL_TYPES = constant.AGRICULTURAL_TYPES
+AGRICULTURAL_TYPES_MAPPING = constant.CONVERT_ARGICULTURAL
 
 cache = TTLCache(maxsize=50, ttl=50000)
 
@@ -38,8 +38,6 @@ def index():
     agricultural_type = request.args.get('agricultural_type', constant.CAFE)
 
     model_data = records
-    model_names = [m.get('name') for m in model_data]
-    current_app.logger.info(model_names)
 
     if (model_name):
         model_data_find = model_info_collection.find_one({'name': model_name})
@@ -115,7 +113,7 @@ def get_data_from_model(model_name):
         current_app.logger.info(agricultural_type)
         if agricultural_type:
             data_agricultural = [entry for entry in data_agricultural if entry['type'].startswith(agricultural_type)]
-
+  
         return jsonify(data_agricultural), http.HTTPStatus.OK
     else:
         return jsonify('Model data not found'), http.HTTPStatus.NOT_FOUND

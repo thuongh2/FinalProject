@@ -23,6 +23,7 @@ class VARModel(BaseModel):
             lag_order = self.model.k_ar
             forecast_input = df_forecast.values[-lag_order:]
             forecast = self.model.forecast(y=forecast_input, steps=n_periods)
+
             return forecast
         else:
             raise Exception("Không tìm thấy model")
@@ -47,7 +48,9 @@ class VARModel(BaseModel):
         predicted = predicted[-forecast_num:]
 
         predicted_df = pd.DataFrame({'date': next_dates, 'price': predicted[self.PRICE_COLUMN]})
-        
+        predicted_df = self.invert_transformation(self.train_data, predicted_df, second_diff=False)
+        predicted_df['price'] = predicted_df['price_forecast']
+
         return predicted_df
 
     def load_model(self):
@@ -68,7 +71,7 @@ class VARModel(BaseModel):
 
         self.forecast_data = pd.DataFrame(self.forecast_data, index=self.test_data.index[-n_periods:], columns=self.test_data.columns)
 
-        self.forecast_data = self.invert_transformation(self.train_data, self.forecast_data, second_diff=True)
+        self.forecast_data = self.invert_transformation(self.test_data, self.forecast_data, second_diff=True)
         self.forecast_data['price'] = self.forecast_data['price_forecast']
         self.accuracy = self.forecast_accuracy(self.forecast_data[self.PRICE_COLUMN].values, self.test_data[self.PRICE_COLUMN].values)
 
@@ -141,7 +144,7 @@ class VARModel(BaseModel):
     def invert_transformation(self, df_train, df_forecast, second_diff=False):
         """Revert back the differencing to get the forecast to original scale."""
         df_res = df_forecast.copy()
-        columns = df_train.columns
+        columns = ['price']
         for col in columns:
             df_res[str(col) + '_forecast'] = df_train[col].iloc[-1] + df_res[str(col)].cumsum()
         return df_res

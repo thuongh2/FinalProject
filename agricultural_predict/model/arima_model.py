@@ -19,6 +19,7 @@ class ARIMAModel(BaseModel):
     def predict(self, n_periods=30):
         if self.model:
             predict, confint = self.model.predict(n_periods=n_periods, return_conf_int=True, dynamic=True)
+
             return predict, confint
         else:
             raise Exception("Không tìm thấy model")
@@ -36,6 +37,7 @@ class ARIMAModel(BaseModel):
         predicted = predict_data[-forecast_num:]
 
         predicted_df = pd.DataFrame({'date': next_dates, 'price': predicted})
+        predicted_df.price = self.test_data.price.iloc[0] + predicted_df.price.cumsum()
 
         return predicted_df
 

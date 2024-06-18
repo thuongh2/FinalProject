@@ -72,11 +72,11 @@ def load_chart():
     model.model_url = model_url
     _, test_data = model.prepare_data_for_self_train()
 
-    try:
-        predict_data = cache[model_file_name]
-    except:
-        predict_data = model.forecast_future(model_time, test_data, n_steps)
-        cache[model_file_name] = predict_data
+    # try:
+    #     predict_data = cache[model_file_name]
+    # except:
+    predict_data = model.forecast_future(model_time, test_data, n_steps)
+        # cache[model_file_name] = predict_data
 
     predict_data['date'] = pd.to_datetime(predict_data['date'])
     predict_data.set_index(['date'], inplace=True)
@@ -114,13 +114,10 @@ def load_chart():
     if price_forecast.empty:
         # nếu ko có giá hôm này lấy giá đầu của dữ liệu (giá dự đoán cho ngày hôm sau)
         price_forecast = predict_data.iloc[1]
-        
-    price_actual['date'] = price_actual['date'].strftime('%d-%m-%Y')
-    price_forecast['date'] = price_forecast['date'].strftime('%d-%m-%Y')
 
-    response_data = {'plot_data': plot_data}
-    response_data['price_actual'] = price_actual.to_json()
-    response_data['price_forecast'] = price_forecast.to_json()
+    response_data = {'plot_data': plot_data,
+                     'price_actual': price_actual.to_json(),
+                     'price_forecast': price_forecast.to_json()}
     return jsonify(response_data), http.HTTPStatus.OK
 
 def get_model_from_file(model_file_name):
@@ -130,7 +127,7 @@ def get_model_from_file(model_file_name):
         model_filename_dir = os.listdir(model_file_path)
         cache['model_file_dir'] = model_filename_dir
 
-    matching_filename = next((filename for filename in model_filename_dir if filename.startswith(model_file_name)), None)
+    matching_filename = next((filename for filename in model_filename_dir if filename.lower().startswith(model_file_name.lower())), None)
     return matching_filename
 
 def get_model_file_local(model_name, file_name):

@@ -38,7 +38,7 @@ class ARIMAXModel(BaseModel):
         predicted = predict_data[-forecast_num:]
 
         predicted_df = pd.DataFrame({'date': next_dates, 'price': predicted})
-
+        predicted_df.price = self.test_data.price.iloc[0] + predicted_df.price.cumsum()
         return predicted_df
 
     def load_model(self):

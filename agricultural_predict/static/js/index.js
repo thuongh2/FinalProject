@@ -26,14 +26,19 @@ $(document).ready(function () {
   var selectedValue = $("#data_name").val();
   callPlotChart(selectedValue);
 
-  $("#model_name").change(function () {
+$("#model_name").change(async function () {
     var modelName = $(this).val();
-    var agriculturalType = $('#agriculturalType').text()
-    getDataForLoadChart(modelName, agriculturalType)
-    showLoading();
-    clearChart();
-    callPlotChart();
-  });
+    var agriculturalType = $('#agriculturalType').text();
+    // await showLoading();
+    // await clearChart();
+    return new Promise((resolve, reject) => {
+        console.log("First function is running");
+        getDataForLoadChart(modelName, agriculturalType);
+    });
+
+});
+
+
   $("#data_name").change(function () {
     showLoading();
     clearChart();
@@ -46,15 +51,17 @@ $(document).ready(function () {
   });
 });
 
-function getDataForLoadChart(modelName, agriculturalType) {
+async function getDataForLoadChart(modelName, agriculturalType) {
   if (modelName) {
-    $.ajax({
+    await $.ajax({
       url: URL_SERVER + "/get-data-from-model/" + modelName,
       type: "GET",
       data: {'agricultural_type': agriculturalType},
       success: function (response) {
         var modelDataSelect = $("#data_name");
-        modelDataSelect.empty(); // Clear current options
+        modelDataSelect
+            .empty()
+            .append('<option value="">Chọn dữ liệu</option>'); // Clear current options
         // Add new options from response
         $.each(response, function (key, value) {
           modelDataSelect.append(
@@ -184,7 +191,7 @@ async function callPlotChart(data) {
     model_data: modelData,
     model_time: modelTime,
   };
-
+  console.log(params)
   const queryString = $.param(params);
   const fullUrl = url + "?" + queryString;
 
@@ -241,19 +248,7 @@ $(document).ready(function () {
   });
 });
 
-// // Active card
-// $(".price-agricutural").click(function () {
-//   var id = $(this).attr("id");
-//   localStorage.setItem("activeTab", id);
-// });
 
-// $(document).ready(function () {
-//   var activeTabId = localStorage.getItem("activeTab");
-//   if (activeTabId) {
-//     $(".price-agricutural").removeClass("active-card");
-//     $("#" + activeTabId).addClass("active-card");
-//   }
-// });
 
 // Display price
 function updateTableFromCSV(csvFilePath) {

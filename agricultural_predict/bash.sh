@@ -7,4 +7,4 @@ source ./venv/Scripts/activate
 pip install -r requirements.txt
 
 # Run the Flask application in debug mode
-flask --app app.py --debug run
+flask --app app.py --debug run -p 5001

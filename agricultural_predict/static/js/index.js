@@ -217,8 +217,7 @@ async function callPlotChart(data) {
 
 function plotActualPrice(data) {
   let price = JSON.parse(data);
-  console.log(price);
-  $("#priceActualDate").text(price.date);
+  $("#priceActualDate").text(formattedDate(price.date));
   $("#priceActual").text(
     parseInt(price.price).toLocaleString("it-IT", {
       style: "currency",
@@ -227,11 +226,21 @@ function plotActualPrice(data) {
   );
 }
 
+function formattedDate(timestamp){
+  const date = new Date(timestamp);
+
+  const day = ('0' + date.getDate()).slice(-2);
+  const month = ('0' + (date.getMonth() + 1)).slice(-2);
+  const year = date.getFullYear();
+
+  return `${day}-${month}-${year}`;
+}
+
 function plotPredictPrice(data) {
   let price = JSON.parse(data);
   console.log(price);
 
-  $("#pricePredictDate").text(price.date);
+  $("#pricePredictDate").text(formattedDate(price.date));
 
   $("#pricePredict").text(
     parseInt(price.price).toLocaleString("it-IT", {

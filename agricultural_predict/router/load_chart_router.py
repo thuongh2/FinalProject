@@ -117,7 +117,7 @@ def load_chart():
 
     response_data = {'plot_data': plot_data,
                      'price_actual': price_actual.to_json(),
-                     'price_forecast': price_forecast.to_json()}
+                     'price_forecast': price_forecast.iloc[0].to_json()}
     return jsonify(response_data), http.HTTPStatus.OK
 
 def get_model_from_file(model_file_name):

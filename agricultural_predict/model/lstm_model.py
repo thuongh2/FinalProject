@@ -72,11 +72,11 @@ class LSTMModel(BaseModel):
             if len(self.data.columns) == 1 and self.PRICE_COLUMN in self.data.columns:
                 last_data = np.append(last_data, next_prediction).reshape(1, -1)[:, 1:]
             else:
-                new_price = next_prediction[0, 0]
-                new_feature = last_data[0, -1, 1]
-                last_data = np.append(last_data, [[[new_price, new_feature]]], axis=1)
+                last_features = last_data[0, -1, 1:]
+                next_prediction_full = np.append(next_prediction, last_features).reshape(1, 1, -1)
+                last_data = np.append(last_data, next_prediction_full, axis=1)
                 last_data = last_data[:, 1:, :]
-
+                
             predicted_price = scaler_price.inverse_transform(next_prediction.reshape(-1, 1))
             predicted_prices.append(predicted_price[0, 0])
 

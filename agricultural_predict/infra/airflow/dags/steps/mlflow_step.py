@@ -27,7 +27,7 @@ class MLFlowStep:
         enpoint = 'submit_train_model'
         if is_auto:
             enpoint = 'submit_auto_train_model'
-        url = f"https://6k46lxs5-5001.asse.devtunnels.ms/{enpoint}"
+        url = f"http://agricultural.io.vn:5001/{enpoint}"
         for retry in range(3):
             response = requests.get(
                 url=url,

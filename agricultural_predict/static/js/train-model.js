@@ -1,4 +1,4 @@
-var URL_SERVER = "http://localhost:5001";
+var URL_SERVER = "http://agricultural.io.vn:5001";
 var interval = null;
 
 const pipelineTemplate = `

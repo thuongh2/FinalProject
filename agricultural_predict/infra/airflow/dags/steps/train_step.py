@@ -39,7 +39,7 @@ class TrainStep:
 
     def fupload_object(self, filename, data, length= None):
         BUCKET_NAME = 'test'
-        MINIO_URL = '20.2.210.176:9000'
+        MINIO_URL = 'agricultural.io.vn:9000'
         MINIO_ACCESS_KEY = 'minio'
         MINIO_SECRET = 'minio123'
         PATH = "./file/"

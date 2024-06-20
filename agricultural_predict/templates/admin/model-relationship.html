@@ -120,7 +120,7 @@ content %}
         var modelName = $(this).val();
         if (modelName) {
             $.ajax({
-                url: 'http://localhost:5001/get-data-from-model/' + modelName,
+                url: 'http://agricultural.io.vn:5001/get-data-from-model/' + modelName,
                 type: 'GET',
                 success: function (response) {
                     var modelDataSelect = $('#model_data');
@@ -148,7 +148,7 @@ content %}
         $('#model_data_name').val($(this).find('option:selected').text())
         if (modelName && modelData) {
             $.ajax({
-                url: 'http://localhost:5001/get-traning-from-model/' + modelName,
+                url: 'http://agricultural.io.vn:5001/get-traning-from-model/' + modelName,
                 data: {'model_data' : modelData, 'model_type': modelType},
                 type: 'GET',
                 success: function (response) {

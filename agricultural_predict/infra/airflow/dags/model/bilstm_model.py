@@ -12,6 +12,12 @@ from tensorflow.keras.optimizers import Adam
 import logging
 import mlflow
 from mlflow.models import infer_signature
+import mlflow
+from mlflow.models import infer_signature
+import os
+
+# Suppress TensorFlow logging
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 class BiLSTMModel(BaseModel):
     def __init__(self):
@@ -38,7 +44,6 @@ class BiLSTMModel(BaseModel):
     def load_model(self):
         self.model = load_model(self.model_url)
 
-
     def train_for_upload_mode(self, n_periods, test_data):
         input_shape = self.model.layers[0].input_shape
         self.time_steps = input_shape[1]
@@ -54,15 +59,18 @@ class BiLSTMModel(BaseModel):
         self.accuracy = self.forecast_accuracy(self.test_data.price.values, self.forecast_data.price.values)
         return self.forecast_data, self.accuracy
 
-    def forecast_future(self, forecast_num, data, time_step):
+    def forecast_future(self, forecast_num, data=None, time_steps=None):
         self.model = load_model(self.model_url)
+
+        input_shape = self.model.layers[0].input_shape
+        self.time_steps = input_shape[1]
 
         scaler_price = MinMaxScaler(feature_range=(0, 1))
         scaled_data = scaler_price.fit_transform(self.data[self.PRICE_COLUMN].values.reshape(-1, 1))
 
         if len(self.data.columns) == 1 and self.PRICE_COLUMN in self.data.columns:
-            last_data = scaled_data[-(time_step + 1):]
-            last_data = last_data.reshape(1, -1)[:, -((time_step + 1) - 1):]
+            last_data = scaled_data[-(self.time_steps + 1):]
+            last_data = last_data.reshape(1, -1)[:, -((self.time_steps + 1) - 1):]
         else:
             other_columns = self.data.drop(columns=[self.PRICE_COLUMN])
             scalers_other = {}
@@ -72,8 +80,8 @@ class BiLSTMModel(BaseModel):
                 scaled_other[:, i] = scalers_other[col].fit_transform(
                     other_columns[col].values.reshape(-1, 1)).flatten()
             scaled_data = np.concatenate((scaled_data, scaled_other), axis=1)
-            last_data = scaled_data[-(time_step + 1):]
-            last_data = last_data.reshape(1, -1, scaled_data.shape[1])[:, -((time_step + 1) - 1):]
+            last_data = scaled_data[-(self.time_steps + 1):]
+            last_data = last_data.reshape(1, -1, scaled_data.shape[1])[:, -((self.time_steps + 1) - 1):]
 
         predicted_prices = []
         for day in range(forecast_num):
@@ -94,7 +102,7 @@ class BiLSTMModel(BaseModel):
         predicted_df = pd.DataFrame({'date': next_dates, 'price': predicted_prices})
 
         return predicted_df
-    
+
     def concat_dataframes(self, original_df, predicted_df):
         predicted_df['date'] = pd.to_datetime(predicted_df['date'])
         predicted_df['date'] = predicted_df['date'].dt.strftime('%m/%d/%Y')
@@ -150,7 +158,7 @@ class BiLSTMModel(BaseModel):
         # Prepare data
         if argument.get('size', 0.8) is None:
             raise Exception("Size is required")
-
+        
         self.data = pd.read_csv(self.data_uri)
         self._clean_data()
         
@@ -191,7 +199,7 @@ class BiLSTMModel(BaseModel):
         self.train_dates, self.test_dates = self.dates[:train_size], self.dates[train_size:]
 
         # Start train model
-        logging.info('Start train LSTM MODEL')
+        logging.info('Start train BiLSTM MODEL')
         self.create_model(argument, input_shape)
         epochs = argument['epochs']
         batchsize = argument.get('batchsize', 64)
@@ -224,13 +232,12 @@ class BiLSTMModel(BaseModel):
         return self.forecast_data, self.accuracy, self.model
     
     
-    def ml_flow_register(self, experient_name="DEFAUT_MODEL"):
+    def ml_flow_register(self, experient_name="DEFAUT_MODEL", argument=None):
         ARTIFACT_PATH = "model"
 
         mlflow.set_tracking_uri(uri="http://agricultural.io.vn:5000/")
         mlflow.set_experiment(experient_name)
 
-        
         # Create an instance of a PandasDataset
         dataset = mlflow.data.from_pandas(
             self.data, source=self.data_uri, name="rice data", targets="price"
@@ -242,12 +249,14 @@ class BiLSTMModel(BaseModel):
 
             mlflow.log_input(dataset, context="training")
 
+            mlflow.log_params({"argument": argument})
+
             for k, v in self.accuracy.items():
                 mlflow.log_metric(k, round(v, 4))
 
             signature = infer_signature(input_sample, output_sample)
 
-            model_mflow = mlflow.tensorflow.log_model(
+            model_mflow = mlflow.sklearn.log_model(
                 self.model, ARTIFACT_PATH, signature=signature
             )
             return model_mflow

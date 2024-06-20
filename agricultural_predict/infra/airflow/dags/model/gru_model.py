@@ -12,6 +12,10 @@ from tensorflow.keras.optimizers import Adam
 import logging
 import mlflow
 from mlflow.models import infer_signature
+import os
+
+# Suppress TensorFlow logging
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 class GRUModel(BaseModel):
     def __init__(self):
@@ -62,15 +66,18 @@ class GRUModel(BaseModel):
         self.accuracy = self.forecast_accuracy(self.test_data.price.values, self.forecast_data.price.values)
         return self.forecast_data, self.accuracy
 
-    def forecast_future(self, forecast_num, data, time_step):
+    def forecast_future(self, forecast_num, data=None, time_steps=None):
         self.model = load_model(self.model_url)
+
+        input_shape = self.model.layers[0].input_shape
+        self.time_steps = input_shape[1]
 
         scaler_price = MinMaxScaler(feature_range=(0, 1))
         scaled_data = scaler_price.fit_transform(self.data[self.PRICE_COLUMN].values.reshape(-1, 1))
 
         if len(self.data.columns) == 1 and self.PRICE_COLUMN in self.data.columns:
-            last_data = scaled_data[-(time_step + 1):]
-            last_data = last_data.reshape(1, -1)[:, -((time_step + 1) - 1):]
+            last_data = scaled_data[-(self.time_steps + 1):]
+            last_data = last_data.reshape(1, -1)[:, -((self.time_steps + 1) - 1):]
         else:
             other_columns = self.data.drop(columns=[self.PRICE_COLUMN])
             scalers_other = {}
@@ -80,8 +87,8 @@ class GRUModel(BaseModel):
                 scaled_other[:, i] = scalers_other[col].fit_transform(
                     other_columns[col].values.reshape(-1, 1)).flatten()
             scaled_data = np.concatenate((scaled_data, scaled_other), axis=1)
-            last_data = scaled_data[-(time_step + 1):]
-            last_data = last_data.reshape(1, -1, scaled_data.shape[1])[:, -((time_step + 1) - 1):]
+            last_data = scaled_data[-(self.time_steps + 1):]
+            last_data = last_data.reshape(1, -1, scaled_data.shape[1])[:, -((self.time_steps + 1) - 1):]
 
         predicted_prices = []
         for day in range(forecast_num):
@@ -96,6 +103,7 @@ class GRUModel(BaseModel):
                 
             predicted_price = scaler_price.inverse_transform(next_prediction.reshape(-1, 1))
             predicted_prices.append(predicted_price[0, 0])
+
         last_date = self.data.index[-1]
         next_dates = pd.date_range(start=last_date, periods=forecast_num + 1)[1:]
         predicted_df = pd.DataFrame({'date': next_dates, 'price': predicted_prices})
@@ -188,7 +196,7 @@ class GRUModel(BaseModel):
         self.train_dates, self.test_dates = self.dates[:train_size], self.dates[train_size:]
 
         # Start train model
-        logging.info('Start train LSTM MODEL')
+        logging.info('Start train GRU MODEL')
         self.create_model(argument, input_shape)
         epochs = argument['epochs']
         batchsize = argument.get('batchsize', 64)
@@ -218,7 +226,7 @@ class GRUModel(BaseModel):
         self.accuracy = self.forecast_accuracy(self.y_test_actual, self.X_test_predict)
 
         return self.forecast_data, self.accuracy, self.model
-    
+
     def ml_flow_register(self, experient_name="DEFAUT_MODEL", argument=None):
         ARTIFACT_PATH = "model"
 
@@ -246,7 +254,7 @@ class GRUModel(BaseModel):
             model_mflow = mlflow.sklearn.log_model(
                 self.model, ARTIFACT_PATH, signature=signature
             )
-            return model_mflow 
+            return model_mflow
     
 if __name__ == '__main__':
     model_url = "../test_data/GRU_univariate_coffee.h5"

@@ -6,7 +6,7 @@ SERVER_URL = f'http://{HOST}:{PORT}'
 
 BUCKET_NAME = 'test'
 
-MINIO_URL = f'http://agricultural.io.vn:9000'
+MINIO_URL = f'agricultural.io.vn:9000'
 
 MINIO_ACCESS_KEY = 'minio'
 

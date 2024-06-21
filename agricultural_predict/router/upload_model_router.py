@@ -19,13 +19,14 @@ from utils import minio_utils
 from utils import common_utils
 from config import host_config
 
-upload_model_router = Blueprint('upload_model_router', __name__, static_folder='static',
+upload_model_router = Blueprint('upload_model_router',
+                                __name__, 
+                                static_folder='static',
                                 template_folder='templates')
 
 @upload_model_router.route('/upload-model-minio', methods=['GET', 'POST'])
 def upload_model():
     if request.method == "POST":
-
         if "file" not in request.files:
             return redirect(request.url)
         file = request.files["file"]

@@ -39,11 +39,10 @@ mlflow_step = MLFlowStep()
 
 with DAG(
         dag_id="{dag_id_to_replace}",
-
         schedule_interval=None,
         catchup=False,
         default_args=default_args,
-        is_paused_upon_creation=False,  # No repetition
+        is_paused_upon_creation=False, 
 ) as dag:
 
     preprocessing_task = PythonOperator(

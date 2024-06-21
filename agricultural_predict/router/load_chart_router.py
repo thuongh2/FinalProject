@@ -4,8 +4,7 @@ from flask import Blueprint
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask import current_app
 from flask_cors import cross_origin
-from pymongo import MongoClient
-from config.db_conn_config import model_info_collection, model_registry_collection, model_data_relations_collection
+from config.db_conn_config import model_registry_collection, model_data_relations_collection
 from flask import session
 import cachetools
 from flask import current_app
@@ -26,9 +25,8 @@ load_chart_router = Blueprint('load_chart_router',
                             static_folder='static',
                             template_folder='templates')
 
-cache = TTLCache(maxsize=10, ttl=50000)
+cache = TTLCache(maxsize=100, ttl=50000)
 model_file_path = './file_model/'
-
 
 # Cache configuration
 lru_cache = LRUCache(maxsize=100)
@@ -72,11 +70,11 @@ def load_chart():
     model.model_url = model_url
     _, test_data = model.prepare_data_for_self_train()
 
-    # try:
-    #     predict_data = cache[model_file_name]
-    # except:
-    predict_data = model.forecast_future(model_time, test_data, n_steps)
-        # cache[model_file_name] = predict_data
+    try:
+        predict_data = cache[model_file_name]
+    except:
+        predict_data = model.forecast_future(model_time, test_data, n_steps)
+        cache[model_file_name] = predict_data
 
     predict_data['date'] = pd.to_datetime(predict_data['date'])
     predict_data.set_index(['date'], inplace=True)

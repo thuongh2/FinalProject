@@ -19,6 +19,7 @@ app = Flask(__name__,
 assets = Environment(app)
 app.logger.setLevel(logging.INFO)
 cors = CORS(app)
+
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 app.secret_key = "cqH3HoQ1Cp4zafXn"

@@ -139,10 +139,10 @@ class ARIMAModel(BaseModel):
         """ invert differenced forecast """
         return value + last_ob
 
-    def ml_flow_register(self, experient_name="DEFAUT_MODEL", argument=None):
+    def ml_flow_register(self, experient_name="ARIMA_MODEL", argument=None):
         ARTIFACT_PATH = "model"
 
-        mlflow.set_tracking_uri(uri="http://agricultural.io.vn:5000/")
+        mlflow.set_tracking_uri(uri=self.ML_FLOW_URL)
         mlflow.set_experiment(experient_name)
 
         # Create an instance of a PandasDataset
@@ -168,33 +168,3 @@ class ARIMAModel(BaseModel):
                 self.model, ARTIFACT_PATH, signature=signature
             )
             return model_mflow
-
-
-if __name__ == '__main__':
-    # test_data_url = "../test_data/test_data_arima.csv"
-    # test_data = pd.read_csv("../test_data/test_data_arima.csv")
-    data_url = "../test_data/arima_data.csv"
-    model_url = "../test_data/arima.joblib"
-    model = ARIMAModel()
-    # model.test_data = "../test_data/test_data_arima.csv"
-    model.model_url = model_url
-    model.data_uri = data_url
-    # # tạo data
-    # _ , test_data = model.prepare_data(data_url)
-    # # xử lí dữ liệu (cho trai trên web)
-    # print(test_data.head())
-    # print(test_data.iloc[0].values)
-    # # dự đoná mô hình
-    model.prepare_data_for_self_train()
-    data , ac = model.train_for_upload_mode(599, None)
-    # # register in ml flow
-    # model_mflow = model.ml_flow_register()
-    # print(model_mflow.model_uri)
-    print(ac)
-    print(data)
-
-    dt = model.forecast_future(10)
-    print(dt)
-    # model.data_uri = data_url
-    model.train_model({'start_p': 1, 'start_q': 1, 'max_p': 1, 'max_q': 1, 'size': 0.8})
-    # model.ml_flow_register()

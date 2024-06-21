@@ -34,10 +34,8 @@ def index():
         price_agricultural = get_price_with_date()
         cache['price_agricultural'] = price_agricultural
 
-    model_name = request.args.get('model_name', 'LSTM')
+    model_name = request.args.get('model_name', constant.LSTM)
     agricultural_type = request.args.get('agricultural_type', constant.CAFE)
-
-    model_data = records
 
     if (model_name):
         model_data_find = model_info_collection.find_one({'name': model_name})

@@ -1,8 +1,7 @@
-
 from minio import Minio
 
 BUCKET_NAME = 'data'
-MINIO_URL = 'agricultural.io.vn/:9000'
+MINIO_URL = 'agricultural.io.vn:9000'
 MINIO_ACCESS_KEY = 'minio'
 MINIO_SECRET = 'minio123'
 PATH = "./file/"

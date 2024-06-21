@@ -1,13 +1,9 @@
 import http
-
 from flask import Blueprint
-from flask import render_template, request, redirect, url_for, flash, jsonify, Response, stream_with_context
-from flask import render_template
-from flask import send_from_directory
-from flask import current_app
+from flask import request, redirect, url_for, flash, jsonify
 from flask_cors import cross_origin
 from pymongo import MongoClient
-from config.db_conn_config import db, model_info_collection, user_collection, model_registry_collection
+from config.db_conn_config import model_registry_collection
 from flask import session
 import hashlib
 from flask import current_app
@@ -23,14 +19,10 @@ from statsmodels.tsa.stattools import acf, pacf
 from requests.auth import HTTPBasicAuth
 from model.factory_model import FactoryModel
 from bson import json_util
-from statsmodels.tsa.stattools import adfuller
-import joblib
-import uuid
 import os
 from utils import minio_utils
 from infra.airflow.include import dag_config
 import requests as requests_api
-import time
 from utils import constant
 from time import sleep
 from config import host_config
@@ -49,7 +41,7 @@ def pipeline_airflow(dags_id, task_id):
         airflow_url = f"http://{host_config.HOST}:8080/api/v1/dags/{dags_id}/dagRuns/{task_id}/taskInstances"
 
         print("Get data from " + airflow_url)
-        response = requests_api.get(airflow_url, 
+        response = requests_api.get(airflow_url,
                                     auth=HTTPBasicAuth('airflow', 'airflow'),
                                     headers={'Content-Type': 'application/json'})
         return jsonify(response.text), http.HTTPStatus.OK
@@ -219,8 +211,7 @@ def get_train_model_airflow(model_id):
     model_factory.load_model()
     _, test_data = model_factory.prepare_data_for_self_train()
 
-    n_periods = len(test_data)
-    forecast_data, ac = model_factory.train_for_upload_mode(n_periods, test_data)
+    forecast_data, ac = model_factory.train_for_upload_mode(len(test_data), test_data)
 
     if isinstance(forecast_data, pd.DataFrame):
         forecast_data.set_index(test_data.index, inplace=True)

@@ -126,11 +126,11 @@ class VARMAModel(BaseModel):
         df_dif = self.train_data.copy()
         return df_dif.diff().dropna()
 
-    def ml_flow_register(self, experient_name="DEFAUT_MODEL", argument=None):
+    def ml_flow_register(self, experient_name="VARMA_MODEL", argument=None):
         ARTIFACT_PATH = "model"
 
-        mlflow.set_tracking_uri(uri="http://agricultural.io.vn:5000/")
-        mlflow.set_experiment("VAR_MODEL")
+        mlflow.set_tracking_uri(uri=self.ML_FLOW_URL)
+        mlflow.set_experiment(experient_name)
 
         # Create an instance of a PandasDataset
         dataset = mlflow.data.from_pandas(
@@ -158,32 +158,3 @@ class VARMAModel(BaseModel):
                                                       registered_model_name="statsmodels_model")
             return model_info
 
-
-if __name__ == '__main__':
-    data_url = "../test_data/var_data.csv"
-    model_url = "../test_data/varma_model.joblib"
-    model = VARMAModel()
-
-
-    warnings.simplefilter('ignore', ConvergenceWarning)
-    model.model_url = model_url
-    model.data_uri = data_url
-    # # tạo data
-    # _, test_data = model.prepare_data(data_url)
-    # # xử lí dữ liệu (cho trai trên web)
-    # print(test_data.head())
-    # print(test_data.iloc[0].values)
-    # # dự đoná mô hình
-    model.prepare_data_for_self_train()
-
-    data, ac = model.train_for_upload_mode(168)
-    model.forecast_future(10)
-
-    # # register in ml flow
-    # model_mflow = model.ml_flow_register()
-    # print(model_mflow.model_uri)
-    # print(ac)
-    # print(data)
-
-    _, ac, _ = model.train_model({"p": 1, "q": 1})
-    print(ac)

@@ -4,7 +4,6 @@ class PreprocessStep:
     def __init__(self, model) -> None:
         self.model = model
 
-
     def __call__(self,ti, data_path: str, size = 0.8, is_auto = False) -> None:
         if is_auto:
             data_path = get_minio_object(data_path)

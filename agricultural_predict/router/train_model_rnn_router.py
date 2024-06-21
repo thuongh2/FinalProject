@@ -114,14 +114,16 @@ def train_model_rnn_data():
     argument = data.get('argument')
     model_id = data.get('model_id')
 
-    data_model = {"user_id": data.get('username'),
-                  "model_name": model_name,
-                  "agricultural_name": data.get('agricultural_name'),
-                  "data_name": model_data,
-                  "argument": argument,
-                  "type": "TRAIN_MODEL",
-                  "create_time": datetime.now(),
-                  "is_used": False}
+    data_model = {
+                    "user_id": data.get('username'),
+                    "model_name": model_name,
+                    "agricultural_name": data.get('agricultural_name'),
+                    "data_name": model_data,
+                    "argument": argument,
+                    "type": "TRAIN_MODEL",
+                    "create_time": datetime.now(),
+                    "is_used": False
+                }
 
 
     dag_run_id = create_dags_flow(model_id, model_name, data_model.get('user_id'),

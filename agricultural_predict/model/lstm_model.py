@@ -221,10 +221,10 @@ class LSTMModel(BaseModel):
 
         return self.forecast_data, self.accuracy, self.model
 
-    def ml_flow_register(self, experient_name="DEFAUT_MODEL", argument=None):
+    def ml_flow_register(self, experient_name="LSTM_MODEL", argument=None):
         ARTIFACT_PATH = "model"
 
-        mlflow.set_tracking_uri(uri="http://agricultural.io.vn:5000/")
+        mlflow.set_tracking_uri(uri=self.ML_FLOW_URL)
         mlflow.set_experiment(experient_name)
 
         # Create an instance of a PandasDataset
@@ -249,33 +249,3 @@ class LSTMModel(BaseModel):
                 self.model, ARTIFACT_PATH, signature=signature
             )
             return model_mflow
-
-if __name__ == '__main__':
-    model_url = "../test_data/LSTM_univariate_coffee.h5"
-    data_url = "../test_data/coffee_daklak.csv"
-    # data = pd.read_csv("../test_data/coffee_daklak.csv", encoding='utf-8')
-    model = LSTMModel()
-    model.model_url = model_url
-    model.data_uri = data_url
-    #
-    # n_steps = 10
-    #
-    # # Chia tập dữ liệu
-    train_data, test_data = model.prepare_data(data_url)
-    #
-    # # Dự đoán mô hình trên dữ liệu thực tế
-    # predicted_train_initial = model.predict(train_data, n_steps)
-    # predicted_test_initial = model.predict(test_data, n_steps)
-    #
-    # predicted_train = np.concatenate([train_data.iloc[:n_steps]['price'].values, predicted_train_initial.flatten()])
-    # predicted_test = np.concatenate([test_data.iloc[:n_steps]['price'].values, predicted_test_initial.flatten()])
-    #
-    # # Đánh giá mô hình
-    # evaluation_train = model.forecast_accuracy(train_data, predicted_train)
-    evaluation_test = model.forecast_future(10, test_data, 10)
-    # print("Evaluation on train data:", evaluation_train)
-    print("Evaluation on test data:", evaluation_test)
-    #
-    # # Dự đoán giá trong tương lai
-    # forecast_num = 60
-    # predicted_df = model.forecast_future(forecast_num, test_data, n_steps)

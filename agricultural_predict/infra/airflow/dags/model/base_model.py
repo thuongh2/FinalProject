@@ -4,13 +4,11 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 from pyparsing import Optional
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, mean_absolute_percentage_error
 from typing import Optional
 
 
-
 class BaseModel:
-
     def __init__(self) -> None:
         """Initializes the model and data attributes.
 
@@ -36,6 +34,7 @@ class BaseModel:
         self.accuracy: Optional[dict] = None
 
         self.PRICE_COLUMN: str = 'price'
+        self.ML_FLOW_URL: str = 'http://agricultural.io.vn:5000'
 
 
     @abstractmethod
@@ -59,12 +58,12 @@ class BaseModel:
         return self.prepare_data(self.data_uri, split_size)
 
     def forecast_accuracy(self, actual_value, predicted_values):
-
-        mape = np.mean(np.abs((actual_value - predicted_values) / actual_value)) * 100
+        mape = mean_absolute_percentage_error(actual_value, predicted_values) * 100
 
         mse = mean_squared_error(actual_value, predicted_values)
         rmse = np.sqrt(mse)
-
+        print("rmse: ", rmse)
+        print("mape: ", mape)
         return {'mape': round(mape, 2), 'rmse': round(rmse, 2)}
 
     def prepare_data(self, data_url, split_size=0.8):
@@ -114,17 +113,16 @@ class BaseModel:
         return ""
 
     def smoothing_data(self, type='exponential', smoothing_value=30):
-        if type == 'exponential':
-            if not smoothing_value:
-                smoothing_value = 0.5
-            self.data = self.data.ewm(alpha=float(smoothing_value), adjust=False).mean()
-        elif type == 'moving_average':
-            if not smoothing_value:
-                smoothing_value = 30
-            self.data = self.data.rolling(int(smoothing_value), min_periods=1).mean()
-        elif type == 'double_exponential':
-            if not smoothing_value:
-                smoothing_value = 0.5
-            self.data = self.data.ewm(alpha=float(smoothing_value), adjust=False).mean()
-            self.data = self.data.ewm(alpha=float(smoothing_value), adjust=False).mean()
+        if type not in ['exponential', 'moving_average', 'double_exponential']:
+            raise ValueError(f"Unknown smoothing type '{type}'.")
+        
+        if type == 'moving_average':
+            smoothing_value = int(smoothing_value) if smoothing_value else 30
+            self.data = self.data.rolling(window=smoothing_value, min_periods=1).mean()
+        else:
+            alpha = float(smoothing_value) if smoothing_value else 0.5
+            self.data = self.data.ewm(alpha=alpha, adjust=False).mean()
+            if type == 'double_exponential':
+                self.data = self.data.ewm(alpha=alpha, adjust=False).mean()
+
         self.data = self.data.dropna()

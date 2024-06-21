@@ -153,11 +153,11 @@ class VARModel(BaseModel):
     def ml_flow_param(self):
         return {"P": self.model.k_ar}
 
-    def ml_flow_register(self, experient_name="DEFAUT_MODEL", argument=None):
+    def ml_flow_register(self, experient_name="VAR_MODEL", argument=None):
         ARTIFACT_PATH = "model"
 
-        mlflow.set_tracking_uri(uri="http://agricultural.io.vn:5000/")
-        mlflow.set_experiment("VAR_MODEL")
+        mlflow.set_tracking_uri(uri=self.ML_FLOW_URL)
+        mlflow.set_experiment(experient_name)
 
         # Create an instance of a PandasDataset
         dataset = mlflow.data.from_pandas(
@@ -184,33 +184,3 @@ class VARModel(BaseModel):
                                                       artifact_path="varmodel",
                                                       registered_model_name="statsmodels_model")
             return model_info
-
-
-    
-if __name__ == '__main__':
-    data_url = "../test_data/var_data.csv"
-    model_url = "../test_data/var_model.joblib"
-    model = VARModel()
-    model.model_url = model_url    
-    model.data_uri = data_url
-    # tạo data
-    # _ , test_data = model.prepare_data(data_url)
-    # xử lí dữ liệu (cho trai trên web)
-    # print(test_data.head())
-    # print(test_data.iloc[0].values)
-    # dự đoná mô hình
-    model.prepare_data_for_self_train()
-
-    # data , ac = model.train_for_upload_mode(168)
-
-    model.forecast_future(10)
-    # register in ml flow
-    # model_mflow = model.ml_flow_register()
-    # print(model_mflow.model_uri)
-    # print(ac)
-    # print(data['price_forecast'])
-
-    _, a, _ = model.train_model({'max_p': 10})
-    print(a)
-
-    

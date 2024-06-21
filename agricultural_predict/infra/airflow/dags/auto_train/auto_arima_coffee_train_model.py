@@ -38,7 +38,7 @@ with DAG(
         schedule_interval='@hourly',
         catchup=False,
         default_args=default_args,
-        is_paused_upon_creation=False, 
+        is_paused_upon_creation=False,
 ) as dag:
 
     preprocessing_task = PythonOperator(

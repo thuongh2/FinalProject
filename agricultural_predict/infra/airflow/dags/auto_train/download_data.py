@@ -107,7 +107,7 @@ def craw_data():
 
     def fupload_object(data, file_name_upload):
         BUCKET_NAME = 'data'
-        MINIO_URL = 'http://agricultural.io.vn:9000'
+        MINIO_URL = 'agricultural.io.vn:9000'
         MINIO_ACCESS_KEY = 'minio'
         MINIO_SECRET = 'minio123'
 

@@ -1,7 +1,6 @@
 import requests
 import json
 
-
 class MLFlowStep:
 
     def __init__(self) -> None:

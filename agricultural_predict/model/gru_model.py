@@ -230,7 +230,7 @@ class GRUModel(BaseModel):
     def ml_flow_register(self, experient_name="DEFAUT_MODEL", argument=None):
         ARTIFACT_PATH = "model"
 
-        mlflow.set_tracking_uri(uri="http://agricultural.io.vn:5000/")
+        mlflow.set_tracking_uri(uri=self.ML_FLOW_URL)
         mlflow.set_experiment(experient_name)
 
         # Create an instance of a PandasDataset

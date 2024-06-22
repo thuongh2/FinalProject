@@ -29,7 +29,7 @@ def create_dags_file(dag_name, data_url, model, argument, agricultural_name, use
             if agricultural_name:
                 line = line.replace("{agricultural_name}", agricultural_name)
             if user_name:
-                line = line.replace("{user_name}", user_name)
+                line = line.replace("{user_name}", user_name.strip())
             print(line, end="")
         print("DAG " + dag_file + " created")
         file_input.close()

@@ -38,7 +38,7 @@ pipeline_router = Blueprint('pipeline_router',
 @cross_origin()
 def pipeline_airflow(dags_id, task_id):
     try:
-        airflow_url = f"http://{host_config.HOST}:8080/api/v1/dags/{dags_id}/dagRuns/{task_id}/taskInstances"
+        airflow_url = f"{host_config.HOST}:8080/api/v1/dags/{dags_id}/dagRuns/{task_id}/taskInstances"
 
         print("Get data from " + airflow_url)
         response = requests_api.get(airflow_url,

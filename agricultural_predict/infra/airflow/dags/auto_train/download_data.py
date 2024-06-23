@@ -57,7 +57,7 @@ def craw_data():
                 element = driver.find_element(By.ID, "ctl00_maincontent_tai_excel")
                 element.click()
 
-                time.sleep(5)
+                time.sleep(30)
             else: 
                 print("Fail when download file")
 

@@ -1,6 +1,6 @@
 from minio import Minio
 
-BUCKET_NAME = 'data'
+BUCKET_NAME = 'final-project'
 MINIO_URL = 'agricultural.io.vn:9000'
 MINIO_ACCESS_KEY = 'minio'
 MINIO_SECRET = 'minio123'

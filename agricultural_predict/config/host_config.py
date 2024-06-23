@@ -1,10 +1,12 @@
-HOST = 'http://agricultural.io.vn'
+# HOST = 'http://agricultural.io.vn'
+HOST = 'http://localhost'
+
 
 PORT = 5001
 
 SERVER_URL = f'http://{HOST}:{PORT}'
 
-BUCKET_NAME = 'test'
+BUCKET_NAME = 'final-project'
 
 MINIO_URL = f'agricultural.io.vn:9000'
 

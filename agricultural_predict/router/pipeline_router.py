@@ -96,7 +96,10 @@ def submit_auto_train_model_airflow():
         else:
             forecast_data = pd.DataFrame(forecast_data, index=test_data.index, columns=['price'])
 
-        model_factory.ml_flow_register(argument=argument)
+        try:
+            model_factory.ml_flow_register(argument=argument)
+        except Exception as e:
+            print(e)
 
         data_model = {  
                         "_id": common_utils.generate_id(model_name + 'AUTO'),
@@ -152,7 +155,10 @@ def submit_train_model_airflow():
         else:
             forecast_data = pd.DataFrame(forecast_data, index=test_data.index, columns=['price'])
 
-        model_factory.ml_flow_register(argument=argument)
+        try:
+            model_factory.ml_flow_register(argument=argument)
+        except Exception as e:
+            print(e)
 
         data_model = {
                         "_id": model_id,

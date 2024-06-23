@@ -107,7 +107,8 @@ async function plotChart() {
   var smoothing_value = $("#smoothing_value").val();
   handelStoreSession("data_url", model_data.data);
   handelStoreSession("agricultural_name", model_data.type);
-  handelStoreSession("model_name", model_data.name);
+  handelStoreSession("model_name", $("#model_name").find(":selected").text());
+
   handelStoreSession("smoothing_data", smoothing_type);
   handelStoreSession("smoothing_value", smoothing_value);
 
@@ -213,7 +214,7 @@ async function trainModel() {
   if (!model_data) {
     alertify.error("Vui lòng chọn dữ liệu");
   }
-  const username = $("#username").text();
+  const username = $("#username").text().trim();
   const agricultural_name = sessionStorage.getItem("agricultural_name");
 
   const layers_data = sessionStorage.getItem("layers_data");

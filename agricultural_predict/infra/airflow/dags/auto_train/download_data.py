@@ -22,7 +22,6 @@ XLS_EXTENSION = ".xls"
 HTML_EXTENSION = ".html"
 
 @dag(
-    schedule_interval=None,
     start_date = datetime(2024, 6, 8),
     schedule_interval='@daily',
     catchup=False,

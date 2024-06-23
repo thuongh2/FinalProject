@@ -181,7 +181,7 @@ def start_trigger_airflow(dag_id, retry=None):
     time.sleep(10)
     print("Start airflow trigger")
 
-    airflow_url = f"http://{host_config.HOST}:8080/api/v1/dags/{dag_id}/dagRuns"
+    airflow_url = f"{host_config.HOST}:8080/api/v1/dags/{dag_id}/dagRuns"
     airflow_url = airflow_url.replace("{dag_id}", dag_id)
     print("Start trigger " + airflow_url)
     dags_run_id = dag_id + "_" + common_utils.generate_string()
@@ -248,8 +248,6 @@ def submit_train_model_data():
     if not model_tranning:
         return jsonify({'message': 'No train model found'}), 404
 
-
-    model_tranning.update({'_id':  data.get('_id')}, {'is_traning': False})
     return json_util.dumps(data.get('_id'))
 
 
@@ -283,7 +281,10 @@ def submit_train_model_airflow():
         else:
             forecast_data = pd.DataFrame(forecast_data, index=test_data.index, columns=['price'])
 
-        model_factory.ml_flow_register(argument=argument)
+        try:
+            model_factory.ml_flow_register(argument=argument)
+        except Exception as e:
+            print(e)
 
         data_model = {"_id": model_id,
                     "user_id": user_name,

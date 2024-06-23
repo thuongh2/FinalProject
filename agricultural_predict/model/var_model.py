@@ -71,7 +71,7 @@ class VARModel(BaseModel):
 
         self.forecast_data = pd.DataFrame(self.forecast_data, index=self.test_data.index[-n_periods:], columns=self.test_data.columns)
 
-        self.forecast_data = self.invert_transformation(self.test_data, self.forecast_data, second_diff=True)
+        self.forecast_data = self.invert_transformation(self.train_data, self.forecast_data, second_diff=True)
         self.forecast_data['price'] = self.forecast_data['price_forecast']
         self.accuracy = self.forecast_accuracy(self.forecast_data[self.PRICE_COLUMN].values, self.test_data[self.PRICE_COLUMN].values)
 

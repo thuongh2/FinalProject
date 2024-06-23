@@ -49,9 +49,10 @@ def train_model_rnn_page():
         model_data_find = model_info_collection.find_one({'name': model_name})
         data = model_data_find.get('data')
         default_param = model_data_find.get('default_param')
-        if(default_param):
+        params_render = None
+        if default_param:
             params_render = default_param.get('param')
-        current_app.logger.info(params_render)
+            current_app.logger.info(params_render)
 
         return render_template('admin/train-model-rnn.html',
                                 model_names=model_names, data=data,
@@ -82,7 +83,7 @@ def start_trigger_airflow(dag_id, retry=None):
     print("Start airflow trigger")
 
     # TODO set this in os
-    airflow_url = f"http://{host_config.HOST}:8080/api/v1/dags/{dag_id}/dagRuns"
+    airflow_url = f"{host_config.HOST}:8080/api/v1/dags/{dag_id}/dagRuns"
     airflow_url = airflow_url.replace("{dag_id}", dag_id)
     print("Start trigger " + airflow_url)
     dags_run_id = dag_id + "_" + common_utils.generate_string()
@@ -149,6 +150,4 @@ def submit_train_model_rnn_data():
     if not model_traning:
         return jsonify({'message': 'No train model found'}), 404
 
-
-    model_traning.update({'_id':  data.get('_id')}, {'is_tranning': False})
     return json_util.dumps(data.get('_id'))

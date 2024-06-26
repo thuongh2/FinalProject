@@ -1,6 +1,6 @@
 ## HCMC UNIVERSITY OF TECHNOLOGY AND EDUCATION
 ### FACULTY OF INFORMATION TECHNOLOGY
-### DEPARTMENT OF DATA ENGINEERING
+### DATA ENGINEERING
 
 ## Project: APPLYING STATISTICAL METHODS AND MACHINE LEARNING TO PREDICT AGRICULTURAL PRICES
 
@@ -10,6 +10,8 @@ The objective of this project is to develop an application to predict agricultur
 - Developing a web application to predict agricultural prices with main features: displaying agricultural price predictions, allowing users to upload their own prediction models, training prediction models directly on the website, and enabling the system to automatically download new data and train models.
 
 #### 2. Project Structure
+
+![alt text](image.png)
 
 - `agricultural_predict`: directory containing the web application
 - `colab`: directory containing model training files

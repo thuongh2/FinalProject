@@ -603,4 +603,9 @@ function loadFromSession() {
 
 document.addEventListener("DOMContentLoaded", function () {
   loadFromSession();
+
+  $('#modal').modal({
+    backdrop: true // or remove this line
+  });
+  
 });

@@ -548,6 +548,11 @@ $(document).ready(function () {
   // config for alertify notify
   alertify.set("notifier", "position", "top-right");
 
+
+  $('#modal').modal({
+    backdrop: true // or remove this line
+  });
+
   $("input[type=radio][name=flexRadioDefault]").change(function () {
     var selectedValue = $(this).val();
     if (selectedValue === "DIFF") {

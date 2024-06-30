@@ -429,8 +429,8 @@ async function getTranningModelDetail(modelId) {
 
       if (data.status === "SUCCESS") {
         $("#model_detail_name").text(data.model_name);
-        $("#model_detail_mape").text(data.evaluate["mape"] | 0);
-        $("#model_detail_rmse").text(data.evaluate["rmse"] | 0);
+        $("#model_detail_mape").text(data.evaluate["mape"]);
+        $("#model_detail_rmse").text(data.evaluate["rmse"]);
 
         // show chart data như trang detail
         await plotChartData(data.plot_data);

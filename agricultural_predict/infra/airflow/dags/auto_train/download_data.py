@@ -36,7 +36,8 @@ def craw_data():
             "profile.default_content_settings.popups": 0,
             "download.prompt_for_download": "false",
             "download.directory_upgrade": "true",
-            "download.default_directory": "/tmp/downloads"
+            "download.default_directory": "/tmp/downloads",
+            "savefile.default_directory": "/tmp/downloads",
         }
         options.add_experimental_option("prefs", prefs)
         remote_webdriver = 'remote_chromedriver'

@@ -105,7 +105,7 @@ def craw_data():
         fupload_object(df_rice, file_name_upload)
 
     def fupload_object(data, file_name_upload):
-        BUCKET_NAME = 'data'
+        BUCKET_NAME = 'final-project'
         MINIO_URL = 'agricultural.io.vn:9000'
         MINIO_ACCESS_KEY = 'minio'
         MINIO_SECRET = 'minio123'

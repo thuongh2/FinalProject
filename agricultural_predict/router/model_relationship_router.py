@@ -55,10 +55,12 @@ def create_model_relationship():
 
     model_relationships = model_data_relations_collection.find()
     try:
-        model_info = cache['model_info']
+        model_info = cache['model_relations_info']
+        if model is None:
+            raise Exception('failed to get model info')
     except:
         model_info = model_info_collection.find()
-        cache['model_info'] = model_info
+        cache['model_relations_info'] = model_info
 
     return render_template('admin/model-relationship.html',
                         model_info=model_info, 

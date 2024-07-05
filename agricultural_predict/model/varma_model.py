@@ -45,8 +45,6 @@ class VARMAModel(BaseModel):
         predicted = predicted[-forecast_num:]
 
         predicted_df = pd.DataFrame({'date': next_dates, 'price': predicted[self.PRICE_COLUMN]})
-        predicted_df = self.invert_transformation(self.test_data, predicted_df, second_diff=False)
-        predicted_df['price'] = predicted_df['price_forecast']
         
         return predicted_df
 

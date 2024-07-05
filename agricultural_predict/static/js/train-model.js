@@ -528,8 +528,8 @@ async function getTranningModelDetail(modelId) {
 
       if (data.status === "SUCCESS") {
         $("#model_detail_name").text(data.model_name);
-        $("#model_detail_mape").text(data.evaluate["mape"] | 0);
-        $("#model_detail_rmse").text(data.evaluate["rmse"] | 0);
+        $("#model_detail_mape").text(data.evaluate["mape"]);
+        $("#model_detail_rmse").text(data.evaluate["rmse"]);
 
         // show chart data như trang detail
         await plotChartData(data.plot_data);
@@ -547,6 +547,11 @@ async function getTranningModelDetail(modelId) {
 $(document).ready(function () {
   // config for alertify notify
   alertify.set("notifier", "position", "top-right");
+
+
+  $('#modal').modal({
+    backdrop: true // or remove this line
+  });
 
   $("input[type=radio][name=flexRadioDefault]").change(function () {
     var selectedValue = $(this).val();
